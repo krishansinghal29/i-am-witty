@@ -16,7 +16,7 @@ import {
 import type { ExerciseStep } from '@/types/exercise';
 import type { QuestionMessage } from '@/types/question';
 import { RECORDING_LIMIT_SECONDS, type SprintStep } from '@/utils/sprintConstants';
-import { extractDisplayText } from '@/utils/sprintHelpers';
+import { extractDisplayText, getExerciseDisplayName } from '@/utils/sprintHelpers';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -48,8 +48,18 @@ export default function SprintExercise() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processedKeyRef = useRef<string | null>(null);
 
-
   const stt = useDeepgramSTT();
+
+  useEffect(() => {
+    setStep('loading');
+    setAnalysisResult(null);
+    setHasRefined(false);
+    setPreviousResponse(null);
+    setAnalysisError(null);
+    setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
+    processedKeyRef.current = null;
+    stt.resetTranscription();
+  }, [count, exerciseId]); // eslint-disable-line react-hooks/exhaustive-deps
   const analyzeMutation = useAnalyzeSprintResponse();
 
   const { data: questionResult } = useGenerateSprintQuestion(uid, exerciseId || '', count, step === 'loading');
@@ -189,7 +199,7 @@ export default function SprintExercise() {
 
   return (
     <div className="flex flex-col bg-white overflow-hidden h-full">
-      <ExerciseHeader exerciseName={exerciseId || ''} step={exerciseStep} />
+      <ExerciseHeader exerciseName={getExerciseDisplayName(exerciseId)} step={exerciseStep} />
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
         {step === 'loading' && <StepLoading />}
         {step === 'listening' && <StepListening listeningLiveText={listeningLiveText} questionData={questionData} avatarUrl={avatarUrl} />}

@@ -1,5 +1,5 @@
 import { Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom';
-import SprintExercise from './pages/practice/SprintExercise';
+import SprintExercise from './pages/SprintExercise';
 
 const EXERCISES = [
   { id: 'yesAnd', label: 'Yes And' },

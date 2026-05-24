@@ -3,7 +3,7 @@ export function getExerciseDisplayName(exerciseId: string): string {
     yesAnd: 'Yes, And...',
     misinterpretation: 'Misinterpretation',
     loveHate: 'Love/Hate',
-    ifByXYouMeanY: '"If by X you mean Y..."',
+    ifByXYouMeanY: 'If by X you mean Y...',
     questionAnswerTease: 'Question Answer Tease',
     vibing: 'Vibing',
     pushPull: 'Push/Pull',
