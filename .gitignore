@@ -1,0 +1,18 @@
+.DS_Store
+
+# Python virtual environments
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# Node modules
+node_modules/
+
+# Video and generated audio content
+lesson-generator/content/
+lesson-generator/output/
+
+# Environment variables
+.env
+.env.local

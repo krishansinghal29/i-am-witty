@@ -1,0 +1,10 @@
+Create a spoken audio lesson on the following topic:
+
+TOPIC: {topic}
+
+Use only the content from the source material below that is relevant to this topic. Ignore anything unrelated.
+
+SOURCE MATERIAL:
+{content}
+
+Respond with a valid JSON object only — no markdown, no explanation.

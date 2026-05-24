@@ -1,0 +1,162 @@
+{
+  "yesAnd": {
+    "name": "Yes, And...",
+    "status": "ACTIVE",
+    "title": [
+      "Master the \"Yes, And...\" Flow",
+      "Build Electric Conversations",
+      "The Improv Secret to Better Dates"
+    ],
+    "description": [
+      "Learn improv's golden rule: accept what she says (yes) and add something that makes it more fun and exciting (and). This is how you create those conversations that feel electric.",
+      "Stop killing conversations with dead-ends. Master the art of accepting energy and building on it to create that \"we just click\" feeling.",
+      "Transform boring exchanges into playful, exciting conversations by learning to accept any premise and escalate it with creativity."
+    ],
+    "primarySkills": ["humor", "creativity", "quick_thinking"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "She", "content": "I think we were raccoons in a past life." },
+        { "role": "You", "content": "Yes, and honestly we were probably the most sophisticated raccoons in the whole garbage district. Had our own territory and everything." },
+        { "role": "She", "content": "Ok that's actually hilarious." }
+      ]
+    }
+  },
+  "misinterpretation": {
+    "name": "Misinterpretation",
+    "status": "ACTIVE",
+    "title": [
+      "Flip Teases Into Attraction",
+      "The Art of Playful Reframing",
+      "Turn Pressure Into Charm"
+    ],
+    "description": [
+      "When she teases or challenges you, don't get defensive. Learn to misinterpret her words in a playful, charming direction that flips the dynamic.",
+      "Stop explaining yourself under pressure. Master the skill of taking her teases and reframing them in a way that makes her laugh and builds attraction.",
+      "Transform social pressure into playful chemistry. Learn to misread teases deliberately to create tension and fun."
+    ],
+    "primarySkills": ["confidence", "humor", "quick_thinking"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "She", "content": "I bet you say that to all the girls." },
+        { "role": "You", "content": "Only the ones who make the top 5. You're lucky, honestly." },
+        { "role": "She", "content": "Oh really, what did I do to earn that?" }
+      ]
+    }
+  },
+  "loveHate": {
+    "name": "Love / Hate",
+    "status": "ACTIVE",
+    "title": [
+      "Express Bold, Charming Opinions",
+      "The Art of the Nuanced Take",
+      "Stand Out With Strong Opinions"
+    ],
+    "description": [
+      "Practice expressing strong opinions on everyday topics using love/hate contrasts. Opinionated people are interesting — learn to share nuanced takes with charm.",
+      "Stop being agreeable about everything. Learn to express what you genuinely love and hate about any topic in a way that creates intrigue and conversation.",
+      "Develop your unique perspective on everyday topics. Share the thing you love AND the thing you hate about any subject to make yourself magnetic."
+    ],
+    "primarySkills": ["confidence", "creativity", "humor"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "Topic", "content": "Coffee shops" },
+        { "role": "You", "content": "Love the ritual of it — the smell, the excuse to sit somewhere for two hours pretending to be productive. Hate that everyone's on their laptop looking mysterious and none of them are actually writing a novel." },
+        { "role": "She", "content": "Ha, I'm definitely one of those people." }
+      ]
+    }
+  },
+  "ifByXYouMeanY": {
+    "name": "If By X You Mean Y",
+    "status": "ACTIVE",
+    "title": [
+      "Redirect Criticism Into Status",
+      "The \"If By... You Mean...\" Reframe",
+      "Own Every Label She Throws at You"
+    ],
+    "description": [
+      "When she labels you negatively, don't argue — reframe it. \"If by X you mean Y\" lets you accept the label, redefine it on your terms, and come out looking better.",
+      "Master the verbal judo of taking any criticism and turning it into a compliment on your own terms. This is high-status communication at its finest.",
+      "Stop being defensive when she labels you. Learn to accept any characterization and immediately reframe it in a way that builds your status and makes her laugh."
+    ],
+    "primarySkills": ["quick_thinking", "confidence", "humor"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "She", "content": "You're so cocky, you know that?" },
+        { "role": "You", "content": "If by cocky you mean refreshingly honest about what I bring to the table — then yes, absolutely guilty." },
+        { "role": "She", "content": "Okay that was actually a good answer." }
+      ]
+    }
+  },
+  "questionAnswerTease": {
+    "name": "Q&A Tease",
+    "status": "ACTIVE",
+    "title": [
+      "Answer Questions Without Being Boring",
+      "The Question-Answer-Tease Formula",
+      "Keep Her Hooked With Every Answer"
+    ],
+    "description": [
+      "Most guys answer questions directly and kill the vibe. Learn the Q-A-Tease framework: answer her question, then redirect it back with playful tension.",
+      "Transform boring Q&A into flirty banter. Answer her question genuinely, then flip it back to her with a tease to keep the momentum going.",
+      "Stop giving interview answers. Learn to answer questions in a way that reveals you while creating intrigue and pulling her further into the conversation."
+    ],
+    "primarySkills": ["humor", "quick_thinking", "creativity"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "She", "content": "What do you do for fun?" },
+        { "role": "You", "content": "Depends on who I'm with. By myself — hiking, cooking things I probably shouldn't be attempting. With the right company though, I'm surprisingly dangerous. What about you, are you actually fun or is that just your bio?" },
+        { "role": "She", "content": "Okay I'm going to have to prove that now." }
+      ]
+    }
+  },
+  "vibing": {
+    "name": "Vibing",
+    "status": "ACTIVE",
+    "title": [
+      "Create Real Connection Fast",
+      "Master Emotional Attunement",
+      "The Skill of Making Anyone Feel Seen"
+    ],
+    "description": [
+      "Practice emotional attunement — the ability to match her energy, validate what she's feeling, and deepen the connection in any conversation.",
+      "Learn to make people feel genuinely understood. Vibing is about reading the emotional undercurrent of a conversation and responding to it, not just the words.",
+      "Great conversations aren't about being clever — they're about connection. Practice the skill of making someone feel truly seen and heard."
+    ],
+    "primarySkills": ["empathy", "confidence", "creativity"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "She", "content": "I've been so stressed lately, I don't even know why." },
+        { "role": "You", "content": "That kind of vague stress is honestly the worst — at least with a real problem you can do something about it. Sounds like your brain's just been running in the background too long." },
+        { "role": "She", "content": "That's exactly what it feels like, yeah." }
+      ]
+    }
+  },
+  "pushPull": {
+    "name": "Push / Pull",
+    "status": "ACTIVE",
+    "title": [
+      "Master Flirty Push and Pull",
+      "Balance Tease and Attraction",
+      "The Push-Pull Dynamic"
+    ],
+    "description": [
+      "Practice the push-pull dynamic: compliment and tease in the same breath. Too much push kills attraction, too much pull reads as needy. Master the balance.",
+      "Learn to give with one hand and take with the other. Push-pull creates tension, keeps her guessing, and makes the interaction magnetic.",
+      "Respond to the image scenario with a comment that compliments (pull) and teases (push) simultaneously. This is the foundation of flirtatious conversation."
+    ],
+    "primarySkills": ["humor", "confidence", "quick_thinking"],
+    "imageUrls": [],
+    "examples": {
+      "default": [
+        { "role": "You", "content": "I appreciate someone who actually reads in public — though I can tell by the spine that book hasn't been opened once. 10/10 for the aesthetic though." },
+        { "role": "She", "content": "How dare you, I'm on chapter three!" }
+      ]
+    }
+  }
+}
