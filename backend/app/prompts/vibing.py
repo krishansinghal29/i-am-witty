@@ -1,5 +1,5 @@
-from prompts.exercise_prompts.prompt_builder import build_system_prompts
-from prompts.exercise_prompts._shared_components import (
+from prompts.prompt_builder import build_system_prompts
+from prompts._shared_components import (
     VOICE_DELIVERY_EVALUATION,
     REFINEMENT_MODE,
     SPRINT_JSON_OUTPUT_FORMAT,

@@ -1,50 +1,5 @@
-"""
-Shared Pydantic schemas used across multiple agents.
+from pydantic import BaseModel
 
-Includes schemas for:
-- CombinedEvaluationResult: Used by classical (text-only) combined evaluation agents.
-- SprintEvaluationResult: Used by sprint evaluation agents that analyse both
-  spoken audio delivery and text content quality via multimodal Gemini calls.
-"""
-
-from pydantic import BaseModel, Field
-
-
-# ---------------------------------------------------------------------------
-# Combined (classical) evaluation schemas
-# ---------------------------------------------------------------------------
-
-class EvaluationFeedback(BaseModel):
-    """Feedback returned by a combined evaluation agent."""
-    feedback: str
-    sample_answer: str
-
-
-class SkillUpdate(BaseModel):
-    """Single skill score delta produced by a combined evaluation agent."""
-    skillKey: str
-    delta: float = Field(ge=-5.0, le=5.0)
-    confidenceDelta: float = Field(ge=-2.0, le=2.0)
-    rationale: str
-    difficultyMultiplier: float = Field(ge=0.5, le=2.0)
-
-
-class ScoringResult(BaseModel):
-    """Aggregated scoring result from a combined evaluation agent."""
-    skills: list[SkillUpdate]
-    overallRationale: str
-    timeBasedAdjustment: str
-
-
-class CombinedEvaluationResult(BaseModel):
-    """Full response schema for combined (classical) evaluation agents."""
-    evaluation: EvaluationFeedback
-    scoring: ScoringResult
-
-
-# ---------------------------------------------------------------------------
-# Sprint evaluation schemas
-# ---------------------------------------------------------------------------
 
 class SprintEvaluationResult(BaseModel):
     """

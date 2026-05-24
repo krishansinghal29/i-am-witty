@@ -9,8 +9,8 @@ import json
 from typing import Optional
 
 from agents.schemas import SprintEvaluationResult
-from agents.sprint_evaluation_agents.sprint_multimodal_agent import SprintMultimodalAgent
-from prompts.exercise_prompts import get_exercise_prompt, get_sprint_question_label
+from agents.sprint_multimodal_agent import SprintMultimodalAgent
+from prompts import get_exercise_prompt, get_sprint_question_label
 from helpers.logger import logger
 from helpers.question_format_converter import convert_question_to_string
 

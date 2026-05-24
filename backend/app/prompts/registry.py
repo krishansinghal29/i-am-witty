@@ -1,13 +1,13 @@
 import random
 from typing import Any, Optional
 
-from prompts.exercise_prompts.if_by_x import PROMPT_CONFIG as IF_BY_X_PROMPT
-from prompts.exercise_prompts.love_hate import PROMPT_CONFIG as LOVE_HATE_PROMPT
-from prompts.exercise_prompts.misinterpretation import PROMPT_CONFIG as MISINTERPRETATION_PROMPT
-from prompts.exercise_prompts.push_pull import PROMPT_CONFIG as PUSH_PULL_PROMPT
-from prompts.exercise_prompts.question_answer_tease import PROMPT_CONFIG as QUESTION_ANSWER_TEASE_PROMPT
-from prompts.exercise_prompts.vibing import PROMPT_CONFIG as VIBING_PROMPT
-from prompts.exercise_prompts.yes_and import PROMPT_CONFIG as YES_AND_PROMPT
+from prompts.if_by_x import PROMPT_CONFIG as IF_BY_X_PROMPT
+from prompts.love_hate import PROMPT_CONFIG as LOVE_HATE_PROMPT
+from prompts.misinterpretation import PROMPT_CONFIG as MISINTERPRETATION_PROMPT
+from prompts.push_pull import PROMPT_CONFIG as PUSH_PULL_PROMPT
+from prompts.question_answer_tease import PROMPT_CONFIG as QUESTION_ANSWER_TEASE_PROMPT
+from prompts.vibing import PROMPT_CONFIG as VIBING_PROMPT
+from prompts.yes_and import PROMPT_CONFIG as YES_AND_PROMPT
 
 _EXERCISE_PROMPT_CONFIGS: dict[str, dict[str, Any]] = {
     YES_AND_PROMPT["exercise_key"]: YES_AND_PROMPT,

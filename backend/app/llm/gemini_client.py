@@ -4,7 +4,6 @@ import json
 import os
 import re
 
-from constants.llm_models import DEFAULT_GEMINI_MODEL
 from google import genai
 from google.genai import types
 from helpers.logger import logger
@@ -14,7 +13,7 @@ from pydantic import BaseModel
 class GeminiClient:
     """Gemini API client with the same interface as OpenAIClient."""
 
-    def __init__(self, model_name: str = DEFAULT_GEMINI_MODEL):
+    def __init__(self, model_name: str = "gemini-3.1-flash-lite-preview"):
         self.model_name = model_name
         api_key = os.getenv('GEMINI_API_KEY')
         if not api_key:

@@ -1,10 +1,9 @@
 from typing import Optional
 
-from constants.llm_models import DEFAULT_GEMINI_MODEL
 from llm.gemini_client import GeminiClient
 from llm.openai_client import OpenAIClient
 
-DEFAULT_MODEL = DEFAULT_GEMINI_MODEL
+DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
 
 
 def infer_provider(model_name: str) -> str:

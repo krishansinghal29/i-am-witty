@@ -15,8 +15,8 @@ from typing import Literal, Optional
 from pydantic import BaseModel, RootModel
 
 from agents.base_agent import BaseAgent
-from prompts.exercise_prompts import build_generator_prompt, get_exercise_prompt
-from prompts.exercise_prompts.registry import _get_exercise_prompt_config
+from prompts import build_generator_prompt, get_exercise_prompt
+from prompts.registry import _get_exercise_prompt_config
 
 
 # ── Dynamic schema factory ────────────────────────────────────────
