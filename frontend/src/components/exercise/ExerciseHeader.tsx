@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion';
 import type { ExerciseStep } from '@/types/exercise';
 
-const STEPS: ExerciseStep[] = ['intro', 'example', 'practice', 'feedback'];
+const STEPS: ExerciseStep[] = ['intro', 'practice', 'feedback'];
 const STEP_LABELS: Record<ExerciseStep, string> = {
   intro: 'Learn',
-  example: 'Example',
   practice: 'Practice',
   feedback: 'Review',
 };
@@ -61,7 +60,7 @@ export const ExerciseHeader = ({
           <motion.div
             className="absolute top-3.5 left-[14%] h-0.5 bg-orange-500 -z-0"
             initial={false}
-            animate={{ width: currentIndex === 0 ? '0%' : currentIndex === 1 ? '24%' : currentIndex === 2 ? '48%' : '72%' }}
+            animate={{ width: currentIndex === 0 ? '0%' : currentIndex === 1 ? '36%' : '72%' }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
           />
           {STEPS.map((s, idx) => (

@@ -6,7 +6,6 @@ import { StepLoading } from '@/components/sprint/StepLoading';
 import { StepRecording } from '@/components/sprint/StepRecording';
 import { useUser } from '@/contexts/UserContext';
 import { useDeepgramSTT } from '@/hooks/useDeepgramSTT';
-import { useExerciseById } from '@/hooks/useExerciseMeta';
 import {
   prefetchSprintQuestion,
   useAnalyzeSprintResponse,
@@ -16,14 +15,11 @@ import {
 } from '@/hooks/useSprintPractice';
 import type { ExerciseStep } from '@/types/exercise';
 import type { QuestionMessage } from '@/types/question';
-import { getExerciseMeta } from '@/utils/getRandomExercisePages';
 import { RECORDING_LIMIT_SECONDS, type SprintStep } from '@/utils/sprintConstants';
 import { extractDisplayText } from '@/utils/sprintHelpers';
 import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import ExerciseExamplePage from '../exercise/ExerciseExamplePage';
-import ExerciseIntroductionPage from '../exercise/ExerciseIntroductionPage';
 
 function extractImageUrl(question: QuestionMessage[]): string | null {
   const img = question.find(p => p.role === 'Image');
@@ -36,8 +32,7 @@ export default function SprintExercise() {
   const queryClient = useQueryClient();
   const { uid } = useUser();
   const count = Number(routeCount) || 1;
-
-  const [step, setStep] = useState<SprintStep>(count === 1 ? 'intro' : 'loading');
+  const [step, setStep] = useState<SprintStep>('loading');
   const [displayText, setDisplayText] = useState('');
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -53,8 +48,6 @@ export default function SprintExercise() {
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processedKeyRef = useRef<string | null>(null);
 
-  const { exercise: rawExercise } = useExerciseById(exerciseId);
-  const exerciseData = useMemo(() => rawExercise ? getExerciseMeta(rawExercise) : null, [rawExercise]);
 
   const stt = useDeepgramSTT();
   const analyzeMutation = useAnalyzeSprintResponse();
@@ -192,29 +185,12 @@ export default function SprintExercise() {
 
   if (!exerciseId) return null;
 
-  const exerciseStep: ExerciseStep = (() => {
-    if (step === 'intro') return 'intro';
-    if (step === 'example') return 'example';
-    if (step === 'feedback') return 'feedback';
-    return 'practice';
-  })();
+  const exerciseStep: ExerciseStep = step === 'feedback' ? 'feedback' : 'practice';
 
   return (
     <div className="flex flex-col bg-white overflow-hidden h-full">
-      <ExerciseHeader exerciseName={exerciseData?.name || ''} step={exerciseStep} />
+      <ExerciseHeader exerciseName={exerciseId || ''} step={exerciseStep} />
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
-        {step === 'intro' && exerciseData && (
-          <ExerciseIntroductionPage
-            exerciseIntroData={{ id: exerciseData.id, name: exerciseData.name, title: exerciseData.title, description: exerciseData.description, imageUrls: exerciseData.imageUrls, primarySkills: exerciseData.primarySkills }}
-            onNext={() => setStep('example')}
-          />
-        )}
-        {step === 'example' && exerciseData && (
-          <ExerciseExamplePage
-            exerciseExampleData={{ examples: exerciseData.examples }}
-            onNext={() => { setStep('loading'); processedKeyRef.current = null; }}
-          />
-        )}
         {step === 'loading' && <StepLoading />}
         {step === 'listening' && <StepListening listeningLiveText={listeningLiveText} questionData={questionData} avatarUrl={avatarUrl} />}
         {step === 'recording' && (
