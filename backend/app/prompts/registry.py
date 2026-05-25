@@ -1,5 +1,15 @@
 import random
+from pathlib import Path
 from typing import Any, Optional
+
+_VERBS: Optional[list[str]] = None
+
+def _get_verbs() -> list[str]:
+    global _VERBS
+    if _VERBS is None:
+        path = Path(__file__).parent.parent / "data" / "verbs.txt"
+        _VERBS = path.read_text().splitlines()
+    return _VERBS
 
 from prompts.if_by_x import PROMPT_CONFIG as IF_BY_X_PROMPT
 from prompts.love_hate import PROMPT_CONFIG as LOVE_HATE_PROMPT
@@ -133,6 +143,11 @@ def _build_archetype_generator_prompt(
     return f"{base_prompt} {specific_instruction} {constraint}{location_instruction}"
 
 
+def _build_verb_seed_generator_prompt() -> str:
+    verb = random.choice(_get_verbs())
+    return f'Generate a sentence using the verb "{verb}".'
+
+
 def build_generator_prompt(exercise_key: str, location_context: Optional[dict] = None) -> str:
     config = _get_exercise_prompt_config(exercise_key)
     mode = str(config.get("generator", {}).get("mode", "none"))
@@ -142,6 +157,8 @@ def build_generator_prompt(exercise_key: str, location_context: Optional[dict] =
         return _build_creative_generator_prompt(generator_components, location_context)
     if mode == "archetype":
         return _build_archetype_generator_prompt(generator_components, location_context)
+    if mode == "verb_seed":
+        return _build_verb_seed_generator_prompt()
 
     raise ValueError(f"Exercise '{exercise_key}' does not support text prompt generation")
 

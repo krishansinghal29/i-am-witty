@@ -3,7 +3,7 @@ from typing import Optional
 from llm.gemini_client import GeminiClient
 from llm.openai_client import OpenAIClient
 
-DEFAULT_MODEL = "gemini-3.1-flash-lite-preview"
+DEFAULT_MODEL = "gpt-4.1-mini"
 
 
 def infer_provider(model_name: str) -> str:
@@ -18,7 +18,7 @@ def create_llm_client(model_name: Optional[str] = None):
     Create LLM client based on model name.
 
     Args:
-        model_name: Model name (e.g. 'gemini-3.1-flash-lite', 'gpt-5'). Defaults to gemini-3.1-flash-lite.
+        model_name: Model name (e.g. 'gpt-4.1-mini', 'gpt-4.1'). Defaults to gpt-4.1-mini.
 
     Returns:
         LLM client instance (GeminiClient or OpenAIClient).
