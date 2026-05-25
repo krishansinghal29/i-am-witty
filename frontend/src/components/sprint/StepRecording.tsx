@@ -63,14 +63,20 @@ export function StepRecording({ stt, displayText, imageUrl, recordingTimeLeft, o
   return (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 p-6">
       {/* Countdown ring */}
-      <div className="relative flex items-center justify-center" style={{ width: 120, height: 120 }}>
-        <CircularProgress variant="determinate" value={100} size={120} thickness={3} sx={{ color: '#f3f4f6', position: 'absolute' }} />
-        <CircularProgress variant="determinate" value={progress} size={120} thickness={3} sx={{ color, position: 'absolute', '& .MuiCircularProgress-circle': { transition: 'stroke-dashoffset 1s linear', strokeLinecap: 'round' } }} />
-        <button onClick={onStopRecording} className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center shadow-lg">
-          <div className="w-5 h-5 bg-white rounded-sm" />
-        </button>
-      </div>
-      <p className="font-bold text-2xl tabular-nums" style={{ color }}>{recordingTimeLeft}s</p>
+      <button
+        onClick={onStopRecording}
+        title="Click to stop recording"
+        className="relative flex flex-col items-center gap-2 cursor-pointer group focus:outline-none"
+      >
+        <div className="relative flex items-center justify-center" style={{ width: 120, height: 120 }}>
+          <CircularProgress variant="determinate" value={100} size={120} thickness={3} sx={{ color: '#f3f4f6', position: 'absolute' }} />
+          <CircularProgress variant="determinate" value={progress} size={120} thickness={3} sx={{ color, position: 'absolute', '& .MuiCircularProgress-circle': { transition: 'stroke-dashoffset 1s linear', strokeLinecap: 'round' } }} />
+          <div className="w-16 h-16 rounded-full bg-red-500 group-hover:bg-red-600 flex items-center justify-center shadow-lg transition-colors">
+            <div className="w-5 h-5 bg-white rounded-sm" />
+          </div>
+        </div>
+        <p className="font-bold text-2xl tabular-nums group-hover:opacity-70 transition-opacity" style={{ color }}>{recordingTimeLeft}s</p>
+      </button>
       <p className="text-sm text-gray-500 mb-2">What would you say in this situation?</p>
 
       {/* Image for pushPull */}
