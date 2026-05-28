@@ -1,7 +1,8 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
     EVALUATION_CONTEXT,
-    EVALUATOR_JSON_OUTPUT_FORMAT,
+    STANDARD_EVALUATOR_COMPONENTS,
+    build_evaluator_sequence,
     build_feedback_style,
     build_sample_answer_guidelines,
 )
@@ -126,34 +127,23 @@ Context: This is in {location}. You may add a local stereotype (e.g., 'You act l
 - The Skepticism Frame: Express total disbelief in his story or doubt his authenticity. Say 'Yeah right' or 'I don't buy it.'
 - The 'Too Nice' Accusation: Accuse him of being a 'Goody Two-Shoes', innocent, or bad at lying.''',
     },
-    "evaluator": {
-        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
-    },
+    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
 PROMPT_SEQUENCES = {
     'generator': [
-            'generator.intro',
-            'generator.archetypes_text',
-            'generator.constraint',
-            'generator.location_instruction_template',
-        ],
-    'evaluator': [
-            'shared.intro',
-            'shared.evaluation_context',
-            'shared.what_this_exercise_is',
-            'shared.reframe_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'evaluator.json_output_format_critical',
-        ],
+        'generator.intro',
+        'generator.archetypes_text',
+        'generator.constraint',
+        'generator.location_instruction_template',
+    ],
+    'evaluator': build_evaluator_sequence('reframe_techniques'),
 }
 
 
 PROMPT_CONFIG = {
-    "exercise_key": 'misinterpretation',
+    "exercise_key": 'shitTest',
     "description": 'Misinterpretation exercise for playful reframing under social pressure.',
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,

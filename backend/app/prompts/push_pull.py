@@ -1,7 +1,8 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
     EVALUATION_CONTEXT,
-    EVALUATOR_JSON_OUTPUT_FORMAT,
+    STANDARD_EVALUATOR_COMPONENTS,
+    build_evaluator_sequence,
     build_feedback_style,
     build_sample_answer_guidelines,
 )
@@ -61,23 +62,12 @@ Push-Pull is the balance of showing INTEREST (pull) and creating TENSION (push).
     },
     "generator": {
     },
-    "evaluator": {
-        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
-    },
+    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
 PROMPT_SEQUENCES = {
-    'evaluator': [
-            'shared.intro',
-            'shared.evaluation_context',
-            'shared.what_this_exercise_is',
-            'shared.push_pull_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'evaluator.json_output_format_critical',
-        ],
+    'evaluator': build_evaluator_sequence('push_pull_techniques'),
 }
 
 

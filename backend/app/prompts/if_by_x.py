@@ -1,7 +1,9 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
+    CREATIVE_GENERATOR_SEQUENCE,
     EVALUATION_CONTEXT,
-    EVALUATOR_JSON_OUTPUT_FORMAT,
+    STANDARD_EVALUATOR_COMPONENTS,
+    build_evaluator_sequence,
     build_feedback_style,
     build_sample_answer_guidelines,
 )
@@ -145,31 +147,13 @@ Make it unique and cleverly reframable!''',
 
 OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (cultural values, work culture, family dynamics). BUT prioritize universal relatability - most statements should work anywhere. Keep it natural and not forced!''',
     },
-    "evaluator": {
-        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
-    },
+    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
 PROMPT_SEQUENCES = {
-    'generator': [
-            'generator.intro',
-            'generator.prompt_styles',
-            'generator.contexts',
-            'generator.topic_suggestions',
-            'generator.creativity_boosters',
-            'generator.location_instruction_template',
-        ],
-    'evaluator': [
-            'shared.intro',
-            'shared.evaluation_context',
-            'shared.what_this_exercise_is',
-            'shared.reframe_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'evaluator.json_output_format_critical',
-        ],
+    'generator': CREATIVE_GENERATOR_SEQUENCE,
+    'evaluator': build_evaluator_sequence('reframe_techniques'),
 }
 
 
