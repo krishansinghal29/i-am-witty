@@ -20,6 +20,7 @@ import { extractDisplayText, getExerciseDisplayName } from '@/utils/sprintHelper
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { sprintQuestionQueryKeys } from '@/hooks/queryKeys';
 
 function extractImageUrl(question: QuestionMessage[]): string | null {
   const img = question.find(p => p.role === 'Image');
@@ -49,6 +50,15 @@ export default function SprintExercise() {
   const processedKeyRef = useRef<string | null>(null);
 
   const stt = useDeepgramSTT();
+
+  // Clear cached question whenever the exercise changes so a fresh one is always fetched on tab switch
+  useEffect(() => {
+    if (exerciseId) {
+      queryClient.removeQueries({
+        queryKey: sprintQuestionQueryKeys.forUserAndExercise(uid, exerciseId),
+      });
+    }
+  }, [exerciseId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     setStep('loading');

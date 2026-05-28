@@ -11,6 +11,7 @@ text-only message pipeline from BaseAgent.
 """
 
 import base64
+import json
 from typing import Optional
 
 from google.genai import types
@@ -114,16 +115,30 @@ class SprintMultimodalAgent(BaseAgent):
         if self.response_schema:
             config_params["response_schema"] = self.response_schema
 
-        if not hasattr(self.llm, "client") or not hasattr(self.llm, "_clean_json_response"):
-            raise RuntimeError("Sprint multimodal evaluation requires GeminiClient-compatible llm")
+        is_gemini = hasattr(self.llm, "_clean_json_response") and hasattr(self.llm, "client")
 
+        if is_gemini:
+            try:
+                response = self.llm.client.models.generate_content(
+                    model=self.llm.model_name,
+                    contents=contents,
+                    config=types.GenerateContentConfig(**config_params),
+                )
+                return self.llm._clean_json_response(response.text)
+            except Exception as e:
+                logger.error(f"Multimodal Gemini call failed: {e}")
+                raise
+
+        # OpenAI path — text-only using the transcript already in text_prompt
         try:
-            response = self.llm.client.models.generate_content(
-                model=self.llm.model_name,
-                contents=contents,
-                config=types.GenerateContentConfig(**config_params),
-            )
-            return self.llm._clean_json_response(response.text)
+            messages = [
+                self.system_message,
+                {"role": "user", "content": full_text_prompt},
+            ]
+            result = self.llm.get_response(messages, response_schema=self.response_schema)
+            if hasattr(result, "model_dump"):
+                return json.dumps(result.model_dump())
+            return result
         except Exception as e:
-            logger.error(f"Multimodal Gemini call failed: {e}")
+            logger.error(f"OpenAI sprint call failed: {e}")
             raise

@@ -10,7 +10,7 @@ from pydantic import BaseModel
 class OpenAIClient:
     """OpenAI API client with the same interface as GeminiClient."""
 
-    def __init__(self, model_name: str = "gpt-5"):
+    def __init__(self, model_name: str = "gpt-5.3-chat-latest"):
         self.model_name = model_name
         self.client = OpenAI()
 
@@ -43,7 +43,7 @@ class OpenAIClient:
                     model=self.model_name,
                     messages=messages,
                     temperature=temperature,
-                    max_tokens=max_tokens,
+                    max_completion_tokens=max_tokens,
                     response_format=response_schema,
                 )
                 parsed = response.choices[0].message.parsed
@@ -55,7 +55,7 @@ class OpenAIClient:
                 'model': self.model_name,
                 'messages': messages,
                 'temperature': temperature,
-                'max_tokens': max_tokens,
+                'max_completion_tokens': max_tokens,
             }
 
             if response_schema:

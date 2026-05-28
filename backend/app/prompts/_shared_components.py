@@ -87,7 +87,7 @@ Respond with ONLY valid JSON, no text before or after, no markdown code blocks.
     "overall_score": <1-10>,
     "text_feedback": "<HTML formatted text analysis using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift>",
     "voice_feedback": "<HTML formatted voice delivery analysis focused only on delivery: filler words, pace, confidence, fluency, tone, and energy>",
-    "sample_answer": "<short, punchy alternative>",
+    "sample_answer": "<3 short responses using different techniques, separated by <br><br>>",
     "filler_words_total_count": <number>,
     "filler_words_breakdown": "<JSON string e.g. {\\"um\\": 2}>",
     "filler_words_frequency_per_minute": <number>,
@@ -100,7 +100,7 @@ Respond with ONLY valid JSON, no text before or after, no markdown code blocks.
 Rules:
 - text_feedback MUST follow the exact 4-section structure defined above.
 - voice_feedback MUST stay separate from text_feedback and focus only on vocal delivery.
-- sample_answer should stay short, punchy, and exercise-specific.'''
+- sample_answer must contain exactly 3 responses separated by <br><br>. Each should be short and punchy.'''
 
 
 # ---------------------------------------------------------------------------

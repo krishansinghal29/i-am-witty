@@ -3,7 +3,7 @@ from typing import Optional
 from llm.gemini_client import GeminiClient
 from llm.openai_client import OpenAIClient
 
-DEFAULT_MODEL = "gpt-4.1-mini"
+DEFAULT_MODEL = "gpt-5.3-chat-latest"
 
 
 def infer_provider(model_name: str) -> str:

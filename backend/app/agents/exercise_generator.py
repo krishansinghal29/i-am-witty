@@ -12,7 +12,7 @@ model dynamically at init time.
 import json
 from typing import Literal, Optional
 
-from pydantic import BaseModel, RootModel
+from pydantic import BaseModel
 
 from agents.base_agent import BaseAgent
 from prompts import build_generator_prompt, get_exercise_prompt
@@ -58,11 +58,11 @@ def _build_response_schema(exercise_key: str):
         },
     )
 
-    # Create the root model (list of messages)
+    # Wrap in an object — OpenAI structured output requires type: "object" at root
     ResponseModel = type(
         f"{exercise_key}_GeneratorResponse",
-        (RootModel,),
-        {"__annotations__": {"root": list[MessageModel]}},
+        (BaseModel,),
+        {"__annotations__": {"messages": list[MessageModel]}},
     )
 
     return ResponseModel
@@ -92,7 +92,7 @@ class ExerciseGenerator(BaseAgent):
         result = self.llm.get_response(
             llm_messages, response_schema=self.response_schema
         )
-        response_array = result.model_dump()
+        response_array = result.model_dump()["messages"]
 
         # Limit to the expected number of turns (one per response_role)
         config = _get_exercise_prompt_config(self.exercise_key)

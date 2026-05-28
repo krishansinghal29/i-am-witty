@@ -145,7 +145,8 @@ def _build_archetype_generator_prompt(
 
 def _build_verb_seed_generator_prompt() -> str:
     verb = random.choice(_get_verbs())
-    return f'Generate a sentence using the verb "{verb}".'
+    pronoun = random.choice(["I", "you", "we"])
+    return f'Generate a sentence using the verb "{verb}" and the pronoun "{pronoun}".'
 
 
 def build_generator_prompt(exercise_key: str, location_context: Optional[dict] = None) -> str:
