@@ -5,33 +5,10 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/re
 import { useEffect } from 'react';
 import { sprintQuestionQueryKeys } from './queryKeys';
 
-export interface PreviousResponse {
-  transcription: string;
-  text_score: number;
-  voice_score: number;
-  overall_score: number;
-  feedback_summary: string;
-  text_feedback?: string;
-  voice_feedback?: string;
-}
-
 export interface SprintAnalysisResult {
   success: boolean;
-  text_score: number;
-  voice_score: number;
-  overall_score: number;
-  text_feedback: string;
-  voice_feedback: string;
+  feedback: string;
   sample_answer: string;
-  filler_words_detail: {
-    total_count: number;
-    breakdown: Record<string, number>;
-    frequency_per_minute: number;
-  };
-  improvement_tips: string[];
-  pace_wpm: number;
-  confidence_level: 'low' | 'medium' | 'high';
-  refinement_comparison: string | null;
 }
 
 export interface SprintQuestionResult {
@@ -49,7 +26,6 @@ interface AnalyzeSprintPayload {
   word_count: number;
   question_data: QuestionMessage[];
   exercise_type: string;
-  previous_response?: PreviousResponse;
 }
 
 const fetchSprintQuestion = async (exercise: string): Promise<SprintQuestionResult> => {

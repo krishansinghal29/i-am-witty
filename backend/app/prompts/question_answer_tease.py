@@ -1,21 +1,16 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
-    VOICE_DELIVERY_EVALUATION,
-    REFINEMENT_MODE,
-    SPRINT_JSON_OUTPUT_FORMAT,
-    COMBINED_JSON_FORMAT,
+    EVALUATION_CONTEXT,
+    EVALUATOR_JSON_OUTPUT_FORMAT,
     build_feedback_style,
     build_sample_answer_guidelines,
-    build_scoring_role,
-    build_sprint_scoring,
-    SPRINT_CONTEXT,
 )
 
 
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Question-Answer-Tease" responses — the art of playful teasing that creates attraction.',
-        "sprint_context": SPRINT_CONTEXT,
+        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 She answered a question. Your job: TEASE her about it. Not insult. Not agree. Not interview. TEASE — with the confidence of someone who knows they're the prize and the humor of someone she can't stop texting back.''',
         "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
@@ -166,64 +161,7 @@ Make it unique and memorable!''',
 OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local food culture, regional activities, social habits). BUT prioritize universal relatability - most questions should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": {
-        "json_output_structure": '''### JSON OUTPUT STRUCTURE
-{
-    "feedback": "HTML formatted 4-section feedback",
-    "sample_answer": "3 teases using different techniques, separated by <br><br>"
-}''',
-        "few_shot_examples": '''### FEW-SHOT EXAMPLES
-
-Example 1 (Too Nice/Agreeable):
-Input:
-{
-    "question": "You: Do you like to cook?
-She: No, I actually burn everything.",
-    "response": "Haha that's okay! We can just order takeout then. I'm not great at it either.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You kept it light and offered a solution.<br><br><b>⚠️ The Trap</b><br>Classic Nice Guy move. You rushed to comfort her and even put yourself DOWN ('I'm not great at it either') to make her feel better. Zero tension, zero attraction.<br><br><b>🚀 Level Up</b><br>Try the Trouble Frame and make her flaw feel playfully dangerous.<br><br><b>🧠 Mindset Shift</b><br>Stop trying to make her comfortable. Your job is to make her laugh and want to prove you wrong. Comfort = friendzone. Challenge = attraction.",
-    "sample_answer": "<b>🔥 Trouble Frame:</b> Okay, you are officially banned from the kitchen. I'm not trying to die of smoke inhalation on the first date.<br><br><b>🕵️ Skepticism:</b> 'Burn everything' sounds like code for 'I tried once, set off the fire alarm, and never recovered.' How close am I?<br><br><b>🎭 Roleplay:</b> So you're the friend who brings wine to the potluck because your 'dish' is a fire hazard. Respect the honesty though."
-}
-
-Example 2 (Too Mean):
-Input:
-{
-    "question": "You: What's your hobby?
-She: I watch a lot of Reality TV.",
-    "response": "Wow, that is brain rot. You need to get some real hobbies.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You didn't just agree with her — that takes some confidence.<br><br><b>⚠️ The Trap</b><br>You crossed from teasing to insulting. 'Brain rot' and 'get real hobbies' is judgmental, not playful. She'd get defensive, not flirty. Big difference between making her laugh and making her feel judged.<br><br><b>🚀 Level Up</b><br>Try Playful Judgment and keep the same energy wrapped in humor.<br><br><b>🧠 Mindset Shift</b><br>Teasing makes HER laugh at herself. Insulting makes her feel attacked. Ask yourself: would she respond with '😂' or '🖕'? Aim for the first one.",
-    "sample_answer": "<b>😏 Playful Judgment:</b> I knew it. You have that 'I thrive on drama' look in your eyes. I bet you have a spreadsheet tracking the arguments.<br><br><b>🕵️ Skepticism:</b> 'A lot' of reality TV? How much is a lot? Like casually or are we talking full-time professional viewer?<br><br><b>🎭 Roleplay:</b> You're definitely the friend who live-texts the group chat during every episode. 'DID YOU SEE THAT' energy."
-}
-
-Example 3 (Generic/Boring):
-Input:
-{
-    "question": "You: Favorite Season?
-She: Summer.",
-    "response": "Ah, summer! You must be one of those who can't resist a sunny beach. Are you secretly a mermaid?",
-    "recent_exercises": [{"feedback": "Too generic. Don't use fantasy labels."}]
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You tried to add a playful character ('mermaid') — that shows you're thinking creatively.<br><br><b>⚠️ The Trap</b><br>We talked about this — 'mermaid' is too Disney, too generic. It could apply to literally anyone who says summer. No tension, no specificity, no personality.<br><br><b>🚀 Level Up</b><br>Try Stereotyping and paint a picture of her exact type instead of using a generic label.<br><br><b>🧠 Mindset Shift</b><br>Good teases are SPECIFIC. They make her think 'how did you know that about me?' Generic teases make her think 'you could say that to anyone.'",
-    "sample_answer": "<b>🎯 Stereotyping:</b> Summer? You strike me as the type who just lays on a pool floatie for 3 months straight and refuses to move. Professional lizard mode.<br><br><b>😏 Trouble Frame:</b> Summer girl. Translation: you're the friend who insists on outdoor brunch in 95-degree heat and then complains about the heat. Am I wrong?<br><br><b>🕵️ Skepticism:</b> Summer is the most basic answer possible. I expected more from you honestly. What's your REAL favorite season?"
-}''',
-    },
-    "combined": {
-        "scoring_role": build_scoring_role('humor, confidence, playfulness, social_calibration'),
-        "json_format_critical": COMBINED_JSON_FORMAT,
-    },
-    "sprint": {
-        "voice_delivery_evaluation_from_audio": VOICE_DELIVERY_EVALUATION,
-        "scoring": build_sprint_scoring('answer + tease skill'),
-        "refinement_mode": REFINEMENT_MODE,
-        "json_output_format_critical": SPRINT_JSON_OUTPUT_FORMAT,
+        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
     },
 }
 
@@ -239,38 +177,13 @@ PROMPT_SEQUENCES = {
         ],
     'evaluator': [
             'shared.intro',
+            'shared.evaluation_context',
             'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
             'shared.tease_techniques',
             'shared.evaluation_criteria',
             'shared.feedback_style',
             'shared.sample_answer_guidelines',
-            'evaluator.json_output_structure',
-            'evaluator.few_shot_examples',
-        ],
-    'combined': [
-            'shared.intro',
-            'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
-            'shared.tease_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'combined.scoring_role',
-            'combined.json_format_critical',
-        ],
-    'sprint': [
-            'shared.intro',
-            'shared.sprint_context',
-            'shared.what_this_exercise_is',
-            'shared.tease_techniques',
-            'shared.evaluation_criteria',
-            'sprint.voice_delivery_evaluation_from_audio',
-            'sprint.scoring',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'sprint.refinement_mode',
-            'sprint.json_output_format_critical',
+            'evaluator.json_output_format_critical',
         ],
 }
 
@@ -281,10 +194,6 @@ PROMPT_CONFIG = {
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "message_keys": {
-        'evaluator': 'question',
-        'combined': 'question',
-    },
     "sprint_question_label": 'Question',
     "generator": {
         'mode': 'creative',

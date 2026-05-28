@@ -1,21 +1,16 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
-    VOICE_DELIVERY_EVALUATION,
-    REFINEMENT_MODE,
-    SPRINT_JSON_OUTPUT_FORMAT,
-    COMBINED_JSON_FORMAT,
+    EVALUATION_CONTEXT,
+    EVALUATOR_JSON_OUTPUT_FORMAT,
     build_feedback_style,
     build_sample_answer_guidelines,
-    build_scoring_role,
-    build_sprint_scoring,
-    SPRINT_CONTEXT,
 )
 
 
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Yes, And..." responses — the art of building playful, exciting conversations.',
-        "sprint_context": SPRINT_CONTEXT,
+        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 "Yes, And..." is improv's golden rule applied to dating: ACCEPT what she says (yes) and ADD something that makes it more fun, more exciting, or more flirty (and). This is how you create those conversations that feel electric — where both people are riffing off each other.''',
         "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
@@ -148,61 +143,7 @@ Make it unique and inspiring!''',
 OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local phenomena, regional traditions, cultural events). BUT prioritize universal imagination and whimsy - most premises should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": {
-        "json_output_structure": '''### JSON OUTPUT STRUCTURE
-{
-    "feedback": "HTML formatted 4-section feedback",
-    "sample_answer": "3 responses using different improv styles, separated by <br><br>"
-}''',
-        "few_shot_examples": '''### FEW-SHOT EXAMPLES
-
-Example 1 (Blocking):
-Input:
-{
-    "premise": "She: I just saw a squirrel riding a tiny bicycle down Main Street!",
-    "response": "That's weird. Squirrels can't ride bikes.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You responded — that's about it.<br><br><b>⚠️ The Trap</b><br>You BLOCKED. 'Squirrels can't ride bikes' is the conversational equivalent of shutting a door in someone's face. She was being playful and you murdered the vibe with logic.<br><br><b>🚀 Level Up</b><br>Try Absurd Escalation and make her premise even crazier.<br><br><b>🧠 Mindset Shift</b><br>She's not asking you to fact-check. She's inviting you to PLAY. In dating, being fun beats being right every single time.",
-    "sample_answer": "<b>🎪 Absurd Escalation:</b> Yes, and I'm honestly not surprised — that squirrel has been training for MONTHS. I saw him doing wheelies behind the library.<br><br><b>🎭 Character Commitment:</b> Yes, and I'm his coach actually. We've been working on his cornering. Tour de France is the goal.<br><br><b>🌍 World Builder:</b> Yes, and this is part of the new city initiative. Squirrels now have their own bike lanes. Very progressive."
-}
-
-Example 2 (Low Energy):
-Input:
-{
-    "premise": "She: My houseplants started singing opera this morning!",
-    "response": "That's interesting.",
-    "recent_exercises": [{"feedback": "Add more detail. Don't just acknowledge."}]
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You didn't block — you accepted the premise.<br><br><b>⚠️ The Trap</b><br>'That's interesting' adds NOTHING. It's a conversational dead end. You accepted but forgot the '...AND.' We talked about this last time — where's the energy?<br><br><b>🚀 Level Up</b><br>Try World Building and add details that expand the scenario.<br><br><b>🧠 Mindset Shift</b><br>Your job isn't just to acknowledge — it's to BUILD. Think of her words as a trampoline. Don't just land on it — bounce HIGHER.",
-    "sample_answer": "<b>🎪 Absurd Escalation:</b> Yes, and mine started a jazz trio! They're charging $5 cover now. Absolute divas.<br><br><b>🎭 Character Commitment:</b> Yes, and I'm actually their vocal coach. The fern has incredible range but ZERO discipline.<br><br><b>🌍 World Builder:</b> Yes, and apparently there's a regional competition. My succulents are considering entering but they're more into heavy metal."
-}
-
-Example 3 (Good Response):
-Input:
-{
-    "premise": "She: I just found out my cat has been running a secret book club in the basement",
-    "response": "Yes, and I'm not surprised — he's always had pretentious taste. I bet they're reading Dostoevsky. Does he kick out cats who haven't done the reading? He seems like a strict moderator.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>PERFECT. You accepted fully, added personality ('pretentious taste'), escalated with specifics ('Dostoevsky'), AND asked a question that keeps the game alive. This is exactly the energy.<br><br><b>⚠️ The Trap</b><br>None — this is textbook 'Yes, And.'<br><br><b>🚀 Level Up</b><br>Try Future Projection next and build a shared scenario.<br><br><b>🧠 Mindset Shift</b><br>You're in the zone — you're treating conversation as play, not performance. Keep this energy.",
-    "sample_answer": "<b>This was strong! Here are variations:</b><br><br><b>🎪 Absurd Escalation:</b> Yes, and I heard he's been turning away cats who only read YA. Very gatekeepy. There was almost a hiss-fight last week.<br><br><b>🎭 Character Commitment:</b> Yes, and I've been trying to join but apparently I need 3 references from other book club cats. The bureaucracy is unreal.<br><br><b>🌍 World Builder:</b> Yes, and apparently it's part of a larger network. Cats across the city are organizing. They're calling it the Meow-rary System."
-}''',
-    },
-    "combined": {
-        "scoring_role": build_scoring_role('creativity, empathy, humor'),
-        "json_format_critical": COMBINED_JSON_FORMAT,
-    },
-    "sprint": {
-        "voice_delivery_evaluation_from_audio": VOICE_DELIVERY_EVALUATION,
-        "scoring": build_sprint_scoring('how well they Yes, And-ed'),
-        "refinement_mode": REFINEMENT_MODE,
-        "json_output_format_critical": SPRINT_JSON_OUTPUT_FORMAT,
+        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
     },
 }
 
@@ -218,38 +159,13 @@ PROMPT_SEQUENCES = {
         ],
     'evaluator': [
             'shared.intro',
+            'shared.evaluation_context',
             'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
             'shared.improv_techniques_for_dating',
             'shared.evaluation_criteria',
             'shared.feedback_style',
             'shared.sample_answer_guidelines',
-            'evaluator.json_output_structure',
-            'evaluator.few_shot_examples',
-        ],
-    'combined': [
-            'shared.intro',
-            'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
-            'shared.improv_techniques_for_dating',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'combined.scoring_role',
-            'combined.json_format_critical',
-        ],
-    'sprint': [
-            'shared.intro',
-            'shared.sprint_context',
-            'shared.what_this_exercise_is',
-            'shared.improv_techniques_for_dating',
-            'shared.evaluation_criteria',
-            'sprint.voice_delivery_evaluation_from_audio',
-            'sprint.scoring',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'sprint.refinement_mode',
-            'sprint.json_output_format_critical',
+            'evaluator.json_output_format_critical',
         ],
 }
 
@@ -260,10 +176,6 @@ PROMPT_CONFIG = {
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "message_keys": {
-        'evaluator': 'premise',
-        'combined': 'premise',
-    },
     "sprint_question_label": 'Premise',
     "generator": {
         'mode': 'creative',

@@ -1,21 +1,16 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
-    VOICE_DELIVERY_EVALUATION,
-    REFINEMENT_MODE,
-    SPRINT_JSON_OUTPUT_FORMAT,
-    COMBINED_JSON_FORMAT,
+    EVALUATION_CONTEXT,
+    EVALUATOR_JSON_OUTPUT_FORMAT,
     build_feedback_style,
     build_sample_answer_guidelines,
-    build_scoring_role,
-    build_sprint_scoring,
-    SPRINT_CONTEXT,
 )
 
 
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Misinterpretation" responses — the art of flipping shit tests into attraction.',
-        "sprint_context": SPRINT_CONTEXT,
+        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she teases, criticizes, or tests you, your job is to REFRAME it as if she just complimented you. The goal: turn negatives into proof of your value — delivered with a smirk, not a speech.''',
         "reframe_techniques": '''=== REFRAME TECHNIQUES ===
@@ -132,63 +127,7 @@ Context: This is in {location}. You may add a local stereotype (e.g., 'You act l
 - The 'Too Nice' Accusation: Accuse him of being a 'Goody Two-Shoes', innocent, or bad at lying.''',
     },
     "evaluator": {
-        "why_this_is_the_1_dating_skill": '''=== WHY THIS IS THE #1 DATING SKILL ===
-Women test men constantly. Not to be mean — to find out who's REAL. The guy who gets defensive fails. The guy who explains himself fails. The guy who flips it with confidence and humor? He passes instantly.''',
-        "json_output_structure": '''### JSON OUTPUT STRUCTURE
-{
-    "feedback": "HTML formatted 4-section feedback",
-    "sample_answer": "3 reframes using different techniques, separated by <br><br>"
-}''',
-        "few_shot_examples": '''### FEW-SHOT EXAMPLES
-
-Example 1 (Defensive Response):
-Input:
-{
-    "tease": "She: Wow, you really don't care what anyone thinks of you, do you?",
-    "response": "That hurt my feelings.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You responded quickly — that's a start.<br><br><b>⚠️ The Trap</b><br>You went DEFENSIVE. 'That hurt my feelings' hands her all the power. She tested you and you confirmed the weakness she was probing for.<br><br><b>🚀 Level Up</b><br>Try Agree & Amplify and own the accusation harder.<br><br><b>🧠 Mindset Shift</b><br>She's not attacking you — she's testing if you're unshakeable. Every tease is an invitation to show confidence, not vulnerability.",
-    "sample_answer": "<b>💪 Cocky-Funny:</b> Guilty. I spent years learning to be this authentic. Most people are still renting their personalities — I bought mine.<br><br><b>😏 Flirty Spin:</b> I care about what SOME people think... you haven't made the list yet, but keep trying.<br><br><b>👑 Agree & Amplify:</b> You noticed! Most people are so busy people-pleasing they forget to have actual opinions. I'm refreshing, right?"
-}
-
-Example 2 (Agree-and-Deflate):
-Input:
-{
-    "tease": "She: You're always living in your own little world",
-    "response": "I know, I'm too much sometimes. Sorry about that.",
-    "recent_exercises": [{"feedback": "Stop apologizing. Own your traits."}]
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You acknowledged the comment — at least you're not ignoring her.<br><br><b>⚠️ The Trap</b><br>You APOLOGIZED again. We talked about this last time. 'Sorry about that' is attraction kryptonite — you're treating your personality like a flaw instead of a feature.<br><br><b>🚀 Level Up</b><br>Try the Cocky-Funny Reframe and make your 'own world' sound exclusive.<br><br><b>🧠 Mindset Shift</b><br>NEVER apologize for who you are in dating. The moment you say sorry for your personality, you've told her it's a problem. Own it like it's your superpower.",
-    "sample_answer": "<b>💪 Cocky-Funny:</b> I do have my own world. Great views, no traffic, and a very exclusive guest list. You might get day-pass access if you're lucky.<br><br><b>😏 Flirty Spin:</b> My own world is way more fun. I've been looking for someone interesting enough to give the grand tour...<br><br><b>👑 Absurd Escalation:</b> Own world? I have my own universe. There's a gift shop. The reviews are stellar."
-}
-
-Example 3 (Good Response):
-Input:
-{
-    "tease": "She: I've never met someone who takes up so much space",
-    "response": "Thank you! It took years of practice to develop this much presence. Most people shrink—I expand. You're welcome for the show.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>PERFECT. You flipped 'takes up space' into 'presence' — that's exactly the move. 'You're welcome for the show' drips confidence.<br><br><b>⚠️ The Trap</b><br>None — you crushed this one.<br><br><b>🚀 Level Up</b><br>Try mixing in a Role Reversal next time to create playful tension.<br><br><b>🧠 Mindset Shift</b><br>You're in the right headspace — every criticism is raw material for a flex. Keep this energy.",
-    "sample_answer": "<b>This was strong! Here are variations:</b><br><br><b>💪 Cocky-Funny:</b> I've been told I have big energy. Comes with the territory of actually having something to say.<br><br><b>😏 Flirty Spin:</b> I take up space AND attention. Lucky you — you get front row seats.<br><br><b>👑 Role Reversal:</b> Takes up space? Says the girl who made everyone look twice when she walked in. We're the same kind of extra."
-}''',
-    },
-    "combined": {
-        "scoring_role": build_scoring_role('humor, creativity, confidence, quick_thinking'),
-        "json_format_critical": COMBINED_JSON_FORMAT,
-    },
-    "sprint": {
-        "voice_delivery_evaluation_from_audio": VOICE_DELIVERY_EVALUATION,
-        "scoring": build_sprint_scoring('reframe skill'),
-        "refinement_mode": REFINEMENT_MODE,
-        "json_output_format_critical": SPRINT_JSON_OUTPUT_FORMAT,
+        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
     },
 }
 
@@ -202,37 +141,13 @@ PROMPT_SEQUENCES = {
         ],
     'evaluator': [
             'shared.intro',
-            'shared.what_this_exercise_is',
-            'evaluator.why_this_is_the_1_dating_skill',
-            'shared.reframe_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'evaluator.json_output_structure',
-            'evaluator.few_shot_examples',
-        ],
-    'combined': [
-            'shared.intro',
+            'shared.evaluation_context',
             'shared.what_this_exercise_is',
             'shared.reframe_techniques',
             'shared.evaluation_criteria',
             'shared.feedback_style',
             'shared.sample_answer_guidelines',
-            'combined.scoring_role',
-            'combined.json_format_critical',
-        ],
-    'sprint': [
-            'shared.intro',
-            'shared.sprint_context',
-            'shared.what_this_exercise_is',
-            'shared.reframe_techniques',
-            'shared.evaluation_criteria',
-            'sprint.voice_delivery_evaluation_from_audio',
-            'sprint.scoring',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'sprint.refinement_mode',
-            'sprint.json_output_format_critical',
+            'evaluator.json_output_format_critical',
         ],
 }
 
@@ -243,21 +158,7 @@ PROMPT_CONFIG = {
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "message_keys": {
-        'evaluator': 'tease',
-        'combined': 'tease',
-    },
     "sprint_question_label": 'Tease/Statement',
-    "combined_few_shot_examples": [
-        {
-            "role": "user",
-            "content": '{"tease": [{"role": "She", "content": "I bet you say that to all the girls."}], "response": "No I don\'t, I\'m being genuine with you.", "recent_exercises": [{"exerciseKey": "misinterpretation", "promptGiven": "You have an answer for everything, don\'t you?", "userAnswer": "I just like being prepared for things.", "feedback": "Too logical and defensive."}], "currentSkills": {"humor": {"score": 35.0, "confidence": 40.0}, "creativity": {"score": 30.0, "confidence": 35.0}, "confidence": {"score": 28.0, "confidence": 30.0}, "quick_thinking": {"score": 32.0, "confidence": 38.0}}, "recent": {}, "userClusters": ["Domain- dating, Label- Spark & Attraction"]}'
-        },
-        {
-            "role": "assistant",
-            "content": '{"evaluation": {"feedback": "<b>\\u2705 What Landed</b><br>You showed sincerity \\u2014 that\'s not nothing. The instinct to be genuine is good in the right moment.<br><br><b>\\u26a0\\ufe0f The Trap</b><br>You got defensive and tried to prove yourself. \\"No I don\'t\\" is you taking the bait. She wasn\'t actually accusing you \\u2014 she was flirting. You treated it like a courtroom instead of a playground.<br><br><b>\\ud83d\\ude80 Level Up</b><br>Try <b>Agree & Amplify</b> and blow the accusation up until it\'s obviously a joke.<br><br><b>\\ud83e\\udde0 Mindset Shift</b><br>I see this pattern in your last exercise too \\u2014 you keep explaining yourself. Your new rule: if she teases you, your job is NOT to clarify. Your job is to make her laugh.", "sample_answer": "all of them. you\'re lucky you made the top 10 though"}, "scoring": {"skills": [{"skillKey": "humor", "delta": -0.5, "confidenceDelta": -0.1, "rationale": "Response had no humor element, played it straight", "difficultyMultiplier": 1.3}, {"skillKey": "creativity", "delta": -0.8, "confidenceDelta": -0.2, "rationale": "No reframe attempted, took the literal path", "difficultyMultiplier": 1.4}, {"skillKey": "confidence", "delta": -1.0, "confidenceDelta": -0.3, "rationale": "Defensive response signals insecurity \\u2014 need to hold frame", "difficultyMultiplier": 1.4}, {"skillKey": "quick_thinking", "delta": 0.2, "confidenceDelta": 0.0, "rationale": "At least responded without freezing, building foundation", "difficultyMultiplier": 1.3}], "overallRationale": "Repeating the pattern of literal/defensive responses from last exercise. The core issue is treating teases as accusations rather than invitations to play.", "timeBasedAdjustment": "Recent practice within same session \\u2014 no time-based adjustment needed."}}'
-        }
-    ],
     "generator": {
         'mode': 'archetype',
         'response_roles': [{'role': 'She'}],

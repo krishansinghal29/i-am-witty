@@ -47,15 +47,6 @@ def get_exercise_prompt(exercise_key: str, prompt_type: str) -> str:
     return prompt_text
 
 
-def get_message_key(exercise_key: str, context: str) -> str:
-    config = _get_exercise_prompt_config(exercise_key)
-    message_key = config.get("message_keys", {}).get(context)
-    if not message_key:
-        raise ValueError(
-            f"Message key '{context}' not configured for exercise '{exercise_key}'"
-        )
-    return message_key
-
 
 def get_sprint_question_label(exercise_key: str) -> str:
     config = _get_exercise_prompt_config(exercise_key)

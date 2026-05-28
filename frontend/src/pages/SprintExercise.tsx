@@ -10,7 +10,6 @@ import {
   prefetchSprintQuestion,
   useAnalyzeSprintResponse,
   useGenerateSprintQuestion,
-  type PreviousResponse,
   type SprintAnalysisResult,
 } from '@/hooks/useSprintPractice';
 import type { ExerciseStep } from '@/types/exercise';
@@ -41,8 +40,6 @@ export default function SprintExercise() {
   const [questionData, setQuestionData] = useState<QuestionMessage[]>([]);
   const [recordingTimeLeft, setRecordingTimeLeft] = useState(RECORDING_LIMIT_SECONDS);
   const [analysisResult, setAnalysisResult] = useState<SprintAnalysisResult | null>(null);
-  const [hasRefined, setHasRefined] = useState(false);
-  const [previousResponse, setPreviousResponse] = useState<PreviousResponse | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -63,8 +60,6 @@ export default function SprintExercise() {
   useEffect(() => {
     setStep('loading');
     setAnalysisResult(null);
-    setHasRefined(false);
-    setPreviousResponse(null);
     setAnalysisError(null);
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
     processedKeyRef.current = null;
@@ -172,7 +167,6 @@ export default function SprintExercise() {
         word_count: stt.wordCount,
         question_data: questionData,
         exercise_type: exerciseId || '',
-        previous_response: previousResponse || undefined,
       },
       {
         onSuccess: result => { setAnalysisResult(result); setStep('feedback'); },
@@ -181,22 +175,11 @@ export default function SprintExercise() {
     );
   }, [stt.isRecording, stt.isConnecting, stt.audioBase64, step]);
 
-  const handleRefine = useCallback(() => {
-    if (!analysisResult) return;
-    setPreviousResponse({
-      transcription: stt.transcript,
-      text_score: analysisResult.text_score,
-      voice_score: analysisResult.voice_score,
-      overall_score: analysisResult.overall_score,
-      feedback_summary: analysisResult.text_feedback,
-      text_feedback: analysisResult.text_feedback,
-      voice_feedback: analysisResult.voice_feedback,
-    });
-    setHasRefined(true);
+  const handleRetry = useCallback(() => {
     stt.resetTranscription();
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
     setStep('recording');
-  }, [analysisResult, stt]);
+  }, [stt]);
 
   const handleNext = useCallback(() => {
     prefetchSprintQuestion(queryClient, uid, exerciseId || '', count + 1);
@@ -228,10 +211,9 @@ export default function SprintExercise() {
           <StepFeedback
             analysisResult={analysisResult}
             error={analysisError}
-            hasRefined={hasRefined}
             userTranscript={stt.transcript}
             userAudioBase64={stt.audioBase64}
-            onRefine={handleRefine}
+            onRetry={handleRetry}
             onNext={handleNext}
           />
         )}

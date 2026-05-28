@@ -117,7 +117,6 @@ async def analyze_sprint_response(request: Request):
     word_count = int(body.get("word_count", 0))
     question_data = body["question_data"]
     exercise_type = body["exercise_type"]
-    previous_response = body.get("previous_response")
 
     logger.info(f"Analysing sprint response for exercise {exercise_type}")
 
@@ -130,7 +129,6 @@ async def analyze_sprint_response(request: Request):
             word_count=word_count,
             question_data=question_data,
             exercise_type=exercise_type,
-            previous_response=previous_response,
         )
         result = json.loads(raw_result)
         result["success"] = True

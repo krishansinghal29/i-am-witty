@@ -1,21 +1,16 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
-    VOICE_DELIVERY_EVALUATION,
-    REFINEMENT_MODE,
-    SPRINT_JSON_OUTPUT_FORMAT,
-    COMBINED_JSON_FORMAT,
+    EVALUATION_CONTEXT,
+    EVALUATOR_JSON_OUTPUT_FORMAT,
     build_feedback_style,
     build_sample_answer_guidelines,
-    build_scoring_role,
-    build_sprint_scoring,
-    SPRINT_CONTEXT,
 )
 
 
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Vibing" responses — the art of making someone feel deeply understood and connected.',
-        "sprint_context": SPRINT_CONTEXT,
+        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Vibing is emotional mirroring: MATCH her energy, VALIDATE her emotion, and BUILD on it. This is how you create that "wow, he really gets me" feeling that makes conversations feel magnetic.''',
         "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
@@ -148,61 +143,7 @@ Make it unique and memorable!''',
 OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local experiences, family dynamics, social situations, regional activities). BUT prioritize universal relatability - most stories should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": {
-        "json_output_structure": '''### JSON OUTPUT STRUCTURE
-{
-    "feedback": "HTML formatted 4-section feedback",
-    "sample_answer": "3 responses using different vibing styles, separated by <br><br>"
-}''',
-        "few_shot_examples": '''### FEW-SHOT EXAMPLES
-
-Example 1 (Dead Fish):
-Input:
-{
-    "vibe": "She: Super excited and energetic - just got tickets to her favorite band's concert!",
-    "response": "That's cool.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>Nothing, honestly.<br><br><b>⚠️ The Trap</b><br>'That's cool' is the verbal equivalent of a shrug. She's EXCITED and you gave her a flatline. This kills momentum instantly — she'll stop sharing things with you.<br><br><b>🚀 Level Up</b><br>Try Energy Amplifier and raise your response to match her excitement.<br><br><b>🧠 Mindset Shift</b><br>She's sharing something she loves. Your job is to make her feel like that excitement is VALID and SHARED. Low-energy responses say 'I don't care about what you care about.'",
-    "sample_answer": "<b>⚡ Energy Amplifier:</b> WAIT — WHICH BAND?! That's amazing! Where's the show? Please tell me you're going all out with like, the full fan experience.<br><br><b>📖 Thread Pulling:</b> Dude, that feeling of scoring concert tickets is unmatched. Last time I got to see my favorite live I was buzzing for DAYS. Who is it??<br><br><b>🔍 Shared Experience:</b> No way! How long have you been a fan? Is this your first time seeing them live or are you a repeat offender?"
-}
-
-Example 2 (Hijacking):
-Input:
-{
-    "vibe": "She: Relaxed and happy after a great vacation",
-    "response": "Oh yeah, I went on an even better vacation last year. We stayed at this amazing resort and did so many activities. The food was incredible too.",
-    "recent_exercises": [{"feedback": "Don't hijack. Keep focus on them."}]
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You related to the topic — showing you can connect on experiences.<br><br><b>⚠️ The Trap</b><br>But then you HIJACKED. 'Even better vacation' is competitive. We talked about this last time — the spotlight should be on HER 70% of the time. She's sharing and you one-upped her.<br><br><b>🚀 Level Up</b><br>Try Thread Pulling and ask about the feeling behind her vacation instead of topping it.<br><br><b>🧠 Mindset Shift</b><br>Connection isn't a competition. The goal isn't to show you've done cooler things — it's to make HER feel interesting. Share briefly, then BOUNCE BACK to her.",
-    "sample_answer": "<b>⚡ Energy Amplifier:</b> Vacation glow looks good on you! Where'd you go? I need to add it to my list because you look genuinely recharged.<br><br><b>📖 Thread Pulling:</b> I love that feeling of coming back from a trip where you actually relaxed. What was the highlight? Like the one moment you can't stop thinking about?<br><br><b>🔍 Shared Experience:</b> Nice! Did you do the lay-on-the-beach-and-do-nothing approach or were you out exploring every day?"
-}
-
-Example 3 (Good Response):
-Input:
-{
-    "vibe": "She: Excited about starting a new creative project - writing a novel",
-    "response": "A NOVEL?! That's actually incredible. What kind of story is it? I've always wondered what makes someone finally sit down and start writing. Is it something you've been thinking about for a while?",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>EVERYTHING. You matched her excitement ('INCREDIBLE'), showed genuine curiosity, and asked a deeper question about motivation. This makes her want to keep talking to you.<br><br><b>⚠️ The Trap</b><br>None — this is textbook vibing.<br><br><b>🚀 Level Up</b><br>Try adding Playful Empathy next time for even more warmth and personality.<br><br><b>🧠 Mindset Shift</b><br>You're doing it right — you're making her feel like what she cares about MATTERS. Keep this energy.",
-    "sample_answer": "<b>This was strong! Here are variations:</b><br><br><b>⚡ Energy Amplifier:</b> Wait a NOVEL? That's so cool! Are you doing NaNoWriMo or just going for it? I need updates on this journey.<br><br><b>📖 Thread Pulling:</b> That's amazing! I tried writing once and realized how hard it is. Major respect. What genre are you going for?<br><br><b>🔍 Shared Experience:</b> I love that! What's the story about? Is it based on anything real or full fiction?"
-}''',
-    },
-    "combined": {
-        "scoring_role": build_scoring_role('empathy, humor, active_listening, rapport'),
-        "json_format_critical": COMBINED_JSON_FORMAT,
-    },
-    "sprint": {
-        "voice_delivery_evaluation_from_audio": VOICE_DELIVERY_EVALUATION,
-        "scoring": build_sprint_scoring('connection and vibing skill'),
-        "refinement_mode": REFINEMENT_MODE,
-        "json_output_format_critical": SPRINT_JSON_OUTPUT_FORMAT,
+        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
     },
 }
 
@@ -218,38 +159,13 @@ PROMPT_SEQUENCES = {
         ],
     'evaluator': [
             'shared.intro',
+            'shared.evaluation_context',
             'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
             'shared.vibing_techniques_for_dating',
             'shared.evaluation_criteria',
             'shared.feedback_style',
             'shared.sample_answer_guidelines',
-            'evaluator.json_output_structure',
-            'evaluator.few_shot_examples',
-        ],
-    'combined': [
-            'shared.intro',
-            'shared.what_this_exercise_is',
-            'shared.why_this_matters_in_dating',
-            'shared.vibing_techniques_for_dating',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'combined.scoring_role',
-            'combined.json_format_critical',
-        ],
-    'sprint': [
-            'shared.intro',
-            'shared.sprint_context',
-            'shared.what_this_exercise_is',
-            'shared.vibing_techniques_for_dating',
-            'shared.evaluation_criteria',
-            'sprint.voice_delivery_evaluation_from_audio',
-            'sprint.scoring',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'sprint.refinement_mode',
-            'sprint.json_output_format_critical',
+            'evaluator.json_output_format_critical',
         ],
 }
 
@@ -260,10 +176,6 @@ PROMPT_CONFIG = {
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "message_keys": {
-        'evaluator': 'vibe',
-        'combined': 'story',
-    },
     "sprint_question_label": 'Story',
     "generator": {
         'mode': 'creative',

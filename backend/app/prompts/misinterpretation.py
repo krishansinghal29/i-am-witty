@@ -1,21 +1,16 @@
 from prompts.prompt_builder import build_system_prompts
 from prompts._shared_components import (
-    VOICE_DELIVERY_EVALUATION,
-    REFINEMENT_MODE,
-    SPRINT_JSON_OUTPUT_FORMAT,
-    COMBINED_JSON_FORMAT,
+    EVALUATION_CONTEXT,
+    EVALUATOR_JSON_OUTPUT_FORMAT,
     build_feedback_style,
     build_sample_answer_guidelines,
-    build_scoring_role,
-    build_sprint_scoring,
-    SPRINT_CONTEXT,
 )
 
 
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are a wit coach evaluating "Misinterpretation" responses — the skill of finding an unexpected meaning in an ordinary sentence.',
-        "sprint_context": SPRINT_CONTEXT,
+        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Given an everyday sentence containing "I", "you", or "we", respond as if you understood it differently. The goal is not to correct the other person — it's to find an alternative reading of the sentence and run with it confidently. Any kind of misinterpretation counts: literal, absurd, flirty, context-shifted, or scope-exploded.''',
         "what_counts": '''=== WHAT COUNTS AS MISINTERPRETATION ===
@@ -104,74 +99,7 @@ Rules:
 - Output only the sentence, nothing else''',
     },
     "evaluator": {
-        "json_output_structure": '''### JSON OUTPUT STRUCTURE
-{
-    "feedback": "HTML formatted 4-section feedback",
-    "sample_answer": "3 misinterpretations using different techniques, separated by <br><br>"
-}''',
-        "few_shot_examples": '''### FEW-SHOT EXAMPLES
-
-Example 1 (Literal response — no misinterpretation):
-Input:
-{
-    "tease": "She: I always lose track of time when you're around",
-    "response": "Yeah same, I think we both just get distracted easily.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You engaged with the sentence — that's the baseline.<br><br><b>⚠️ The Trap</b><br>LITERAL. You answered the obvious meaning. 'We get distracted' is just agreeing — no misinterpretation happened. The sentence was an invitation and you RSVP'd to the wrong event.<br><br><b>🚀 Level Up</b><br>Try Scope Explosion — respond as if losing track of time around you is a documented phenomenon, not a small thing.<br><br><b>🧠 Mindset Shift</b><br>The exercise isn't about agreeing or disagreeing. It's about finding the OTHER meaning hiding in the sentence and living there confidently.",
-    "sample_answer": "<b>🔍 Scope Explosion:</b> Scientists are looking into it. Apparently it happens to everyone near me — they're calling it a local anomaly.<br><br><b>😏 Innuendo:</b> Time isn't the only thing you lose track of. Don't worry, I'll remind you.<br><br><b>🎭 Context Shift:</b> Already? Most people wait at least a month before they admit I've ruined their schedule."
-}
-
-Example 2 (Forced — misinterpretation doesn't fit):
-Input:
-{
-    "tease": "She: We should probably stop here",
-    "response": "I will never stop. I am unstoppable.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You tried to misinterpret — the instinct is right.<br><br><b>⚠️ The Trap</b><br>FORCED. 'I am unstoppable' doesn't connect back to the sentence — it's a random flex with no anchor. A good misinterpretation has to feel like it could have genuinely come from the sentence. This felt like you ignored the sentence and just said something bold.<br><br><b>🚀 Level Up</b><br>Try Context Shift — 'stop here' is a goldmine. It can mean stop walking, stop talking, stop the relationship. Pick one and run with it.<br><br><b>🧠 Mindset Shift</b><br>The misinterpretation has to be believable. If someone reads it back and can't see how you got there from the sentence, it didn't land.",
-    "sample_answer": "<b>🌍 Context Shift:</b> Already? We've known each other for what, a week?<br><br><b>🔍 Literal Trap:</b> Stop here specifically? Interesting spot. What happened here?<br><br><b>🎭 Scope Explosion:</b> That's a big call. I usually need a committee vote before I stop anything mid-momentum."
-}
-
-Example 3 (Continuation — passes as misinterpretation but shouldn't):
-Input:
-{
-    "tease": "She: I wonder if they are going to televise the event live.",
-    "response": "I hope so, I've already cleared my schedule and stocked up on popcorn for the coverage.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>You engaged with the sentence — that's it.<br><br><b>⚠️ The Trap</b><br>CONTINUATION. Apply the litmus test: does your response still work if the sentence meant exactly what it said? Yes — completely. You understood 'televise the event live' correctly and just agreed enthusiastically. No word was misread. No meaning was flipped. This is a normal conversation response, not a misinterpretation.<br><br><b>🚀 Level Up</b><br>Find something in the sentence to misread. 'Live' is ambiguous — it can mean broadcast live or live animals. 'Event' is vague. 'They' has no clear referent. Any of those is a door in.<br><br><b>🧠 Mindset Shift</b><br>Enthusiasm is not misinterpretation. If someone could say your response in a normal conversation without anything being misunderstood, you haven't done the exercise.",
-    "sample_answer": "<b>🐾 Wrong-word 'live':</b> Wait — they're putting live animals on television? What kind of event is this?<br><br><b>👤 Referent confusion:</b> Who's 'they'? Should I be worried that you're talking about people watching us?<br><br><b>🔍 Literal parse:</b> Televise it live as opposed to... televising it dead? Bold choice either way."
-}
-
-Example 4 (Good response):
-Input:
-{
-    "tease": "She: You always disappear right when I need you",
-    "response": "That's a skill. Most people charge extra for it.",
-    "recent_exercises": []
-}
-Output:
-{
-    "feedback": "<b>✅ What Landed</b><br>CLEAN. You misread 'disappear' — which was meant as a complaint — and parsed it as a deliberate, impressive ability. 'Most people charge extra' is unexpected and specific. Litmus test: does this work if she meant it as a complaint? No — you treated it as a compliment on your skill. That's the flip.<br><br><b>⚠️ The Trap</b><br>None — this one landed.<br><br><b>🚀 Level Up</b><br>Try a Subject Flip next time: respond as if 'you' referred to them.<br><br><b>🧠 Mindset Shift</b><br>You found the alternative meaning and committed fully. That's the whole exercise.",
-    "sample_answer": "<b>This was strong. Here are variations:</b><br><br><b>🔍 Absurd Escalation:</b> Disappear? I have a whole system. Took years to refine. You're lucky you even noticed.<br><br><b>😏 Innuendo:</b> Right when you need me is exactly when I show up. You just have to be more specific about what you need.<br><br><b>🌍 Referent flip:</b> Disappear implies I was there to begin with. Interesting assumption."
-}''',
-    },
-    "combined": {
-        "scoring_role": build_scoring_role('humor, creativity, confidence, quick_thinking'),
-        "json_format_critical": COMBINED_JSON_FORMAT,
-    },
-    "sprint": {
-        "voice_delivery_evaluation_from_audio": VOICE_DELIVERY_EVALUATION,
-        "scoring": build_sprint_scoring('misinterpretation skill'),
-        "refinement_mode": REFINEMENT_MODE,
-        "json_output_format_critical": SPRINT_JSON_OUTPUT_FORMAT,
+        "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
     },
 }
 
@@ -182,39 +110,14 @@ PROMPT_SEQUENCES = {
         ],
     'evaluator': [
             'shared.intro',
+            'shared.evaluation_context',
             'shared.what_this_exercise_is',
             'shared.what_counts',
             'shared.misinterpretation_techniques',
             'shared.evaluation_criteria',
             'shared.feedback_style',
             'shared.sample_answer_guidelines',
-            'evaluator.json_output_structure',
-            'evaluator.few_shot_examples',
-        ],
-    'combined': [
-            'shared.intro',
-            'shared.what_this_exercise_is',
-            'shared.what_counts',
-            'shared.misinterpretation_techniques',
-            'shared.evaluation_criteria',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'combined.scoring_role',
-            'combined.json_format_critical',
-        ],
-    'sprint': [
-            'shared.intro',
-            'shared.sprint_context',
-            'shared.what_this_exercise_is',
-            'shared.what_counts',
-            'shared.misinterpretation_techniques',
-            'shared.evaluation_criteria',
-            'sprint.voice_delivery_evaluation_from_audio',
-            'sprint.scoring',
-            'shared.feedback_style',
-            'shared.sample_answer_guidelines',
-            'sprint.refinement_mode',
-            'sprint.json_output_format_critical',
+            'evaluator.json_output_format_critical',
         ],
 }
 
@@ -225,21 +128,7 @@ PROMPT_CONFIG = {
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "message_keys": {
-        'evaluator': 'tease',
-        'combined': 'tease',
-    },
     "sprint_question_label": 'Tease/Statement',
-    "combined_few_shot_examples": [
-        {
-            "role": "user",
-            "content": '{"tease": [{"role": "She", "content": "I bet you say that to all the girls."}], "response": "No I don\'t, I\'m being genuine with you.", "recent_exercises": [{"exerciseKey": "misinterpretation", "promptGiven": "You have an answer for everything, don\'t you?", "userAnswer": "I just like being prepared for things.", "feedback": "Too logical and defensive."}], "currentSkills": {"humor": {"score": 35.0, "confidence": 40.0}, "creativity": {"score": 30.0, "confidence": 35.0}, "confidence": {"score": 28.0, "confidence": 30.0}, "quick_thinking": {"score": 32.0, "confidence": 38.0}}, "recent": {}, "userClusters": ["Domain- dating, Label- Spark & Attraction"]}'
-        },
-        {
-            "role": "assistant",
-            "content": '{"evaluation": {"feedback": "<b>\\u2705 What Landed</b><br>You showed sincerity \\u2014 that\'s not nothing. The instinct to be genuine is good in the right moment.<br><br><b>\\u26a0\\ufe0f The Trap</b><br>CONTINUATION. Apply the litmus test: does your response still work if the sentence meant exactly what it said? Yes \\u2014 you just agreed with it. No word was misread, no meaning was flipped. This is a normal conversation response, not a misinterpretation.<br><br><b>\\ud83d\\ude80 Level Up</b><br>Try Agree & Amplify and misread the accusation as a fact about your reach. How many people are we talking about here?<br><br><b>\\ud83e\\udde0 Mindset Shift</b><br>Your job is not to defend or confirm the sentence. Find the other meaning hiding in it and live there.", "sample_answer": "all of them. I have a spreadsheet \\u2014 you\'re row 847.<br><br>I mean, someone has to set the standard. Might as well be consistent.<br><br>Say that to all the girls? I barely have time. You\'re already cutting into my schedule."}, "scoring": {"skills": [{"skillKey": "humor", "delta": -0.5, "confidenceDelta": -0.1, "rationale": "Response had no humor element, played it straight", "difficultyMultiplier": 1.3}, {"skillKey": "creativity", "delta": -0.8, "confidenceDelta": -0.2, "rationale": "No misinterpretation attempted, took the literal path", "difficultyMultiplier": 1.4}, {"skillKey": "confidence", "delta": -1.0, "confidenceDelta": -0.3, "rationale": "Defensive response signals insecurity \\u2014 need to hold frame", "difficultyMultiplier": 1.4}, {"skillKey": "quick_thinking", "delta": 0.2, "confidenceDelta": 0.0, "rationale": "At least responded without freezing, building foundation", "difficultyMultiplier": 1.3}], "overallRationale": "Repeating the pattern of literal/defensive responses from last exercise. The core issue is answering the surface meaning instead of finding the alternative reading.", "timeBasedAdjustment": "Recent practice within same session \\u2014 no time-based adjustment needed."}}'
-        }
-    ],
     "generator": {
         'mode': 'verb_seed',
         'response_roles': [{'role': 'She'}],
