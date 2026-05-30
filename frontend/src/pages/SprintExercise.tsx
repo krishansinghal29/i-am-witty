@@ -1,6 +1,7 @@
 import { ExerciseHeader } from '@/components/exercise/ExerciseHeader';
 import { StepAnalyzing } from '@/components/sprint/StepAnalyzing';
 import { StepFeedback } from '@/components/sprint/StepFeedback';
+import { StepIntro } from '@/components/sprint/StepIntro';
 import { StepListening } from '@/components/sprint/StepListening';
 import { StepLoading } from '@/components/sprint/StepLoading';
 import { StepRecording } from '@/components/sprint/StepRecording';
@@ -27,7 +28,7 @@ export default function SprintExercise() {
   const queryClient = useQueryClient();
   const { uid } = useUser();
   const count = Number(routeCount) || 1;
-  const [step, setStep] = useState<SprintStep>('loading');
+  const [step, setStep] = useState<SprintStep>('intro');
   const [scaffoldStage, setScaffoldStage] = useState(1);
   const [displayText, setDisplayText] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -55,7 +56,7 @@ export default function SprintExercise() {
   }, [exerciseId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    setStep('loading');
+    setStep('intro');
     setScaffoldStage(1);
     setAnalysisResult(null);
     setAnalysisError(null);
@@ -89,6 +90,8 @@ export default function SprintExercise() {
       let wordIdx = 0;
 
       let transitioned = false;
+      let fallbackTimer: ReturnType<typeof setTimeout>;
+
       const goToRecording = () => {
         if (transitioned) return;
         transitioned = true;
@@ -105,8 +108,13 @@ export default function SprintExercise() {
         }
       }, 150);
 
-      // Fallback: transition after word reveal + 2s buffer, in case `ended` never fires
-      const fallbackTimer = setTimeout(goToRecording, words.length * 150 + 2000);
+      // Use actual audio duration for the fallback so it never fires early.
+      // 60s safety net kicks in only if metadata never loads.
+      fallbackTimer = setTimeout(goToRecording, 60_000);
+      audio.addEventListener('loadedmetadata', () => {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = setTimeout(goToRecording, (audio.duration + 1) * 1000);
+      });
 
       audio.addEventListener('ended', goToRecording);
 
@@ -152,6 +160,22 @@ export default function SprintExercise() {
   const handleStopRecording = useCallback(() => {
     stopTimer();
     stt.stopRecording();
+  }, [stt, stopTimer]);
+
+  const handleLearnClick = useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    stopTimer();
+    stt.stopRecording();
+    stt.resetTranscription();
+    setScaffoldStage(1);
+    setAnalysisResult(null);
+    setAnalysisError(null);
+    setListeningLiveText('');
+    processedKeyRef.current = null;
+    setStep('intro');
   }, [stt, stopTimer]);
 
   // When recording stops & audio is ready, advance scaffold stage or submit for analysis
@@ -200,12 +224,13 @@ export default function SprintExercise() {
 
   if (!exerciseId) return null;
 
-  const exerciseStep: ExerciseStep = step === 'feedback' ? 'feedback' : 'practice';
+  const exerciseStep: ExerciseStep = step === 'intro' ? 'intro' : step === 'feedback' ? 'feedback' : 'practice';
 
   return (
     <div className="flex flex-col bg-white overflow-hidden h-full">
-      <ExerciseHeader exerciseName={getExerciseDisplayName(exerciseId)} step={exerciseStep} />
+      <ExerciseHeader exerciseName={getExerciseDisplayName(exerciseId)} step={exerciseStep} onLearn={handleLearnClick} />
       <div className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+        {step === 'intro' && <StepIntro exerciseId={exerciseId} onStart={() => setStep('loading')} />}
         {step === 'loading' && <StepLoading />}
         {step === 'listening' && <StepListening listeningLiveText={listeningLiveText} questionData={questionData} avatarUrl={avatarUrl} />}
         {step === 'recording' && (
@@ -226,6 +251,7 @@ export default function SprintExercise() {
             error={analysisError}
             userTranscript={stt.transcript}
             userAudioBase64={stt.audioBase64}
+            originalQuestion={displayText}
             onRetry={handleRetry}
             onNext={handleNext}
           />

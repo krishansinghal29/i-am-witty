@@ -128,7 +128,23 @@ export const useDeepgramSTT = () => {
       const socket = new WebSocket(wsUrl, ['token', token]);
       socketRef.current = socket;
 
+      // If the WebSocket never opens (network hang, firewall, etc.) clear the stuck state.
+      const connectTimeout = setTimeout(() => {
+        if (!isRecordingRef.current) {
+          console.warn('[DeepgramSTT] Connection timed out');
+          try { socket.close(); } catch { /* ignore */ }
+          socketRef.current = null;
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(t => t.stop());
+            streamRef.current = null;
+          }
+          setError('Connection timed out. Check your internet and try again.');
+          setIsConnecting(false);
+        }
+      }, 10_000);
+
       socket.onopen = () => {
+        clearTimeout(connectTimeout);
         console.log('[DeepgramSTT] WebSocket connected');
         setIsConnecting(false);
         setIsRecording(true);
@@ -221,11 +237,13 @@ export const useDeepgramSTT = () => {
       };
 
       socket.onerror = (event) => {
+        clearTimeout(connectTimeout);
         console.error('[DeepgramSTT] WebSocket error:', event);
         // onclose fires after onerror with the actual code/reason — let it set the error
       };
 
       socket.onclose = (event) => {
+        clearTimeout(connectTimeout);
         console.log('[DeepgramSTT] WebSocket closed:', event.code, event.reason);
         if (!isRecordingRef.current && event.code === 1000) return; // clean close after stopRecording
 

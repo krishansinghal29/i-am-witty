@@ -8,6 +8,7 @@ interface Props {
   error: string | null;
   userTranscript?: string;
   userAudioBase64?: string | null;
+  originalQuestion?: string;
   onRetry: () => void;
   onNext: () => void;
 }
@@ -24,7 +25,7 @@ const TabBtn = ({ active, onClick, icon: Icon, label }: { active: boolean; onCli
   </button>
 );
 
-export function StepFeedback({ analysisResult, error, userTranscript, userAudioBase64, onRetry, onNext }: Props) {
+export function StepFeedback({ analysisResult, error, userTranscript, userAudioBase64, originalQuestion, onRetry, onNext }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>('feedback');
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -60,6 +61,14 @@ export function StepFeedback({ analysisResult, error, userTranscript, userAudioB
   return (
     <div className="flex flex-col h-full bg-white">
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {/* Original question */}
+        {originalQuestion && (
+          <div className="border border-blue-100 rounded-xl p-3 bg-blue-50">
+            <span className="text-xs font-semibold text-blue-500 uppercase tracking-wide block mb-1">Question</span>
+            <p className="text-sm text-gray-800 leading-relaxed">{originalQuestion}</p>
+          </div>
+        )}
+
         {/* Your response (audio + transcript) */}
         {(userTranscript || userAudioBase64) && (
           <div className="border border-gray-100 rounded-xl p-3 bg-white shadow-sm">

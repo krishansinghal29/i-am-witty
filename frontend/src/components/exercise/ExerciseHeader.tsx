@@ -8,14 +8,28 @@ const STEP_LABELS: Record<ExerciseStep, string> = {
   feedback: 'Review',
 };
 
-const StepDot = ({ step, currentStep, index }: { step: ExerciseStep; currentStep: ExerciseStep; index: number }) => {
+const StepDot = ({
+  step,
+  currentStep,
+  index,
+  onClick,
+}: {
+  step: ExerciseStep;
+  currentStep: ExerciseStep;
+  index: number;
+  onClick?: () => void;
+}) => {
   const currentIndex = STEPS.indexOf(currentStep);
   const isCompleted = index < currentIndex;
   const isCurrent = index === currentIndex;
   const isUpcoming = index > currentIndex;
 
   return (
-    <div className="flex flex-col items-center">
+    <button
+      onClick={onClick}
+      disabled={!onClick}
+      className={`flex flex-col items-center ${onClick ? 'cursor-pointer' : 'cursor-default'}`}
+    >
       <motion.div
         className={`w-7 h-7 rounded-full flex items-center justify-center border-2 transition-colors duration-300
           ${isCompleted ? 'bg-orange-500 border-orange-500' : ''}
@@ -36,16 +50,18 @@ const StepDot = ({ step, currentStep, index }: { step: ExerciseStep; currentStep
       <span className={`text-[10px] font-medium mt-1 ${isCurrent ? 'text-orange-600' : isCompleted ? 'text-orange-500' : 'text-gray-400'}`}>
         {STEP_LABELS[step]}
       </span>
-    </div>
+    </button>
   );
 };
 
 export const ExerciseHeader = ({
   exerciseName,
   step,
+  onLearn,
 }: {
   exerciseName: string;
   step: ExerciseStep;
+  onLearn?: () => void;
 }) => {
   const currentIndex = STEPS.indexOf(step);
 
@@ -64,7 +80,13 @@ export const ExerciseHeader = ({
             transition={{ duration: 0.3, ease: 'easeOut' }}
           />
           {STEPS.map((s, idx) => (
-            <StepDot key={s} step={s} currentStep={step} index={idx} />
+            <StepDot
+              key={s}
+              step={s}
+              currentStep={step}
+              index={idx}
+              onClick={s === 'intro' && currentIndex > 0 ? onLearn : undefined}
+            />
           ))}
         </div>
       </div>
