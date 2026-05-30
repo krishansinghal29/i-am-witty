@@ -222,12 +222,25 @@ export const useDeepgramSTT = () => {
 
       socket.onerror = (event) => {
         console.error('[DeepgramSTT] WebSocket error:', event);
-        setError('Speech recognition connection error');
-        stopRecording();
+        // onclose fires after onerror with the actual code/reason — let it set the error
       };
 
       socket.onclose = (event) => {
         console.log('[DeepgramSTT] WebSocket closed:', event.code, event.reason);
+        if (!isRecordingRef.current && event.code === 1000) return; // clean close after stopRecording
+
+        let errorMsg: string | null = null;
+        if (event.code === 1008 || event.code === 4010 || event.code === 4011) {
+          errorMsg = 'Speech recognition auth failed. Check your Deepgram API key.';
+        } else if (event.code === 1006) {
+          // Abnormal closure — often means the connection was never established
+          errorMsg = 'Speech recognition connection failed. Check your internet connection.';
+        } else if (event.code !== 1000 && event.code !== 1001) {
+          errorMsg = `Speech recognition error (${event.code}${event.reason ? ': ' + event.reason : ''})`;
+        }
+
+        if (errorMsg) setError(errorMsg);
+
         if (isRecordingRef.current) {
           stopRecording();
         }

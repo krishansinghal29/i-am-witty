@@ -133,6 +133,12 @@ export default function SprintExercise() {
   const handleStartRecording = useCallback(async () => {
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
     await stt.startRecording();
+    // Timer starts in the useEffect below once stt.isRecording becomes true
+  }, [stt]);
+
+  // Start the countdown only after the WebSocket is open and recording has begun
+  useEffect(() => {
+    if (step !== 'recording' || !stt.isRecording) return;
     recordingTimerRef.current = setInterval(() => {
       setRecordingTimeLeft(prev => {
         if (prev <= 1) {
@@ -143,7 +149,8 @@ export default function SprintExercise() {
         return prev - 1;
       });
     }, 1000);
-  }, [stt, stopTimer]);
+    return stopTimer;
+  }, [stt.isRecording, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStopRecording = useCallback(() => {
     stopTimer();
