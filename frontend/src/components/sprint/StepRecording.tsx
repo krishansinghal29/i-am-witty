@@ -9,7 +9,6 @@ type STTReturn = ReturnType<typeof useDeepgramSTT>;
 interface Props {
   stt: STTReturn;
   displayText: string;
-  imageUrl?: string | null;
   recordingTimeLeft: number;
   onStartRecording: () => Promise<void>;
   onStopRecording: () => void;
@@ -21,7 +20,7 @@ function getTimerColor(t: number) {
   return '#EF4444';
 }
 
-export function StepRecording({ stt, displayText, imageUrl, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
+export function StepRecording({ stt, displayText, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
   const hasAutoStarted = useRef(false);
   const progress = (recordingTimeLeft / RECORDING_LIMIT_SECONDS) * 100;
   const color = getTimerColor(recordingTimeLeft);
@@ -79,15 +78,8 @@ export function StepRecording({ stt, displayText, imageUrl, recordingTimeLeft, o
       </button>
       <p className="text-sm text-gray-500 mb-2">What would you say in this situation?</p>
 
-      {/* Image for pushPull */}
-      {imageUrl && (
-        <div className="rounded-xl overflow-hidden border border-gray-200 w-full max-w-xs">
-          <img src={imageUrl} alt="Question prompt" className="w-full h-auto" />
-        </div>
-      )}
-
       {/* Question text */}
-      {displayText && !imageUrl && (
+      {displayText && (
         <div className="w-full max-w-md bg-gray-50 rounded-xl p-4 border border-gray-100 text-sm text-gray-600 whitespace-pre-line">
           {displayText}
         </div>

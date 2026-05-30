@@ -21,11 +21,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { sprintQuestionQueryKeys } from '@/hooks/queryKeys';
 
-function extractImageUrl(question: QuestionMessage[]): string | null {
-  const img = question.find(p => p.role === 'Image');
-  return img?.content || null;
-}
-
 export default function SprintExercise() {
   const { exerciseId, count: routeCount } = useParams<{ exerciseId: string; count?: string }>();
   const navigate = useNavigate();
@@ -34,7 +29,6 @@ export default function SprintExercise() {
   const count = Number(routeCount) || 1;
   const [step, setStep] = useState<SprintStep>('loading');
   const [displayText, setDisplayText] = useState('');
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [listeningLiveText, setListeningLiveText] = useState('');
   const [questionData, setQuestionData] = useState<QuestionMessage[]>([]);
@@ -79,7 +73,6 @@ export default function SprintExercise() {
     const q = questionResult.question || [];
     setQuestionData(q);
     setDisplayText(extractDisplayText(q));
-    setImageUrl(extractImageUrl(q));
     setAvatarUrl(questionResult.avatar_image_url || null);
 
     // Play audio if available
@@ -207,7 +200,6 @@ export default function SprintExercise() {
           <StepRecording
             stt={stt}
             displayText={displayText}
-            imageUrl={imageUrl}
             recordingTimeLeft={recordingTimeLeft}
             onStartRecording={handleStartRecording}
             onStopRecording={handleStopRecording}

@@ -8,7 +8,7 @@ interface Props {
 }
 
 export function StepListening({ listeningLiveText, questionData, avatarUrl }: Props) {
-  const textParts = questionData?.filter(p => p.role !== 'Image' && p.content) ?? [];
+  const textParts = questionData?.filter(p => p.content) ?? [];
 
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-6 gap-6">

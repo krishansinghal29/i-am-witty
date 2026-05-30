@@ -14,7 +14,7 @@ export function getExerciseDisplayName(exerciseId: string): string {
 export function extractSpeechText(question: unknown): string {
   if (Array.isArray(question)) {
     return question
-      .filter((p: any) => p.role !== 'Image' && p.content)
+      .filter((p: any) => p.content)
       .map((p: any) => p.content)
       .join(' ');
   }
@@ -25,7 +25,7 @@ export function extractSpeechText(question: unknown): string {
 export function extractDisplayText(question: unknown): string {
   if (Array.isArray(question)) {
     return question
-      .filter((p: any) => p.role !== 'Image')
+      .filter((p: any) => p.content)
       .map((p: any) => (p.role && p.content ? `${p.role}: ${p.content}` : p.content || ''))
       .join('\n\n');
   }
