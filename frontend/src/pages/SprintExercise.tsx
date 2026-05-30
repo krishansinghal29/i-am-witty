@@ -28,6 +28,7 @@ export default function SprintExercise() {
   const { uid } = useUser();
   const count = Number(routeCount) || 1;
   const [step, setStep] = useState<SprintStep>('loading');
+  const [scaffoldStage, setScaffoldStage] = useState(1);
   const [displayText, setDisplayText] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [listeningLiveText, setListeningLiveText] = useState('');
@@ -53,6 +54,7 @@ export default function SprintExercise() {
 
   useEffect(() => {
     setStep('loading');
+    setScaffoldStage(1);
     setAnalysisResult(null);
     setAnalysisError(null);
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
@@ -150,11 +152,18 @@ export default function SprintExercise() {
     stt.stopRecording();
   }, [stt, stopTimer]);
 
-  // When recording stops & audio is ready, submit for analysis
+  // When recording stops & audio is ready, advance scaffold stage or submit for analysis
   useEffect(() => {
     if (step !== 'recording') return;
     if (stt.isRecording || stt.isConnecting) return;
     if (!stt.audioBase64 && !stt.transcript) return;
+
+    if (exerciseId === 'pushPull' && scaffoldStage < 3) {
+      setScaffoldStage(s => s + 1);
+      setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
+      stt.resetTranscription();
+      return;
+    }
 
     setStep('analyzing');
     setAnalysisError(null);
@@ -198,8 +207,10 @@ export default function SprintExercise() {
         {step === 'listening' && <StepListening listeningLiveText={listeningLiveText} questionData={questionData} avatarUrl={avatarUrl} />}
         {step === 'recording' && (
           <StepRecording
+            key={exerciseId === 'pushPull' ? scaffoldStage : 0}
             stt={stt}
             displayText={displayText}
+            scaffoldStage={exerciseId === 'pushPull' ? scaffoldStage : undefined}
             recordingTimeLeft={recordingTimeLeft}
             onStartRecording={handleStartRecording}
             onStopRecording={handleStopRecording}

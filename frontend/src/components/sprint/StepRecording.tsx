@@ -6,9 +6,16 @@ import { RECORDING_LIMIT_SECONDS } from '@/utils/sprintConstants';
 
 type STTReturn = ReturnType<typeof useDeepgramSTT>;
 
+const SCAFFOLD_LABELS: Record<number, { step: string; instruction: string }> = {
+  1: { step: 'Step 1 of 3', instruction: 'Say just the tease — one sentence, no softening' },
+  2: { step: 'Step 2 of 3', instruction: 'Say just the genuine compliment — no irony' },
+  3: { step: 'Step 3 of 3', instruction: 'Combine them into one push-pull line' },
+};
+
 interface Props {
   stt: STTReturn;
   displayText: string;
+  scaffoldStage?: number;
   recordingTimeLeft: number;
   onStartRecording: () => Promise<void>;
   onStopRecording: () => void;
@@ -20,7 +27,7 @@ function getTimerColor(t: number) {
   return '#EF4444';
 }
 
-export function StepRecording({ stt, displayText, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
+export function StepRecording({ stt, displayText, scaffoldStage, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
   const hasAutoStarted = useRef(false);
   const progress = (recordingTimeLeft / RECORDING_LIMIT_SECONDS) * 100;
   const color = getTimerColor(recordingTimeLeft);
@@ -76,7 +83,14 @@ export function StepRecording({ stt, displayText, recordingTimeLeft, onStartReco
         </div>
         <p className="font-bold text-2xl tabular-nums group-hover:opacity-70 transition-opacity" style={{ color }}>{recordingTimeLeft}s</p>
       </button>
-      <p className="text-sm text-gray-500 mb-2">What would you say in this situation?</p>
+      {scaffoldStage ? (
+        <div className="flex flex-col items-center gap-1 mb-2">
+          <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">{SCAFFOLD_LABELS[scaffoldStage].step}</span>
+          <p className="text-sm text-gray-500 text-center">{SCAFFOLD_LABELS[scaffoldStage].instruction}</p>
+        </div>
+      ) : (
+        <p className="text-sm text-gray-500 mb-2">What would you say in this situation?</p>
+      )}
 
       {/* Question text */}
       {displayText && (
