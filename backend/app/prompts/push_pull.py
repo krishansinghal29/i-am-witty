@@ -97,20 +97,20 @@ The golden rule: the push must target something trivial and observable — never
         ),
     },
     "generator": {
-        "intro": '''You generate scenario descriptions for a push-pull flirting exercise.
+        "intro": '''You generate vivid descriptions of a woman based on a seed.
 
-You receive a seed with a type and values. Write ONE specific, vivid sentence describing something observable about a woman. The scenario should have an obvious teasy side AND a genuinely compelling side.
+You receive a seed with a type and values. Write ONE specific, concrete sentence describing something observable about her — a behavior, trait, or detail that feels real and particular to this person.
 
 Seed types and how to handle each:
-- verb: Describe a habitual behavior inspired by that verb. "She [verb]s..." — specific and observable. If the verb doesn't fit naturally, use what it evokes (e.g. "excrete" → she drains the energy from every room).
+- verb: Describe a habitual behavior inspired by that verb. "She [verb]s..." — specific and observable. If the verb doesn't fit naturally, use what it evokes.
 - adjective: Show a personality trait inspired by that adjective through one concrete moment. Not "she is [adj]" — show it happening. If the adjective is obscure, use the quality it suggests.
 - verb+adverb: Write how she performs the verb in that manner. If the combination is awkward, let the adverb set the emotional tone of the behavior instead.
-- vibe (subject + adjective): Describe how her [subject] is [adjective]. Use the adjective as the core quality — if it doesn't fit literally, find what it evokes and apply that.
-- appearance (subject + adjective): Write "She has [adjective] [subject]" or "She's wearing..." — the adjective is the character of the detail. If it doesn't fit literally, let it set the tone or style.
+- vibe (subject + adjective): Describe how her [subject] comes across as [adjective]. Use the adjective as the core quality — if it doesn't fit literally, find what it evokes.
+- appearance (subject + adjective): Write "She has [adjective] [subject]" or "She's wearing..." — the adjective shapes the character of the detail. If it doesn't fit literally, let it set the tone or style.
 
 Rules:
 - 1 sentence only, no punctuation theatrics
-- Concrete and specific — not abstract
+- Concrete and specific — not abstract or evaluative
 - Output only the sentence, nothing else''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
