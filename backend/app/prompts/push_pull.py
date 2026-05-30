@@ -65,11 +65,12 @@ The golden rule: the push must target something trivial and observable — never
         "evaluation_criteria": '''=== EVALUATION CRITERIA ===
 1. **Both sides present**: Is there a clear push AND a clear pull? If one is missing entirely, it is not push-pull.
 2. **Push is trivial**: Does the push target something observable and silly — not a real insecurity? If it could genuinely hurt on a bad day, it fails.
-3. **Pull is genuine**: Does the pull feel real? Not sarcastic, not hollow, not a copy-paste compliment. Something actually meant.
-4. **Tension**: Do push and pull create an interesting charge together — or does one cancel the other out?
-5. **Brevity**: 1-2 sentences. More = explaining the dynamic instead of creating it.
-6. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?
-7. **History Awareness**: If they keep doing all-push or all-pull, name the pattern directly.''',
+3. **Push is about her**: Does the push tease something about HER — a habit, trait, or observable detail? Pushes that target the dynamic ("you seem bored of me", "you're ignoring me") are accusations about the interaction, not playful teases about her. They fail.
+4. **Pull is genuine**: Does the pull feel real? Not sarcastic, not hollow, not a copy-paste compliment. Something actually meant.
+5. **Tension**: Do push and pull create an interesting charge together — or does one cancel the other out?
+6. **Brevity**: 1-2 sentences. More = explaining the dynamic instead of creating it.
+7. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?
+8. **History Awareness**: If they keep doing all-push or all-pull, name the pattern directly.''',
         "sample_answer_guidelines": build_sample_answer_guidelines(
             [
                 "First: improved version of user's attempt (keep their angle, fix the balance)",
@@ -82,6 +83,7 @@ The golden rule: the push must target something trivial and observable — never
             "The specific mistake. Common push-pull traps:",
             [
                 "ALL PUSH: Just teasing with no genuine interest signal — she thinks you don't like her",
+                "ACCUSATION PUSH: Targeting the dynamic instead of her — 'you seem bored of me / you're ignoring me' is an accusation about the interaction, not a playful tease about her",
                 "ALL PULL: Just complimenting with no edge — warm but forgettable",
                 "MEAN: Crossed from playful into actually hurtful — targeted something real, not trivial",
                 "HOLLOW PULL: The compliment sounds nice but means nothing ('you're so interesting')",
@@ -97,12 +99,12 @@ The golden rule: the push must target something trivial and observable — never
         ),
     },
     "generator": {
-        "intro": '''You generate vivid descriptions of a woman based on a seed.
+        "intro": '''You generate descriptions of a woman based on a seed.
 
 You receive a seed with a type and values. Write ONE specific, concrete sentence describing something observable about her — a behavior, trait, or detail that feels real and particular to this person.
 
 Seed types and how to handle each:
-- verb: Describe a habitual behavior inspired by that verb. "She [verb]s..." — specific and observable. If the verb doesn't fit naturally, use what it evokes.
+- verb: Describe a habitual behavior inspired by that verb. "She [verb]s..." — specific and observable. If the verb is obscure or complex, use a simpler everyday word that captures the same meaning. If the verb doesn't fit naturally, use what it evokes.
 - adjective: Show a personality trait inspired by that adjective through one concrete moment. Not "she is [adj]" — show it happening. If the adjective is obscure, use the quality it suggests.
 - verb+adverb: Write how she performs the verb in that manner. If the combination is awkward, let the adverb set the emotional tone of the behavior instead.
 - vibe (subject + adjective): Describe how her [subject] comes across as [adjective]. Use the adjective as the core quality — if it doesn't fit literally, find what it evokes.
