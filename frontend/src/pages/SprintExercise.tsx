@@ -40,6 +40,8 @@ export default function SprintExercise() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processedKeyRef = useRef<string | null>(null);
+  const scaffoldStageRef = useRef(scaffoldStage);
+  scaffoldStageRef.current = scaffoldStage;
 
   const stt = useDeepgramSTT();
 
@@ -158,7 +160,7 @@ export default function SprintExercise() {
     if (stt.isRecording || stt.isConnecting) return;
     if (!stt.audioBase64 && !stt.transcript) return;
 
-    if (exerciseId === 'pushPull' && scaffoldStage < 3) {
+    if (exerciseId === 'pushPull' && scaffoldStageRef.current < 3) {
       setScaffoldStage(s => s + 1);
       setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
       stt.resetTranscription();
@@ -182,13 +184,14 @@ export default function SprintExercise() {
         onError: err => { setAnalysisError(err.message); setStep('feedback'); },
       },
     );
-  }, [stt.isRecording, stt.isConnecting, stt.audioBase64, step]);
+  }, [stt.isRecording, stt.isConnecting, stt.audioBase64, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleRetry = useCallback(() => {
     stt.resetTranscription();
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
+    if (exerciseId === 'pushPull') setScaffoldStage(1);
     setStep('recording');
-  }, [stt]);
+  }, [stt, exerciseId]);
 
   const handleNext = useCallback(() => {
     prefetchSprintQuestion(queryClient, uid, exerciseId || '', count + 1);

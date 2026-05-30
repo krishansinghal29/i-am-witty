@@ -7,7 +7,7 @@ import { RECORDING_LIMIT_SECONDS } from '@/utils/sprintConstants';
 type STTReturn = ReturnType<typeof useDeepgramSTT>;
 
 const SCAFFOLD_LABELS: Record<number, { step: string; instruction: string }> = {
-  1: { step: 'Step 1 of 3', instruction: 'Say just the tease — one sentence, no softening' },
+  1: { step: 'Step 1 of 3', instruction: 'Say just the push — one sentence, no softening' },
   2: { step: 'Step 2 of 3', instruction: 'Say just the genuine compliment — no irony' },
   3: { step: 'Step 3 of 3', instruction: 'Combine them into one push-pull line' },
 };
