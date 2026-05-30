@@ -10,7 +10,7 @@ model dynamically at init time.
 """
 
 import json
-from typing import Literal, Optional
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -76,7 +76,7 @@ class ExerciseGenerator(BaseAgent):
 
     Usage:
         generator = ExerciseGenerator("ifByXYouMeanY")
-        result = generator.process(location_context=...)
+        result = generator.process()
     """
 
     def __init__(self, exercise_key: str):
@@ -85,8 +85,8 @@ class ExerciseGenerator(BaseAgent):
         self.response_schema = _build_response_schema(exercise_key)
         super().__init__(system_message, agent_type=f"{exercise_key}_generator")
 
-    def process(self, location_context: Optional[dict] = None) -> str:
-        prompt = build_generator_prompt(self.exercise_key, location_context)
+    def process(self) -> str:
+        prompt = build_generator_prompt(self.exercise_key)
         llm_messages = self.generate_llm_history(prompt)
 
         result = self.llm.get_response(

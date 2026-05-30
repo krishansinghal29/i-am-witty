@@ -78,14 +78,6 @@ Topics can be everyday things, activities, concepts, or situations that people m
 When given a request, respond with a single topic formatted as a natural statement or topic.
 Keep your topics relatable but interesting, allowing for both positive and negative interpretations.
 
-LOCATION-BASED REALISM (OPTIONAL):
-Sometimes (not always), when location context is provided, you MAY generate topics with cultural context:
-- Weather patterns or seasonal phenomena from that region (monsoons, snow days, heatwaves)
-- Local cultural practices, social norms, or regional customs
-- Regional transportation, infrastructure, or daily life aspects
-
-IMPORTANT: Location awareness should add VARIETY, not dominate. A lot of topics should still be universally relatable. Only occasionally add cultural flavor.
-
 CRITICAL INSTRUCTIONS FOR VARIETY:
 - NEVER repeat the same type of topic or theme
 - Think of DIFFERENT categories: food, weather, technology, social situations, daily activities, cultural phenomena, modern life, etc.
@@ -141,10 +133,6 @@ Be innovative and fresh!
 Think of the most interesting topic possible!
 Be creative and original!
 Make it unique and opinion-provoking!''',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (weather patterns, cultural practices, regional daily life). BUT prioritize universal relatability - most topics should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }

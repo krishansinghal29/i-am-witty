@@ -116,10 +116,6 @@ Examples of Good Outputs:
                         },
         ],
         "constraint": 'Make it sound like a natural, slightly sassy observation on a date. DO NOT make it a compliment.',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-Context: This is in {location}. You may add a local stereotype (e.g., 'You act like every other guy in {location}'), but keep it understandable.''',
         "archetypes_text": '''- The Player Accusation: Accuse him of being a player, a heartbreaker, or smooth-talker. Imply he is untrustworthy.
 - The Vanity Accusation: Tease him about his appearance, implies he tries too hard, or is too obsessed with his looks.
 - The Weirdness Accusation: Call him out for being random, strange, eccentric, or confusing.
@@ -136,7 +132,6 @@ PROMPT_SEQUENCES = {
         'generator.intro',
         'generator.archetypes_text',
         'generator.constraint',
-        'generator.location_instruction_template',
     ],
     'evaluator': build_evaluator_sequence('reframe_techniques'),
 }

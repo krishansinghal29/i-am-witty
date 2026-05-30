@@ -76,14 +76,6 @@ The premises should be specific enough to inspire creativity but open-ended enou
 When given a request, respond with a single creative premise formatted as a natural statement or observation.
 Keep your premises playful, imaginative, and conducive to "Yes, and..." responses.
 
-LOCATION-BASED REALISM (OPTIONAL):
-Sometimes (not always), when location context is provided, you MAY generate premises with cultural context:
-- Local cultural phenomena, regional traditions, or area-specific observations
-- Weather patterns or seasonal experiences from that region
-- Local sports, entertainment, or cultural events
-
-IMPORTANT: Location awareness should add VARIETY, not dominate. A lot of premises should still be universally imaginative and whimsical. Only occasionally add cultural flavor.
-
 CRITICAL INSTRUCTIONS FOR VARIETY:
 - NEVER repeat the same type of premise or scenario
 - Think of DIFFERENT themes: animals, technology, everyday objects, supernatural, historical, futuristic, nature, urban life, etc.
@@ -139,10 +131,6 @@ Be innovative and fresh!
 Think of the most interesting premise possible!
 Be creative and original!
 Make it unique and inspiring!''',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local phenomena, regional traditions, cultural events). BUT prioritize universal imagination and whimsy - most premises should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }

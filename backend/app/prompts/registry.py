@@ -53,24 +53,8 @@ def get_sprint_question_label(exercise_key: str) -> str:
     return config.get("sprint_question_label", "Question/Scenario")
 
 
-def _extract_location(location_context: Optional[dict]) -> str:
-    if not location_context:
-        return ""
-
-    country = str(location_context.get("country", "")).strip()
-    city = str(location_context.get("city", "")).strip()
-    region = str(location_context.get("region", "")).strip()
-
-    if city:
-        return city
-    if region:
-        return region
-    return country
-
-
 def _build_creative_generator_prompt(
     generator_components: dict[str, Any],
-    location_context: Optional[dict] = None,
 ) -> str:
     prompt_styles = generator_components.get("prompt_styles", [])
     contexts = generator_components.get("contexts", [])
@@ -94,20 +78,11 @@ def _build_creative_generator_prompt(
     topic_suggestion = random.choice(topic_suggestions)
     creativity_booster = random.choice(creativity_boosters)
 
-    location_instruction = ""
-    location = _extract_location(location_context)
-    location_probability = float(generator_components.get("location_inclusion_probability", 0.4))
-    template = str(generator_components.get("location_instruction_template", ""))
-
-    if location and template and random.random() < location_probability:
-        location_instruction = template.format(location=location)
-
-    return f"{base_prompt} {context} {topic_suggestion} {creativity_booster}{location_instruction}"
+    return f"{base_prompt} {context} {topic_suggestion} {creativity_booster}"
 
 
 def _build_archetype_generator_prompt(
     generator_components: dict[str, Any],
-    location_context: Optional[dict] = None,
 ) -> str:
     archetypes = generator_components.get("archetypes", [])
     if isinstance(archetypes, str):
@@ -123,15 +98,7 @@ def _build_archetype_generator_prompt(
     base_prompt = f"Generate a specific '{archetype_type}' statement."
     specific_instruction = f"Instruction: {instruction}"
 
-    location_instruction = ""
-    location = _extract_location(location_context)
-    location_probability = float(generator_components.get("location_inclusion_probability", 0.4))
-    template = str(generator_components.get("location_instruction_template", ""))
-
-    if location and template and random.random() < location_probability:
-        location_instruction = template.format(location=location)
-
-    return f"{base_prompt} {specific_instruction} {constraint}{location_instruction}"
+    return f"{base_prompt} {specific_instruction} {constraint}"
 
 
 def _build_verb_seed_generator_prompt() -> str:
@@ -140,15 +107,15 @@ def _build_verb_seed_generator_prompt() -> str:
     return f'Generate a sentence using the verb "{verb}" and the pronoun "{pronoun}".'
 
 
-def build_generator_prompt(exercise_key: str, location_context: Optional[dict] = None) -> str:
+def build_generator_prompt(exercise_key: str) -> str:
     config = _get_exercise_prompt_config(exercise_key)
     mode = str(config.get("generator", {}).get("mode", "none"))
     generator_components = config.get("prompt_components", {}).get("generator", {})
 
     if mode == "creative":
-        return _build_creative_generator_prompt(generator_components, location_context)
+        return _build_creative_generator_prompt(generator_components)
     if mode == "archetype":
-        return _build_archetype_generator_prompt(generator_components, location_context)
+        return _build_archetype_generator_prompt(generator_components)
     if mode == "verb_seed":
         return _build_verb_seed_generator_prompt()
 

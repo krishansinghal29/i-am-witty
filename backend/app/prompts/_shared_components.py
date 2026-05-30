@@ -88,7 +88,6 @@ CREATIVE_GENERATOR_SEQUENCE = [
     'generator.contexts',
     'generator.topic_suggestions',
     'generator.creativity_boosters',
-    'generator.location_instruction_template',
 ]
 
 

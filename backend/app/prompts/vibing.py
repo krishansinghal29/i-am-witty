@@ -75,15 +75,6 @@ and finding relatable angles to continue the conversation.
 
 For each request, you will generate a story in the format requested.
 
-LOCATION-BASED REALISM (OPTIONAL):
-Sometimes (not always), when location context is provided, you MAY generate stories with cultural context:
-- Culturally relevant experiences from that region (family dynamics, social norms, education systems)
-- Local activities, hobbies, or social situations common in that area
-- Regional lifestyle, weather-related experiences, or cultural traditions
-- Local food culture, dining habits, or social gatherings
-
-IMPORTANT: Location awareness should add VARIETY, not dominate. A lot of stories should still be universally relatable. Only occasionally add cultural flavor.
-
 CRITICAL INSTRUCTIONS FOR VARIETY:
 - NEVER repeat the same type of story or theme
 - Think of DIFFERENT topics: childhood, relationships, work, travel, family, friends, hobbies, life lessons, funny moments, challenges, etc.
@@ -139,10 +130,6 @@ Be innovative and fresh with your storytelling!
 Think of the most interesting life experience possible!
 Be creative and original with your anecdote!
 Make it unique and memorable!''',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local experiences, family dynamics, social situations, regional activities). BUT prioritize universal relatability - most stories should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }

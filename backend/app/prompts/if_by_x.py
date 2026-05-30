@@ -79,14 +79,6 @@ For example, if someone says "You're so disorganized", a response might be
 When given a request, respond with a single statement. The statement should be something that appears
 negative on the surface but can be cleverly reframed as positive.
 
-LOCATION-BASED REALISM (OPTIONAL):
-Sometimes (not always), when location context is provided, you MAY generate statements with cultural context:
-- Cultural values or societal expectations from that region
-- Regional work culture, family dynamics, or social pressures
-- Local lifestyle choices or cultural norms
-
-IMPORTANT: Location awareness should add VARIETY, not dominate. A lot of statements should still be universally relatable. Only occasionally add cultural flavor.
-
 CRITICAL INSTRUCTIONS FOR VARIETY:
 - NEVER repeat the same type of criticism or statement
 - Think of DIFFERENT topics: work habits, personality traits, social behavior, lifestyle choices, communication style, decision-making, etc.
@@ -142,10 +134,6 @@ Be innovative and fresh!
 Think of the most interesting criticism possible!
 Be creative and original!
 Make it unique and cleverly reframable!''',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (cultural values, work culture, family dynamics). BUT prioritize universal relatability - most statements should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }

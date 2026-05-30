@@ -12,7 +12,6 @@ from fastapi.staticfiles import StaticFiles
 from agents.exercise_generator import ExerciseGenerator
 from agents.image_generator import ImageGenerator
 from helpers.avatar_utils import get_random_avatar_url
-from helpers.location_service import get_location_from_request_headers
 from helpers.logger import logger
 from helpers.openai_tts import text_to_speech_multi_role
 from helpers.sprint_evaluation_helpers import create_sprint_agent, validate_sprint_request
@@ -53,15 +52,13 @@ async def generate_sprint_question(request: Request):
     if not exercise or exercise not in _SUPPORTED_EXERCISES:
         return JSONResponse({"error": f"Invalid exercise type: {exercise}"}, status_code=400)
 
-    location_context = get_location_from_request_headers(request.headers)
-
     try:
         if exercise == "pushPull":
             generator = ImageGenerator()
             question_json = generator.process()
         else:
             generator = ExerciseGenerator(exercise)
-            question_json = generator.process(location_context=location_context)
+            question_json = generator.process()
     except json.JSONDecodeError as e:
         logger.error(f"Error generating sprint question: {str(e)}")
         return JSONResponse({"error": "Error generating question"}, status_code=500)

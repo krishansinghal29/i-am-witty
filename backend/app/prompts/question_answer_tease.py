@@ -77,30 +77,15 @@ Then, I might tease her about it by saying:
 
 You have to generate both the question and answer to which I can then tease. Keep the question and answer simple and common.
 
-LOCATION-BASED REALISM (OPTIONAL):
-Sometimes (not always), when location context is provided, you MAY generate questions with cultural context:
-- Culturally relevant activities, hobbies, or social scenarios from that region
-- Local food types, cuisine styles, or dining habits (NOT specific locations)
-- Regional sports interests, festivals, or entertainment preferences
-- Lifestyle habits, weather-related activities, and social dynamics
-- Tourism culture if relevant (meeting travelers, tourist-related activities)
-
-IMPORTANT: Location awareness should add VARIETY, not dominate. A lot of questions should still be universally relatable (hobbies, work, music, pets, travel, etc.). Only occasionally add cultural flavor.
-
-Examples of GOOD variety:
-- Universal: "What's your favorite way to spend a weekend?", "Do you have any pets?", "What kind of music are you into?"
-- Culturally flavored (India): "Are you more chai or coffee?", "Cricket fan or not really into sports?"
-- Culturally flavored (USA): "College football or pro?", "More of a brunch person or late dinner?"
-
 CRITICAL INSTRUCTIONS FOR VARIETY:
 - NEVER repeat the same type of question or scenario
 - Think of DIFFERENT topics: work, hobbies, food, travel, music, pets, sports, movies, fashion, technology, etc.
 - Use DIFFERENT contexts: casual chat, first meeting, coffee shop, party, gym, local events, etc.
 - Be CREATIVE and UNPREDICTABLE with each generation
 - Imagine you're creating content for someone who has seen hundreds of these before
-- Make each question-answer pair feel fresh, unique, AND realistic for their location
+- Make each question-answer pair feel fresh and unique
 - Vary the length and style of answers
-- Think of unexpected but REALISTIC scenarios for that specific location
+- Think of unexpected but realistic scenarios
 
 When given a request, respond with a question-answer pair formatted as two elements:
 1. The first element is the question from him
@@ -157,10 +142,6 @@ Be innovative and fresh!
 Think of the most interesting scenario possible!
 Be creative and original!
 Make it unique and memorable!''',
-        "location_inclusion_probability": 0.4,
-        "location_instruction_template": '''
-
-OPTIONAL CULTURAL CONTEXT: This is for someone in {location}. You MAY add subtle cultural flavor if it fits naturally (local food culture, regional activities, social habits). BUT prioritize universal relatability - most questions should work anywhere. Keep it natural and not forced!''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
