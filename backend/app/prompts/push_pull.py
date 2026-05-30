@@ -8,77 +8,132 @@ from prompts._shared_components import (
 )
 
 
+APPEARANCE_SEED_CATEGORIES = [
+    {"name": "dress",    "weight": 3},
+    {"name": "jacket",   "weight": 3},
+    {"name": "shoes",    "weight": 2},
+    {"name": "hair",     "weight": 3},
+    {"name": "nails",    "weight": 1},
+    {"name": "earrings", "weight": 2},
+    {"name": "bag",      "weight": 2},
+    {"name": "makeup",   "weight": 2},
+    {"name": "top",      "weight": 2},
+    {"name": "trousers", "weight": 1},
+    {"name": "scarf",    "weight": 1},
+    {"name": "hat",      "weight": 1},
+    {"name": "rings",    "weight": 1},
+    {"name": "style",    "weight": 2},
+]
+
+VIBE_SEED_CATEGORIES = [
+    {"name": "voice",    "weight": 3},
+    {"name": "laugh",    "weight": 2},
+    {"name": "energy",   "weight": 3},
+    {"name": "humor",    "weight": 3},
+    {"name": "delivery", "weight": 2},
+    {"name": "presence", "weight": 3},
+    {"name": "timing",   "weight": 1},
+    {"name": "opinions", "weight": 2},
+]
+
+
 PROMPT_COMPONENTS = {
     "shared": {
-        "intro": 'You are an elite dating coach evaluating "Push-Pull" responses to images — the art of creating emotional tension that makes you unforgettable.',
+        "intro": 'You are a wit coach evaluating "Push-Pull" responses — the skill of balancing genuine interest (the pull) with playful challenge (the push) to create memorable emotional tension.',
         "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
-Push-Pull is the balance of showing INTEREST (pull) and creating TENSION (push). You look at her photo and create a response that says "I notice you AND I'm not intimidated by you." This is the energy of a confident, playful man who doesn't need to try hard.''',
+Given an observable scenario about a woman — something she's wearing, doing, saying, or how she carries herself — write a 1-2 sentence push-pull response.
+
+Push-pull is the balance between genuine interest (the pull) and playful challenge (the push). A good push-pull says "I notice you AND I'm not trying too hard." It creates emotional tension that makes an interaction memorable — not predictable, not eager, not cold.
+
+The golden rule: the push must target something trivial and observable — never a real insecurity. The pull must be genuine — not sarcastic, not hollow.''',
         "push_pull_techniques": '''=== PUSH-PULL TECHNIQUES ===
-1. **The Tease-First (Push-Heavy Balance)**: Lead with playful challenge, soften with subtle interest.
-   - "That outfit screams 'I'm the main character'... and honestly? You're kind of pulling it off."
+1. **Compliment → Tease**: Open with something genuine, close with a playful challenge.
+   - "You look incredible tonight... which is genuinely inconvenient for me."
 
-2. **The Interest-Plus-Challenge**: Show curiosity (pull) but add a playful qualifier (push).
-   - "Okay, the artsy vibe is strong... but can you actually keep up with someone who quotes obscure movies?"
+2. **Tease → Compliment**: Lead with the push, land on the pull.
+   - "You're such a walking disaster... and somehow the most interesting person in this room."
 
-3. **The Backhanded Compliment**: Compliment (pull) wrapped in teasing ambiguity (push).
-   - "You look like you'd either bail on plans last minute or show up with the best snacks. No in-between."
+3. **Feigned Reluctance**: Act like you didn't want to admit the pull.
+   - "I wasn't going to say this, but — you're actually kind of fascinating."
 
-4. **The Assumption Flip**: Make a playful (slightly wrong) assumption that implies interest.
-   - "Definitely the type who says 'I'm low-maintenance' but has 12 steps to their skincare routine."
+4. **Fake Threat**: Turn the pull into a mock consequence.
+   - "Stop being this interesting or I'm leaving. I had plans tonight."
 
-5. **The Genuine + Absurd**: Start with something real, add something ridiculous.
-   - "that look is dangerous and you definitely know it. I'd need at least 3 business days to recover from brunch with you."''',
+5. **Buried Pull**: Heavy push, with one small genuine thing placed at the very end.
+   - "You've reorganized this conversation three times already. Impossible to keep up with. I'm in."''',
         "evaluation_criteria": '''=== EVALUATION CRITERIA ===
-1. **Balance Check**: Is there both push (tease/challenge) AND pull (attraction/interest)?
-2. **Image Specificity**: Does it reference something ACTUAL in the photo?
-3. **Tone**: Confident and playful? Or try-hard and forced?
-4. **Brevity**: 1-2 sentences max. Like a real DM or text.
-5. **History Awareness**: Review recent_exercises for growth or repeated mistakes.''',
+1. **Both sides present**: Is there a clear push AND a clear pull? If one is missing entirely, it is not push-pull.
+2. **Push is trivial**: Does the push target something observable and silly — not a real insecurity? If it could genuinely hurt on a bad day, it fails.
+3. **Pull is genuine**: Does the pull feel real? Not sarcastic, not hollow, not a copy-paste compliment. Something actually meant.
+4. **Tension**: Do push and pull create an interesting charge together — or does one cancel the other out?
+5. **Brevity**: 1-2 sentences. More = explaining the dynamic instead of creating it.
+6. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?
+7. **History Awareness**: If they keep doing all-push or all-pull, name the pattern directly.''',
         "sample_answer_guidelines": build_sample_answer_guidelines(
             [
-                "First: improved version of their attempt (fix the balance, keep their angle)",
-                "Second: completely new approach using a different push-pull style",
-                "Third: another creative approach",
+                "First: improved version of user's attempt (keep their angle, fix the balance)",
+                "Second: completely new approach using a different technique",
+                "Third: another new approach using yet another technique",
             ],
-            "Separate with <br><br>. Keep each SHORT — 1-2 sentences max.",
+            "Separate with <br><br>. Keep each SHORT — 1-2 sentences max. Each must have both a push and a pull.",
         ),
         "feedback_style": build_feedback_style(
             "The specific mistake. Common push-pull traps:",
             [
-                "ALL PUSH: Just teasing/criticizing with no attraction signal (she thinks you don't like her)",
-                "ALL PULL: Just complimenting with no edge (boring, no tension)",
-                "GENERIC: Could be said about any photo (shows you didn't look)",
-                "TOO LONG: More than 2 sentences = essay, not flirting",
-                "MEAN: Crossing from playful to hurtful",
+                "ALL PUSH: Just teasing with no genuine interest signal — she thinks you don't like her",
+                "ALL PULL: Just complimenting with no edge — warm but forgettable",
+                "MEAN: Crossed from playful into actually hurtful — targeted something real, not trivial",
+                "HOLLOW PULL: The compliment sounds nice but means nothing ('you're so interesting')",
+                "GENERIC: Could apply to anyone — not connected to the actual scenario",
+                "TOO LONG: More than 2 sentences is explaining the dynamic, not creating it",
             ],
             [
-                "You're confusing teasing with negging. Teasing says 'I like you AND I'm fun.' Negging just says 'I'm insecure.'",
-                "The best push-pulls leave her laughing, not wondering if you're a jerk.",
-                "Think of it as a dance: you step toward her (pull), then spin away (push). Both moves matter.",
+                "The push proves you're paying attention. The pull proves you like what you see. Both have to be true.",
+                "A push without a pull is just criticism. A pull without a push is just flattery. The tension is the whole point.",
+                "If your push could hurt her feelings on a bad day, it's too sharp. If your pull could apply to anyone, it's too soft.",
             ],
-            mindset_intro="One root-cause reframe.",
+            mindset_intro="One root-cause observation.",
         ),
     },
     "generator": {
+        "intro": '''You generate scenario descriptions for a push-pull flirting exercise.
+
+You receive a seed with a type and values. Write ONE specific, vivid sentence describing something observable about a woman. The scenario should have an obvious teasy side AND a genuinely compelling side.
+
+Seed types and how to handle each:
+- verb: Describe a habitual behavior inspired by that verb. "She [verb]s..." — specific and observable. If the verb doesn't fit naturally, use what it evokes (e.g. "excrete" → she drains the energy from every room).
+- adjective: Show a personality trait inspired by that adjective through one concrete moment. Not "she is [adj]" — show it happening. If the adjective is obscure, use the quality it suggests.
+- verb+adverb: Write how she performs the verb in that manner. If the combination is awkward, let the adverb set the emotional tone of the behavior instead.
+- vibe (subject + adjective): Describe how her [subject] is [adjective]. Use the adjective as the core quality — if it doesn't fit literally, find what it evokes and apply that.
+- appearance (subject + adjective): Write "She has [adjective] [subject]" or "She's wearing..." — the adjective is the character of the detail. If it doesn't fit literally, let it set the tone or style.
+
+Rules:
+- 1 sentence only, no punctuation theatrics
+- Concrete and specific — not abstract
+- Output only the sentence, nothing else''',
     },
     "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
 PROMPT_SEQUENCES = {
+    'generator': ['generator.intro'],
     'evaluator': build_evaluator_sequence('push_pull_techniques'),
 }
 
 
 PROMPT_CONFIG = {
     "exercise_key": 'pushPull',
-    "description": 'Push-Pull image-response exercise for balancing tease and attraction.',
+    "description": 'Push-Pull exercise — balance genuine interest and playful challenge across observable scenarios.',
     "prompt_components": PROMPT_COMPONENTS,
     "prompt_sequences": PROMPT_SEQUENCES,
     "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Image Description',
+    "sprint_question_label": 'Scenario',
     "generator": {
-        'mode': 'none',
+        'mode': 'weighted_seed',
+        'response_roles': [{'role': 'She'}],
+        'appearance_categories': APPEARANCE_SEED_CATEGORIES,
+        'vibe_categories': VIBE_SEED_CATEGORIES,
     },
 }

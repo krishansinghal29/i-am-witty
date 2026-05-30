@@ -10,7 +10,6 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from agents.exercise_generator import ExerciseGenerator
-from agents.image_generator import ImageGenerator
 from helpers.avatar_utils import get_random_avatar_url
 from helpers.logger import logger
 from helpers.openai_tts import text_to_speech_multi_role
@@ -53,12 +52,8 @@ async def generate_sprint_question(request: Request):
         return JSONResponse({"error": f"Invalid exercise type: {exercise}"}, status_code=400)
 
     try:
-        if exercise == "pushPull":
-            generator = ImageGenerator()
-            question_json = generator.process()
-        else:
-            generator = ExerciseGenerator(exercise)
-            question_json = generator.process()
+        generator = ExerciseGenerator(exercise)
+        question_json = generator.process()
     except json.JSONDecodeError as e:
         logger.error(f"Error generating sprint question: {str(e)}")
         return JSONResponse({"error": "Error generating question"}, status_code=500)
@@ -71,7 +66,7 @@ async def generate_sprint_question(request: Request):
     question_array = question_data.get("question", question_data) if isinstance(question_data, dict) else question_data
 
     audio_result = None
-    if exercise != "pushPull" and isinstance(question_array, list):
+    if isinstance(question_array, list):
         try:
             audio_result = text_to_speech_multi_role(question_array)
         except Exception as e:

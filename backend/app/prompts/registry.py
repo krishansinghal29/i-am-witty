@@ -3,6 +3,9 @@ from pathlib import Path
 from typing import Any, Optional
 
 _VERBS: Optional[list[str]] = None
+_ADJECTIVES: Optional[list[str]] = None
+_ADVERBS: Optional[list[str]] = None
+
 
 def _get_verbs() -> list[str]:
     global _VERBS
@@ -10,6 +13,22 @@ def _get_verbs() -> list[str]:
         path = Path(__file__).parent.parent / "data" / "verbs.txt"
         _VERBS = path.read_text().splitlines()
     return _VERBS
+
+
+def _get_adjectives() -> list[str]:
+    global _ADJECTIVES
+    if _ADJECTIVES is None:
+        path = Path(__file__).parent.parent / "data" / "adjectives.txt"
+        _ADJECTIVES = path.read_text().splitlines()
+    return _ADJECTIVES
+
+
+def _get_adverbs() -> list[str]:
+    global _ADVERBS
+    if _ADVERBS is None:
+        path = Path(__file__).parent.parent / "data" / "adverbs.txt"
+        _ADVERBS = path.read_text().splitlines()
+    return _ADVERBS
 
 from prompts.if_by_x import PROMPT_CONFIG as IF_BY_X_PROMPT
 from prompts.love_hate import PROMPT_CONFIG as LOVE_HATE_PROMPT
@@ -107,6 +126,42 @@ def _build_verb_seed_generator_prompt() -> str:
     return f'Generate a sentence using the verb "{verb}" and the pronoun "{pronoun}".'
 
 
+def _weighted_category_pick(categories: list[dict]) -> str:
+    weights = [c["weight"] for c in categories]
+    return random.choices(categories, weights=weights, k=1)[0]["name"]
+
+
+def _build_weighted_seed_generator_prompt(config: dict) -> str:
+    generator_config = config.get("generator", {})
+    appearance_categories = generator_config.get("appearance_categories", [])
+    vibe_categories = generator_config.get("vibe_categories", [])
+
+    # appearance = 1/3, each of the other four = 1/6
+    seed_types = ["verb", "adjective", "verb_adverb", "vibe", "appearance"]
+    weights = [1, 1, 1, 1, 2]
+
+    seed_type = random.choices(seed_types, weights=weights, k=1)[0]
+
+    if seed_type == "verb":
+        verb = random.choice(_get_verbs())
+        return f'Seed type: verb. Value: "{verb}"'
+    if seed_type == "adjective":
+        adj = random.choice(_get_adjectives())
+        return f'Seed type: adjective. Value: "{adj}"'
+    if seed_type == "verb_adverb":
+        verb = random.choice(_get_verbs())
+        adverb = random.choice(_get_adverbs())
+        return f'Seed type: verb+adverb. Verb: "{verb}", Adverb: "{adverb}"'
+    if seed_type == "vibe":
+        subject = _weighted_category_pick(vibe_categories)
+        adj = random.choice(_get_adjectives())
+        return f'Seed type: vibe. Subject: "{subject}", Adjective: "{adj}"'
+    # appearance
+    subject = _weighted_category_pick(appearance_categories)
+    adj = random.choice(_get_adjectives())
+    return f'Seed type: appearance. Subject: "{subject}", Adjective: "{adj}"'
+
+
 def build_generator_prompt(exercise_key: str) -> str:
     config = _get_exercise_prompt_config(exercise_key)
     mode = str(config.get("generator", {}).get("mode", "none"))
@@ -118,6 +173,8 @@ def build_generator_prompt(exercise_key: str) -> str:
         return _build_archetype_generator_prompt(generator_components)
     if mode == "verb_seed":
         return _build_verb_seed_generator_prompt()
+    if mode == "weighted_seed":
+        return _build_weighted_seed_generator_prompt(config)
 
     raise ValueError(f"Exercise '{exercise_key}' does not support text prompt generation")
 
