@@ -30,8 +30,8 @@ if os.path.isdir(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
 _SUPPORTED_EXERCISES = {
-    "yesAnd", "misinterpretation", "loveHate", "ifByXYouMeanY",
-    "questionAnswerTease", "vibing", "pushPull",
+    "yesAnd", "misinterpretation", "misinterpretationTechniques", "loveHate", "ifByXYouMeanY",
+    "questionAnswerTease", "vibing", "pushPull", "heightening", "firstUnusualThing",
 }
 
 
@@ -64,6 +64,7 @@ async def generate_sprint_question(request: Request):
         question_data = question_json
 
     question_array = question_data.get("question", question_data) if isinstance(question_data, dict) else question_data
+    technique = question_data.get("technique") if isinstance(question_data, dict) else None
 
     audio_result = None
     if isinstance(question_array, list):
@@ -77,6 +78,7 @@ async def generate_sprint_question(request: Request):
         "audio_base64": audio_result.get("audio_content_base64") if audio_result else None,
         "content_type": audio_result.get("audio_content_type") if audio_result else None,
         "speech_text": audio_result.get("speech_text") if audio_result else None,
+        "technique": technique,
     }
 
     try:
@@ -109,6 +111,7 @@ async def analyze_sprint_response(request: Request):
     word_count = int(body.get("word_count", 0))
     question_data = body["question_data"]
     exercise_type = body["exercise_type"]
+    technique_name = body.get("technique_name")
 
     logger.info(f"Analysing sprint response for exercise {exercise_type}")
 
@@ -121,6 +124,7 @@ async def analyze_sprint_response(request: Request):
             word_count=word_count,
             question_data=question_data,
             exercise_type=exercise_type,
+            technique_name=technique_name,
         )
         result = json.loads(raw_result)
         result["success"] = True

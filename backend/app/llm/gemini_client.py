@@ -37,7 +37,7 @@ class GeminiClient:
         """
         use_pydantic = isinstance(response_schema, type) and issubclass(response_schema, BaseModel)
         generation_config = generation_config or {}
-        temperature = generation_config.get("temperature", 1.0)
+        temperature = generation_config.get("temperature", 2.0)
         max_output_tokens = generation_config.get(
             "max_output_tokens",
             generation_config.get("max_tokens", 8000),

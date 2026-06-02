@@ -2,20 +2,17 @@ import { CircularProgress } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useEffect, useRef } from 'react';
 import { useDeepgramSTT } from '@/hooks/useDeepgramSTT';
-import { RECORDING_LIMIT_SECONDS } from '@/utils/sprintConstants';
+import type { SprintTechnique } from '@/hooks/useSprintPractice';
+import { RECORDING_LIMIT_SECONDS, SCAFFOLD_STAGES } from '@/utils/sprintConstants';
 
 type STTReturn = ReturnType<typeof useDeepgramSTT>;
-
-const SCAFFOLD_LABELS: Record<number, { step: string; instruction: string }> = {
-  1: { step: 'Step 1 of 3', instruction: 'Say just the push — one sentence, no softening' },
-  2: { step: 'Step 2 of 3', instruction: 'Say just the genuine compliment — no irony' },
-  3: { step: 'Step 3 of 3', instruction: 'Combine them into one push-pull line' },
-};
 
 interface Props {
   stt: STTReturn;
   displayText: string;
+  exerciseId: string;
   scaffoldStage?: number;
+  technique?: SprintTechnique | null;
   recordingTimeLeft: number;
   onStartRecording: () => Promise<void>;
   onStopRecording: () => void;
@@ -27,10 +24,11 @@ function getTimerColor(t: number) {
   return '#EF4444';
 }
 
-export function StepRecording({ stt, displayText, scaffoldStage, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
+export function StepRecording({ stt, displayText, exerciseId, scaffoldStage, technique, recordingTimeLeft, onStartRecording, onStopRecording }: Props) {
   const hasAutoStarted = useRef(false);
   const progress = (recordingTimeLeft / RECORDING_LIMIT_SECONDS) * 100;
   const color = getTimerColor(recordingTimeLeft);
+  const scaffoldLabel = scaffoldStage ? SCAFFOLD_STAGES[exerciseId]?.[scaffoldStage - 1] : undefined;
 
   useEffect(() => {
     if (!hasAutoStarted.current && !stt.isRecording && !stt.isConnecting) {
@@ -83,10 +81,18 @@ export function StepRecording({ stt, displayText, scaffoldStage, recordingTimeLe
         </div>
         <p className="font-bold text-2xl tabular-nums group-hover:opacity-70 transition-opacity" style={{ color }}>{recordingTimeLeft}s</p>
       </button>
-      {scaffoldStage ? (
+      {scaffoldLabel ? (
         <div className="flex flex-col items-center gap-1 mb-2">
-          <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">{SCAFFOLD_LABELS[scaffoldStage].step}</span>
-          <p className="text-sm text-gray-500 text-center">{SCAFFOLD_LABELS[scaffoldStage].instruction}</p>
+          <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">{scaffoldLabel.step}</span>
+          <p className="text-sm text-gray-500 text-center">{scaffoldLabel.instruction}</p>
+        </div>
+      ) : technique ? (
+        <div className="flex flex-col items-center gap-2 mb-2">
+          <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">Technique: {technique.name}</span>
+          <p className="text-sm text-gray-500 text-center">{technique.instruction}</p>
+          {technique.example && (
+            <p className="text-xs text-gray-400 text-center italic max-w-xs">{technique.example}</p>
+          )}
         </div>
       ) : (
         <p className="text-sm text-gray-500 mb-2">What would you say in this situation?</p>

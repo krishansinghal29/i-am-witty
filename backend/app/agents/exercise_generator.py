@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from agents.base_agent import BaseAgent
 from prompts import build_generator_prompt, get_exercise_prompt
-from prompts.registry import _get_exercise_prompt_config
+from prompts.registry import _get_exercise_prompt_config, get_technique_for_exercise
 
 
 # ── Dynamic schema factory ────────────────────────────────────────
@@ -100,4 +100,10 @@ class ExerciseGenerator(BaseAgent):
         if expected_count > 0:
             response_array = response_array[:expected_count]
 
-        return json.dumps({"question": response_array})
+        output: dict = {"question": response_array}
+
+        technique = get_technique_for_exercise(self.exercise_key)
+        if technique:
+            output["technique"] = technique
+
+        return json.dumps(output)

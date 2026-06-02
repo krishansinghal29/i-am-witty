@@ -30,9 +30,13 @@ def _get_adverbs() -> list[str]:
         _ADVERBS = path.read_text().splitlines()
     return _ADVERBS
 
+from prompts.first_unusual_thing import PROMPT_CONFIG as FIRST_UNUSUAL_THING_PROMPT
+from prompts.heightening import PROMPT_CONFIG as HEIGHTENING_PROMPT
 from prompts.if_by_x import PROMPT_CONFIG as IF_BY_X_PROMPT
 from prompts.love_hate import PROMPT_CONFIG as LOVE_HATE_PROMPT
 from prompts.misinterpretation import PROMPT_CONFIG as MISINTERPRETATION_PROMPT
+from prompts.misinterpretation_techniques import PROMPT_CONFIG as MISINTERPRETATION_TECHNIQUES_PROMPT
+from prompts.misinterpretation_techniques import pick_random_technique
 from prompts.push_pull import PROMPT_CONFIG as PUSH_PULL_PROMPT
 from prompts.question_answer_tease import PROMPT_CONFIG as QUESTION_ANSWER_TEASE_PROMPT
 from prompts.vibing import PROMPT_CONFIG as VIBING_PROMPT
@@ -41,12 +45,24 @@ from prompts.yes_and import PROMPT_CONFIG as YES_AND_PROMPT
 _EXERCISE_PROMPT_CONFIGS: dict[str, dict[str, Any]] = {
     YES_AND_PROMPT["exercise_key"]: YES_AND_PROMPT,
     MISINTERPRETATION_PROMPT["exercise_key"]: MISINTERPRETATION_PROMPT,
+    MISINTERPRETATION_TECHNIQUES_PROMPT["exercise_key"]: MISINTERPRETATION_TECHNIQUES_PROMPT,
     LOVE_HATE_PROMPT["exercise_key"]: LOVE_HATE_PROMPT,
     IF_BY_X_PROMPT["exercise_key"]: IF_BY_X_PROMPT,
     QUESTION_ANSWER_TEASE_PROMPT["exercise_key"]: QUESTION_ANSWER_TEASE_PROMPT,
     VIBING_PROMPT["exercise_key"]: VIBING_PROMPT,
     PUSH_PULL_PROMPT["exercise_key"]: PUSH_PULL_PROMPT,
+    HEIGHTENING_PROMPT["exercise_key"]: HEIGHTENING_PROMPT,
+    FIRST_UNUSUAL_THING_PROMPT["exercise_key"]: FIRST_UNUSUAL_THING_PROMPT,
 }
+
+_TECHNIQUE_EXERCISES = {"misinterpretationTechniques"}
+
+
+def get_technique_for_exercise(exercise_key: str) -> Optional[dict]:
+    """Return a randomly chosen technique dict for exercises that use technique mode, else None."""
+    if exercise_key in _TECHNIQUE_EXERCISES:
+        return pick_random_technique()
+    return None
 
 
 def _get_exercise_prompt_config(exercise_key: str) -> dict[str, Any]:

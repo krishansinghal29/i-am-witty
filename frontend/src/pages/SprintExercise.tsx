@@ -12,10 +12,16 @@ import {
   useAnalyzeSprintResponse,
   useGenerateSprintQuestion,
   type SprintAnalysisResult,
+  type SprintTechnique,
 } from '@/hooks/useSprintPractice';
 import type { ExerciseStep } from '@/types/exercise';
 import type { QuestionMessage } from '@/types/question';
-import { RECORDING_LIMIT_SECONDS, type SprintStep } from '@/utils/sprintConstants';
+import {
+  RECORDING_LIMIT_SECONDS,
+  getScaffoldStageCount,
+  isScaffoldedExercise,
+  type SprintStep,
+} from '@/utils/sprintConstants';
 import { extractDisplayText, getExerciseDisplayName } from '@/utils/sprintHelpers';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -37,6 +43,7 @@ export default function SprintExercise() {
   const [recordingTimeLeft, setRecordingTimeLeft] = useState(RECORDING_LIMIT_SECONDS);
   const [analysisResult, setAnalysisResult] = useState<SprintAnalysisResult | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [technique, setTechnique] = useState<SprintTechnique | null>(null);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -60,6 +67,7 @@ export default function SprintExercise() {
     setScaffoldStage(1);
     setAnalysisResult(null);
     setAnalysisError(null);
+    setTechnique(null);
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
     processedKeyRef.current = null;
     stt.resetTranscription();
@@ -79,6 +87,7 @@ export default function SprintExercise() {
     setQuestionData(q);
     setDisplayText(extractDisplayText(q));
     setAvatarUrl(questionResult.avatar_image_url || null);
+    setTechnique(questionResult.technique || null);
 
     // Play audio if available
     if (questionResult.audio_base64 && questionResult.content_type) {
@@ -184,7 +193,10 @@ export default function SprintExercise() {
     if (stt.isRecording || stt.isConnecting) return;
     if (!stt.audioBase64 && !stt.transcript) return;
 
-    if (exerciseId === 'pushPull' && scaffoldStageRef.current < 3) {
+    if (
+      isScaffoldedExercise(exerciseId || '') &&
+      scaffoldStageRef.current < getScaffoldStageCount(exerciseId || '')
+    ) {
       setScaffoldStage(s => s + 1);
       setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
       stt.resetTranscription();
@@ -202,6 +214,7 @@ export default function SprintExercise() {
         word_count: stt.wordCount,
         question_data: questionData,
         exercise_type: exerciseId || '',
+        ...(technique ? { technique_name: technique.name } : {}),
       },
       {
         onSuccess: result => { setAnalysisResult(result); setStep('feedback'); },
@@ -213,7 +226,7 @@ export default function SprintExercise() {
   const handleRetry = useCallback(() => {
     stt.resetTranscription();
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
-    if (exerciseId === 'pushPull') setScaffoldStage(1);
+    if (isScaffoldedExercise(exerciseId || '')) setScaffoldStage(1);
     setStep('recording');
   }, [stt, exerciseId]);
 
@@ -224,6 +237,7 @@ export default function SprintExercise() {
 
   if (!exerciseId) return null;
 
+  const scaffolded = isScaffoldedExercise(exerciseId);
   const exerciseStep: ExerciseStep = step === 'intro' ? 'intro' : step === 'feedback' ? 'feedback' : 'practice';
 
   return (
@@ -235,10 +249,12 @@ export default function SprintExercise() {
         {step === 'listening' && <StepListening listeningLiveText={listeningLiveText} questionData={questionData} avatarUrl={avatarUrl} />}
         {step === 'recording' && (
           <StepRecording
-            key={exerciseId === 'pushPull' ? scaffoldStage : 0}
+            key={scaffolded ? scaffoldStage : 0}
             stt={stt}
             displayText={displayText}
-            scaffoldStage={exerciseId === 'pushPull' ? scaffoldStage : undefined}
+            exerciseId={exerciseId}
+            scaffoldStage={scaffolded ? scaffoldStage : undefined}
+            technique={technique}
             recordingTimeLeft={recordingTimeLeft}
             onStartRecording={handleStartRecording}
             onStopRecording={handleStopRecording}

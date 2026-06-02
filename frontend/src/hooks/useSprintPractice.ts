@@ -11,12 +11,19 @@ export interface SprintAnalysisResult {
   sample_answer: string;
 }
 
+export interface SprintTechnique {
+  name: string;
+  instruction: string;
+  example?: string;
+}
+
 export interface SprintQuestionResult {
   question: QuestionMessage[];
   audio_base64: string | null;
   content_type: string | null;
   speech_text: string | null;
   avatar_image_url?: string | null;
+  technique?: SprintTechnique | null;
 }
 
 interface AnalyzeSprintPayload {
@@ -26,6 +33,7 @@ interface AnalyzeSprintPayload {
   word_count: number;
   question_data: QuestionMessage[];
   exercise_type: string;
+  technique_name?: string;
 }
 
 const fetchSprintQuestion = async (exercise: string): Promise<SprintQuestionResult> => {

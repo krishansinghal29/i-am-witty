@@ -85,6 +85,7 @@ class SprintEvaluator(SprintMultimodalAgent):
         question_data,
         exercise_type: str,
         previous_response: Optional[dict] = None,
+        technique_name: Optional[str] = None,
     ) -> str:
         """
         Evaluate a user's spoken response using multimodal Gemini.
@@ -94,6 +95,10 @@ class SprintEvaluator(SprintMultimodalAgent):
 
         prompt_parts = [
             f"**Exercise Type:** {exercise_type}",
+            *(
+                [f"**Assigned Technique:** {technique_name}"]
+                if technique_name else []
+            ),
             f"**{self.question_label}:** {question_text}",
             f"**User's Spoken Response (transcript):** {transcription if transcription and transcription.strip() else '(No transcript available - analyze audio only)'}",
             "",

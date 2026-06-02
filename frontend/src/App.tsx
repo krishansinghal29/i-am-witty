@@ -4,11 +4,14 @@ import SprintExercise from './pages/SprintExercise';
 const EXERCISES = [
   { id: 'yesAnd', label: 'Yes And' },
   { id: 'misinterpretation', label: 'Misinterpret' },
+  { id: 'misinterpretationTechniques', label: 'Misinterpret+' },
   { id: 'loveHate', label: 'Love Hate' },
   { id: 'ifByXYouMeanY', label: 'If By X...' },
   { id: 'questionAnswerTease', label: 'Q&A Tease' },
   { id: 'vibing', label: 'Vibing' },
   { id: 'pushPull', label: 'Push Pull' },
+  { id: 'heightening', label: 'Heighten' },
+  { id: 'firstUnusualThing', label: 'Unusual' },
 ];
 
 function AppShell() {

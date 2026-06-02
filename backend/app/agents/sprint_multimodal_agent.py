@@ -19,6 +19,10 @@ from google.genai import types
 from agents.base_agent import BaseAgent
 from helpers.logger import logger
 
+# Evaluators emit structured JSON feedback, so they run at a stable temperature
+# rather than the high default used for creative generation.
+EVALUATOR_TEMPERATURE = 1.0
+
 
 class SprintMultimodalAgent(BaseAgent):
     """
@@ -107,7 +111,7 @@ class SprintMultimodalAgent(BaseAgent):
 
         # Configure Gemini request
         config_params = {
-            "temperature": 1.0,
+            "temperature": EVALUATOR_TEMPERATURE,
             "max_output_tokens": 8000,
             "response_mime_type": "application/json",
             "thinking_config": types.ThinkingConfig(thinking_budget=0),
@@ -135,7 +139,11 @@ class SprintMultimodalAgent(BaseAgent):
                 self.system_message,
                 {"role": "user", "content": full_text_prompt},
             ]
-            result = self.llm.get_response(messages, response_schema=self.response_schema)
+            result = self.llm.get_response(
+                messages,
+                response_schema=self.response_schema,
+                generation_config={"temperature": EVALUATOR_TEMPERATURE},
+            )
             if hasattr(result, "model_dump"):
                 return json.dumps(result.model_dump())
             return result

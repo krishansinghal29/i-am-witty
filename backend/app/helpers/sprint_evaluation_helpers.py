@@ -12,11 +12,14 @@ from agents.sprint_evaluator import SprintEvaluator
 _SUPPORTED_SPRINT_EXERCISES = {
     "yesAnd",
     "misinterpretation",
+    "misinterpretationTechniques",
     "loveHate",
     "ifByXYouMeanY",
     "questionAnswerTease",
     "vibing",
     "pushPull",
+    "heightening",
+    "firstUnusualThing",
 }
 
 
@@ -87,7 +90,7 @@ def validate_sprint_request(body: dict) -> tuple[bool, str]:
         if not isinstance(content, str) or not content.strip():
             return False, f"question_data[{i}].content must be a non-empty string"
 
-    exercise_type = body["exercise_type"]
+    exercise_type = body.get("exercise_type", "")
     if exercise_type not in _SUPPORTED_SPRINT_EXERCISES:
         return False, f"Unsupported exercise type: {exercise_type}"
 
