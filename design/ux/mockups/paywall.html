@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i-am-witty — Witty+ paywall (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   i-am-witty — Witty+ paywall (RevenueCat) mockup
+   Triggered when the daily free limit is reached. Gentle, not
+   punishing: "come back free tomorrow OR unlock now." Shows
+   RevenueCat-style packages (annual + monthly) + free trial.
+   Static HTML/CSS mockup — not production code.
+   ============================================================ */
+:root{
+  --bg:#150F1E; --bg-2:#1B1428; --surface:#221934; --surface-2:#2A1F40;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+  --text:#F4EEFB; --muted:#A99CC0; --faint:#6E6385;
+  --purple:#9D7BFF; --purple-2:#6E45D8; --lime:#B6F250; --coral:#FF7361;
+  --gold:#FFB23E; --ice:#5CC8FF;
+  --r:22px; --r-sm:14px; --r-xs:11px;
+  --display:'Fredoka',sans-serif; --body:'Hanken Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background:radial-gradient(80% 50% at 50% 0%, #19121f, #0c0812 70%),#0c0812;
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;min-height:100vh;padding:40px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- phone frame ---------- */
+.phone{
+  position:relative;width:392px;height:850px;border-radius:54px;
+  background:#0a0710;
+  box-shadow:0 50px 130px rgba(0,0,0,.65), 0 0 0 11px #100b18, 0 0 0 12px #271d38, inset 0 0 0 1px #000;
+  overflow:hidden;flex:none;
+}
+.screen{position:absolute;inset:0;border-radius:54px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+.screen::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 70% at 88% -6%, rgba(157,123,255,.24), transparent 56%),
+    radial-gradient(95% 55% at -4% 1%, rgba(92,200,255,.12), transparent 52%),
+    radial-gradient(120% 60% at 50% 110%, rgba(110,69,216,.18), transparent 60%);
+}
+.screen>*{position:relative;z-index:1}
+
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:108px;height:30px;background:#000;border-radius:18px;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 4px;font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.3px}
+.status .ico{display:flex;gap:6px;align-items:center;opacity:.92}
+.status .ico svg{display:block}
+
+/* ---------- backdrop: a dimmed practice screen ---------- */
+.topbar{padding:6px 20px 12px}
+.top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pagehead h1{font-family:var(--display);font-weight:600;font-size:29px;line-height:1.05}
+.pagehead .sub{font-size:13px;color:var(--muted);margin-top:5px;max-width:26ch;line-height:1.45}
+.top-actions{display:flex;gap:10px;align-items:center;flex:none}
+.tg-btn,.chat-btn{width:44px;height:44px;border-radius:14px;position:relative;display:grid;place-items:center}
+.tg-btn{border:1px solid rgba(92,200,255,.42);color:var(--ice);background:linear-gradient(180deg,rgba(92,200,255,.2),rgba(92,200,255,.05))}
+.tg-btn svg{transform:translate(-1px,1px)}
+.chat-btn{border:1px solid var(--line-2);color:var(--text);background:linear-gradient(180deg,rgba(157,123,255,.18),rgba(157,123,255,.05))}
+.divide{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:2px 20px 0}
+.content{flex:1;overflow:hidden;padding:14px 20px 6px}
+.filters{display:flex;gap:8px}
+.fchip{display:inline-flex;align-items:center;gap:6px;font-family:var(--display);font-weight:500;font-size:13px;padding:8px 14px;border-radius:999px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.03)}
+.fchip.active{color:#1a1026;background:linear-gradient(120deg,var(--purple),var(--coral));border-color:transparent;font-weight:600}
+.lib{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.tile{border-radius:var(--r);padding:14px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:9px;min-height:138px}
+.tile .thumb{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:24px;border:1px solid var(--line)}
+.thumb.purple{background:radial-gradient(circle at 40% 30%,rgba(157,123,255,.4),rgba(157,123,255,.12))}
+.thumb.lime{background:radial-gradient(circle at 40% 30%,rgba(182,242,80,.35),rgba(182,242,80,.1))}
+.thumb.coral{background:radial-gradient(circle at 40% 30%,rgba(255,115,97,.38),rgba(255,115,97,.1))}
+.thumb.ice{background:radial-gradient(circle at 40% 30%,rgba(92,200,255,.35),rgba(92,200,255,.1))}
+.tile h4{font-family:var(--display);font-weight:600;font-size:15.5px}
+.tile .meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;font-weight:500}
+.sec{margin:22px 2px 2px}
+.sec h2{font-family:var(--display);font-weight:600;font-size:16.5px}
+
+.tabs{display:flex;align-items:flex-end;justify-content:space-around;padding:12px 14px 24px;background:linear-gradient(180deg,rgba(21,15,30,0),rgba(17,12,24,.9) 35%,#120c18);border-top:1px solid var(--line)}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint);position:relative;flex:1;padding-top:4px}
+.tab svg{width:25px;height:25px}.tab span{font-size:11px;font-weight:600}
+.tab.active{color:var(--purple)}
+.tab.active::before{content:"";position:absolute;top:-12px;width:26px;height:4px;border-radius:4px;background:var(--purple)}
+.tab.disabled{color:#4a4258}
+.soon{position:absolute;top:-3px;right:50%;transform:translateX(26px);font-size:8px;font-weight:800;color:var(--gold);background:rgba(255,178,62,.14);border:1px solid rgba(255,178,62,.4);padding:2px 5px;border-radius:6px;text-transform:uppercase}
+
+/* ============================================================
+   Witty+ paywall sheet (RevenueCat offering)
+   ============================================================ */
+.pw-scrim{position:absolute;inset:0;z-index:30;background:rgba(8,5,14,.74);backdrop-filter:blur(4px)}
+.pw-sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:31;
+  background:linear-gradient(180deg,#2a2040,#1d1530);
+  border-radius:30px 30px 54px 54px;padding:12px 22px 26px;
+  border-top:1px solid var(--line-2);box-shadow:0 -24px 70px rgba(0,0,0,.7);
+  max-height:94%;overflow-y:auto;scrollbar-width:none;
+}
+.pw-sheet::-webkit-scrollbar{display:none}
+.pw-sheet::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(85% 38% at 50% -3%, rgba(255,178,62,.2), transparent 60%),radial-gradient(70% 30% at 82% 1%, rgba(157,123,255,.2), transparent 60%)}
+.pw-sheet>*{position:relative}
+.grab{width:42px;height:5px;border-radius:5px;background:var(--line-2);margin:2px auto 14px}
+.pw-close{position:absolute;top:12px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--muted);font-size:13px;cursor:pointer;z-index:2}
+
+.pw-limit{margin:2px 0 16px;text-align:center;font-size:12.5px;color:var(--gold);background:rgba(255,178,62,.12);border:1px solid rgba(255,178,62,.34);padding:9px 12px;border-radius:12px;font-weight:600}
+.pw-limit b{color:var(--gold)}
+
+.pw-hero{text-align:center}
+.pw-spark{width:60px;height:60px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:29px;background:radial-gradient(circle at 40% 30%,rgba(255,178,62,.42),rgba(157,123,255,.2));border:1px solid var(--line-2);box-shadow:0 12px 30px rgba(255,178,62,.3)}
+.pw-hero h2{font-family:var(--display);font-weight:600;font-size:24px}
+.pw-hero p{font-size:13px;color:var(--muted);margin:7px auto 0;line-height:1.5;max-width:32ch}
+.pw-hero b{color:var(--text)}
+
+.pw-feats{list-style:none;margin:18px 6px 0;display:flex;flex-direction:column;gap:11px}
+.pw-feats li{display:flex;align-items:center;gap:12px;font-size:13.5px;font-weight:500}
+.pw-feats .fi{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:15px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.pw-feats em{color:var(--faint);font-style:normal;font-size:12px}
+
+.pw-plans{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.pw-plan{position:relative;border-radius:var(--r-sm);border:1px solid var(--line-2);background:rgba(255,255,255,.03);padding:15px 14px 13px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.pw-plan .pbadge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:.5px;color:#1a1026;background:var(--gold);padding:3px 9px;border-radius:6px;text-transform:uppercase}
+.pw-plan .pn{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted)}
+.pw-plan .price{font-family:var(--display);font-weight:600;font-size:21px;margin-top:1px}
+.pw-plan .price small{font-size:12px;color:var(--muted);font-weight:500}
+.pw-plan .psub{font-size:11px;color:var(--faint);font-weight:600;margin-top:1px}
+.pw-plan .tick{position:absolute;top:11px;right:11px;width:18px;height:18px;border-radius:50%;border:2px solid var(--faint)}
+.pw-plan.sel{border-color:var(--purple);background:linear-gradient(160deg,rgba(157,123,255,.18),rgba(255,255,255,.02));box-shadow:inset 0 0 0 1px var(--purple),0 10px 26px rgba(110,69,216,.28)}
+.pw-plan.sel .tick{border-color:var(--purple);background:radial-gradient(circle,var(--purple) 0 42%,transparent 46%)}
+
+.pw-trial{text-align:center;font-size:12px;color:var(--muted);margin-top:15px;font-weight:600}
+.pw-cta{width:100%;margin-top:11px;padding:16px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:var(--display);font-weight:600;font-size:16.5px;color:#1a1026;background:linear-gradient(120deg,var(--gold),var(--coral) 58%,var(--purple));box-shadow:0 14px 32px rgba(255,140,80,.34)}
+.pw-cta:hover{filter:brightness(1.05)}
+.pw-fine{display:flex;justify-content:center;gap:8px;margin-top:13px;font-size:11.5px;color:var(--faint);font-weight:600}
+.pw-fine span{cursor:pointer}.pw-fine .ds{cursor:default;opacity:.6}
+.pw-later{text-align:center;margin-top:13px;font-size:13px;color:var(--muted);font-weight:600;cursor:pointer}
+
+.caption{font-family:var(--display);color:#5b5270;font-size:13px;font-weight:500}
+.caption b{color:#8a7fa3;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="island"></div>
+
+    <!-- status bar -->
+    <div class="status">
+      <span>9:41</span>
+      <span class="ico">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l1.3-1.4A10 10 0 0 0 8 .5 10 10 0 0 0 1 3.3l1.3 1.4A8 8 0 0 1 8 2.5Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.3-1.4A7.5 7.5 0 0 0 8 3.8a7.5 7.5 0 0 0-4.7 1.9l1.3 1.4A5.5 5.5 0 0 1 8 5.8Zm0 3.2c.6 0 1.2.2 1.6.7L8 11.5 6.4 9.7c.4-.5 1-.7 1.6-.7Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+      </span>
+    </div>
+
+    <!-- dimmed practice backdrop -->
+    <header class="topbar">
+      <div class="top-row">
+        <div class="pagehead">
+          <h1>Practice 🎭</h1>
+          <p class="sub">Pick anything, any time.</p>
+        </div>
+        <div class="top-actions">
+          <button class="tg-btn"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></button>
+          <button class="chat-btn"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg></button>
+        </div>
+      </div>
+    </header>
+    <div class="divide"></div>
+    <main class="content">
+      <div class="filters">
+        <span class="fchip active">All</span>
+        <span class="fchip">🎭 Improv</span>
+        <span class="fchip">⚡ Sprints</span>
+        <span class="fchip">🎙️ Stories</span>
+      </div>
+      <div class="sec"><h2>Your regulars 💜</h2></div>
+      <div class="lib">
+        <div class="tile"><div class="thumb lime">⚡</div><h4>Warm-up riff</h4><div class="meta"><span>⏱ 1 min</span><span>·</span><span>Sprint</span></div></div>
+        <div class="tile"><div class="thumb purple">🎭</div><h4>Yes, And…</h4><div class="meta"><span>⏱ 2 min</span><span>·</span><span>Improv</span></div></div>
+        <div class="tile"><div class="thumb ice">🌬️</div><h4>Box breathing</h4><div class="meta"><span>⏱ 2 min</span><span>·</span><span>Calm</span></div></div>
+        <div class="tile"><div class="thumb coral">🎙️</div><h4>Peak–End hook</h4><div class="meta"><span>⏱ 1 min</span><span>·</span><span>Story</span></div></div>
+      </div>
+    </main>
+    <nav class="tabs">
+      <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg><span>Home</span></div>
+      <div class="tab active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg><span>Practice</span></div>
+      <div class="tab disabled"><span class="soon">Soon</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 13.5h5"/><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12Z"/></svg><span>Role play</span></div>
+      <div class="tab"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg><span>Profile</span></div>
+    </nav>
+
+    <!-- ===== Witty+ paywall (triggered: daily free limit reached) ===== -->
+    <div class="pw-scrim"></div>
+    <div class="pw-sheet">
+      <div class="grab"></div>
+      <button class="pw-close" aria-label="Close">✕</button>
+
+      <div class="pw-limit">🎯 That’s your <b>3 free</b> practices for today — your streak’s safe 💜</div>
+
+      <div class="pw-hero">
+        <div class="pw-spark">✨</div>
+        <h2>Keep the momentum going</h2>
+        <p>Come back free tomorrow — or go unlimited right now with <b>Witty+</b>.</p>
+      </div>
+
+      <ul class="pw-feats">
+        <li><span class="fi">♾️</span> Unlimited practice, every day</li>
+        <li><span class="fi">🎙️</span> Deeper feedback on every take</li>
+        <li><span class="fi">🎭</span> The full library + Role play <em>(soon)</em></li>
+      </ul>
+
+      <div class="pw-plans">
+        <label class="pw-plan sel">
+          <span class="pbadge">Best value</span>
+          <span class="tick"></span>
+          <span class="pn">Annual</span>
+          <span class="price">$39.99<small>/yr</small></span>
+          <span class="psub">≈ $3.33 / mo · save 44%</span>
+        </label>
+        <label class="pw-plan">
+          <span class="tick"></span>
+          <span class="pn">Monthly</span>
+          <span class="price">$5.99<small>/mo</small></span>
+          <span class="psub">billed monthly</span>
+        </label>
+      </div>
+
+      <div class="pw-trial">✨ 7 days free, then $39.99/yr · cancel anytime</div>
+      <button class="pw-cta">Start my free trial →</button>
+      <div class="pw-fine"><span>Restore</span><span class="ds">·</span><span>Terms</span><span class="ds">·</span><span>Privacy</span></div>
+      <div class="pw-later">Not now — see you tomorrow 👋</div>
+    </div>
+
+  </div>
+</div>
+
+<p class="caption"><b>Witty+ paywall</b> — i-am-witty · RevenueCat · pops up when the daily free limit runs out</p>
+
+</body>
+</html>

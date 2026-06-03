@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i-am-witty — Home (mockup)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   i-am-witty — Home screen mockup
+   Theme: "Cozy Dark Arcade" (calm to plan, loud to celebrate)
+   Static HTML/CSS mockup — not production code.
+   ============================================================ */
+:root{
+  --bg:#150F1E; --bg-2:#1B1428; --surface:#221934; --surface-2:#2A1F40;
+  --line:rgba(255,255,255,.08); --line-2:rgba(255,255,255,.14);
+  --text:#F4EEFB; --muted:#A99CC0; --faint:#6E6385;
+  --purple:#9D7BFF; --purple-2:#6E45D8; --lime:#B6F250; --coral:#FF7361;
+  --gold:#FFB23E; --ice:#5CC8FF;
+  --r:22px; --r-sm:14px; --r-xs:11px;
+  --display:'Fredoka',sans-serif; --body:'Hanken Grotesk',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background:
+    radial-gradient(80% 50% at 50% 0%, #19121f, #0c0812 70%),
+    #0c0812;
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;min-height:100vh;padding:40px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- phone frame ---------- */
+.phone{
+  position:relative;width:392px;height:850px;border-radius:54px;
+  background:#0a0710;
+  box-shadow:0 50px 130px rgba(0,0,0,.65), 0 0 0 11px #100b18, 0 0 0 12px #271d38, inset 0 0 0 1px #000;
+  overflow:hidden;flex:none;
+}
+.screen{
+  position:absolute;inset:0;border-radius:54px;overflow:hidden;
+  display:flex;flex-direction:column;
+  background:var(--bg);
+}
+/* atmosphere: arcade glow + grain */
+.screen::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 70% at 88% -6%, rgba(157,123,255,.24), transparent 56%),
+    radial-gradient(95% 55% at -4% 1%, rgba(255,115,97,.13), transparent 52%),
+    radial-gradient(120% 60% at 50% 110%, rgba(110,69,216,.18), transparent 60%);
+}
+.screen::after{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.screen>*{position:relative;z-index:1}
+
+/* dynamic island + status bar */
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:108px;height:30px;background:#000;border-radius:18px;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 4px;font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.3px}
+.status .ico{display:flex;gap:6px;align-items:center;opacity:.92}
+.status .ico svg{display:block}
+
+/* ---------- top bar ---------- */
+.topbar{padding:8px 20px 14px}
+.top-row{display:flex;align-items:center;justify-content:space-between}
+.streaks{display:flex;gap:10px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--display);font-weight:600;font-size:17px;
+  padding:7px 13px 7px 10px;border-radius:999px;border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.01));
+}
+.chip .emo{font-size:17px;line-height:1}
+.chip.flame{color:var(--gold);box-shadow:inset 0 0 16px rgba(255,178,62,.12)}
+
+.chat-btn{
+  width:44px;height:44px;border-radius:14px;cursor:pointer;
+  border:1px solid var(--line-2);color:var(--text);
+  background:linear-gradient(180deg,rgba(157,123,255,.18),rgba(157,123,255,.05));
+  display:grid;place-items:center;transition:transform .15s ease, box-shadow .2s ease;
+  box-shadow:0 6px 18px rgba(110,69,216,.25);
+}
+.chat-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(110,69,216,.4)}
+.chat-btn .dot{position:absolute;margin:-16px 0 0 16px;width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 2px var(--bg)}
+
+/* top-right action cluster: telegram + chat */
+.top-actions{display:flex;gap:10px;align-items:center}
+.tg-btn{
+  width:44px;height:44px;border-radius:14px;cursor:pointer;position:relative;
+  border:1px solid rgba(92,200,255,.42);color:var(--ice);
+  background:linear-gradient(180deg,rgba(92,200,255,.2),rgba(92,200,255,.05));
+  display:grid;place-items:center;transition:transform .15s ease, box-shadow .2s ease;
+  box-shadow:0 6px 18px rgba(92,200,255,.22);
+}
+.tg-btn:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(92,200,255,.4)}
+.tg-btn svg{transform:translate(-1px,1px)}
+
+/* week dots */
+.week{display:flex;justify-content:space-between;margin-top:18px}
+.day{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1}
+.day .lbl{font-size:12px;font-weight:600;color:var(--faint);letter-spacing:.4px}
+.day.today .lbl{color:var(--purple)}
+.cell{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;font-family:var(--display)}
+.cell.done{background:rgba(182,242,80,.16);color:var(--lime);border:1px solid rgba(182,242,80,.35)}
+.cell.missed{background:transparent;color:var(--faint);border:1px solid var(--line)}
+.cell.today{background:radial-gradient(circle at 50% 40%,var(--purple),var(--purple-2));color:#fff;box-shadow:0 0 0 4px rgba(157,123,255,.18),0 6px 16px rgba(110,69,216,.5)}
+.cell.up{background:transparent;color:transparent;border:1.5px dashed var(--line-2)}
+
+/* divider */
+.divide{height:1px;background:linear-gradient(90deg,transparent,var(--line),transparent);margin:6px 20px 0}
+
+/* ---------- content ---------- */
+.content{flex:1;overflow-y:auto;padding:18px 20px 6px;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+.greet .hi{font-size:14px;color:var(--muted);font-weight:600}
+.greet .plan-title{font-family:var(--display);font-weight:600;font-size:30px;line-height:1.05;margin-top:3px;display:flex;align-items:center;gap:9px}
+.greet .help{margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);color:var(--faint);font-size:14px;display:grid;place-items:center;font-weight:700}
+.greet .plan-sub{font-size:13.5px;color:var(--muted);margin-top:7px;max-width:30ch;line-height:1.45}
+
+/* path */
+.path{margin-top:20px;display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:30px 1fr;gap:14px;animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.rail{display:flex;flex-direction:column;align-items:center}
+.node{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:20px}
+.node.cur{background:var(--bg);border:none;box-shadow:0 0 0 4px rgba(157,123,255,.22)}
+.node.cur::after{content:"";width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--purple),var(--purple-2));box-shadow:0 0 12px var(--purple)}
+.node.done{background:rgba(182,242,80,.16);color:var(--lime);border:1px solid rgba(182,242,80,.4);font-size:13px;font-weight:800}
+.node.up{border:1.5px dashed var(--line-2)}
+.connector{width:2px;flex:1;margin:6px 0 -8px;background:repeating-linear-gradient(var(--line-2) 0 4px,transparent 4px 9px)}
+
+/* cards */
+.card{
+  margin:10px 0 4px;border-radius:var(--r);padding:16px;
+  background:var(--surface);border:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 10px 24px rgba(0,0,0,.28);
+}
+.card.next{
+  background:linear-gradient(150deg,rgba(157,123,255,.20),rgba(34,25,52,.9) 55%);
+  border:1px solid rgba(157,123,255,.5);
+  box-shadow:0 16px 38px rgba(110,69,216,.32);
+  animation:rise .55s cubic-bezier(.2,.7,.2,1) both, glow 3.6s ease-in-out infinite 1s;
+}
+.card .info{flex:1;min-width:0}
+.badge{display:inline-block;font-family:var(--display);font-weight:700;font-size:10.5px;letter-spacing:1.4px;color:var(--purple);background:rgba(157,123,255,.16);border:1px solid rgba(157,123,255,.4);padding:3px 9px;border-radius:7px;margin-bottom:8px}
+.card h3{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:.2px}
+.meta{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12.5px;color:var(--muted);font-weight:500}
+.meta .sep{color:var(--faint)}
+.meta .type{color:var(--text);font-weight:600}
+.thumb{width:62px;height:62px;border-radius:18px;flex:none;display:grid;place-items:center;font-size:30px;border:1px solid var(--line)}
+.thumb.purple{background:radial-gradient(circle at 40% 30%,rgba(157,123,255,.4),rgba(157,123,255,.12))}
+.thumb.lime{background:radial-gradient(circle at 40% 30%,rgba(182,242,80,.35),rgba(182,242,80,.1))}
+.thumb.coral{background:radial-gradient(circle at 40% 30%,rgba(255,115,97,.38),rgba(255,115,97,.1))}
+.thumb.ice{background:radial-gradient(circle at 40% 30%,rgba(92,200,255,.35),rgba(92,200,255,.1))}
+
+/* ---------- bottom tabs ---------- */
+.tabs{
+  display:flex;align-items:flex-end;justify-content:space-around;
+  padding:12px 14px calc(20px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(21,15,30,0),rgba(17,12,24,.9) 35%,#120c18);
+  border-top:1px solid var(--line);backdrop-filter:blur(8px);
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--faint);position:relative;cursor:pointer;flex:1;padding-top:4px}
+.tab svg{width:25px;height:25px}
+.tab span{font-size:11px;font-weight:600;letter-spacing:.2px}
+.tab.active{color:var(--purple)}
+.tab.active svg{filter:drop-shadow(0 0 10px rgba(157,123,255,.6))}
+.tab.active::before{content:"";position:absolute;top:-12px;width:26px;height:4px;border-radius:4px;background:var(--purple);box-shadow:0 0 12px var(--purple)}
+.tab.disabled{color:#4a4258;cursor:default}
+.soon{position:absolute;top:-3px;right:50%;transform:translateX(26px);font-size:8px;font-weight:800;letter-spacing:.6px;color:var(--gold);background:rgba(255,178,62,.14);border:1px solid rgba(255,178,62,.4);padding:2px 5px;border-radius:6px;text-transform:uppercase}
+
+/* ---------- chat sheet ---------- */
+.scrim{position:absolute;inset:0;z-index:20;background:rgba(8,5,14,.6);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:21;
+  background:linear-gradient(180deg,var(--surface-2),var(--surface));
+  border-radius:28px 28px 54px 54px;padding:14px 22px 34px;
+  border-top:1px solid var(--line-2);box-shadow:0 -20px 60px rgba(0,0,0,.6);
+  transform:translateY(102%);transition:transform .36s cubic-bezier(.2,.8,.2,1);
+}
+.sheet .grab{width:42px;height:5px;border-radius:5px;background:var(--line-2);margin:2px auto 18px}
+.sheet h2{font-family:var(--display);font-weight:600;font-size:21px;line-height:1.15}
+.sheet p{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sheet textarea{width:100%;margin-top:16px;min-height:96px;resize:none;border-radius:var(--r-sm);border:1px solid var(--line-2);background:rgba(0,0,0,.25);color:var(--text);padding:13px 14px;font-family:var(--body);font-size:14px;outline:none}
+.sheet textarea:focus{border-color:var(--purple)}
+.sheet textarea::placeholder{color:var(--faint)}
+.send{width:100%;margin-top:14px;padding:15px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:var(--display);font-weight:600;font-size:16px;color:#1a1026;background:linear-gradient(120deg,var(--purple),var(--coral));box-shadow:0 12px 28px rgba(110,69,216,.4)}
+.send:hover{filter:brightness(1.05)}
+.tag{display:inline-flex;gap:6px;font-size:11.5px;color:var(--faint);margin-top:14px}
+body.chat-open .scrim{opacity:1;pointer-events:auto}
+body.chat-open .sheet{transform:translateY(0)}
+
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 16px 38px rgba(110,69,216,.28)}50%{box-shadow:0 16px 44px rgba(110,69,216,.5)}}
+
+.caption{font-family:var(--display);color:#5b5270;font-size:13px;font-weight:500}
+.caption b{color:#8a7fa3;font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="island"></div>
+
+    <!-- status bar -->
+    <div class="status">
+      <span>9:41</span>
+      <span class="ico">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l1.3-1.4A10 10 0 0 0 8 .5 10 10 0 0 0 1 3.3l1.3 1.4A8 8 0 0 1 8 2.5Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.3-1.4A7.5 7.5 0 0 0 8 3.8a7.5 7.5 0 0 0-4.7 1.9l1.3 1.4A5.5 5.5 0 0 1 8 5.8Zm0 3.2c.6 0 1.2.2 1.6.7L8 11.5 6.4 9.7c.4-.5 1-.7 1.6-.7Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+      </span>
+    </div>
+
+    <!-- top bar: streak + chat -->
+    <header class="topbar">
+      <div class="top-row">
+        <div class="streaks">
+          <span class="chip flame"><span class="emo">🔥</span>5</span>
+        </div>
+        <div class="top-actions">
+          <button class="tg-btn" aria-label="Join our Telegram community">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+          <button class="chat-btn" onclick="document.body.classList.add('chat-open')" aria-label="Chat with us">
+            <span class="dot"></span>
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- week dots -->
+      <div class="week">
+        <div class="day"><span class="lbl">Su</span><span class="cell done">✓</span></div>
+        <div class="day"><span class="lbl">Mo</span><span class="cell done">✓</span></div>
+        <div class="day"><span class="lbl">Tu</span><span class="cell missed">✕</span></div>
+        <div class="day today"><span class="lbl">We</span><span class="cell today"></span></div>
+        <div class="day"><span class="lbl">Th</span><span class="cell up">·</span></div>
+        <div class="day"><span class="lbl">Fr</span><span class="cell up">·</span></div>
+        <div class="day"><span class="lbl">Sa</span><span class="cell up">·</span></div>
+      </div>
+    </header>
+
+    <div class="divide"></div>
+
+    <!-- content: today's plan -->
+    <main class="content">
+      <div class="greet">
+        <p class="hi">Hey, you 👋</p>
+        <div class="plan-title">Today’s plan <span class="help">?</span></div>
+        <p class="plan-sub">A few tiny wins. No pressure — just pick up where you left off.</p>
+      </div>
+
+      <div class="path">
+        <!-- NEXT (current) -->
+        <div class="row" style="animation-delay:.05s">
+          <div class="rail"><span class="node cur"></span><span class="connector"></span></div>
+          <div class="card next">
+            <div class="info">
+              <span class="badge">NEXT UP</span>
+              <h3>Yes, And…</h3>
+              <div class="meta"><span>⏱ 2 min</span><span class="sep">·</span><span class="type">Practice</span></div>
+            </div>
+            <div class="thumb purple">🎭</div>
+          </div>
+        </div>
+
+        <!-- sprint -->
+        <div class="row" style="animation-delay:.14s">
+          <div class="rail"><span class="node up"></span><span class="connector"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>Warm-up riff</h3>
+              <div class="meta"><span>⏱ 1 min</span><span class="sep">·</span><span class="type">Sprint</span></div>
+            </div>
+            <div class="thumb lime">⚡</div>
+          </div>
+        </div>
+
+        <!-- radio / lesson -->
+        <div class="row" style="animation-delay:.22s">
+          <div class="rail"><span class="node up"></span><span class="connector"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>The Peak–End story</h3>
+              <div class="meta"><span>⏱ 1 min</span><span class="sep">·</span><span class="type">Radio</span></div>
+            </div>
+            <div class="thumb coral">🎙️</div>
+          </div>
+        </div>
+
+        <!-- breath / confidence -->
+        <div class="row" style="animation-delay:.30s">
+          <div class="rail"><span class="node up"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>Confidence reset</h3>
+              <div class="meta"><span>⏱ 3 min</span><span class="sep">·</span><span class="type">Breath</span></div>
+            </div>
+            <div class="thumb ice">🌬️</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- bottom tabs -->
+    <nav class="tabs">
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+        <span>Practice</span>
+      </div>
+      <div class="tab disabled">
+        <span class="soon">Soon</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 13.5h5"/><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12Z"/></svg>
+        <span>Role play</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        <span>Profile</span>
+      </div>
+    </nav>
+
+    <!-- chat sheet (tap the bubble top-right) -->
+    <div class="scrim" onclick="document.body.classList.remove('chat-open')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h2>Got an idea, or did something break?</h2>
+      <p>Tell us anything — a bug, a half-baked idea, or just a hi. A real human reads every single message. 💬</p>
+      <textarea placeholder="Type away…"></textarea>
+      <button class="send" onclick="this.textContent='Thanks — got it! 🙌';this.disabled=true">Send it our way →</button>
+      <div class="tag">🔒 Private · always here, on every screen</div>
+    </div>
+
+  </div>
+</div>
+
+<p class="caption"><b>Home</b> — i-am-witty · cozy dark arcade · tap the 💬 to see the chat sheet</p>
+
+</body>
+</html>

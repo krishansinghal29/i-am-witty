@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i-am-witty — Profile (mockup · production theme)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   i-am-witty — Profile screen mockup (PRODUCTION theme)
+   Progress vs. your PAST self — never others. "Light & Warm",
+   mirrors the shipped app. Same elements & placement as ../ux/.
+   ============================================================ */
+:root{
+  --bg:#F7F8FA; --bg-2:#FFFFFF; --surface:#FFFFFF; --surface-2:#FFFFFF;
+  --line:#E5EAF1; --line-2:#D8E0EA;
+  --text:#2B2F3A; --muted:#6B7589; --faint:#9AA3B2;
+  --primary:#3B82F6; --primary-2:#0A8FF2; --accent:#F97316; --accent-2:#F7C13B;
+  --green:#16A34A; --amber:#F5A30A; --sky:#0EA5E9; --red:#EF4444;
+  --r:16px; --r-sm:12px; --r-xs:9px;
+  --display:'Inter',sans-serif; --body:'Inter',system-ui,sans-serif;
+  --warm:linear-gradient(135deg,#F97316,#F7C13B);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background:radial-gradient(80% 50% at 50% 0%, #ffffff, #eaeef3 72%),#eaeef3;
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;min-height:100vh;padding:40px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- phone frame ---------- */
+.phone{
+  position:relative;width:392px;height:850px;border-radius:54px;
+  background:#1b2230;
+  box-shadow:0 50px 130px rgba(17,24,39,.30), 0 0 0 11px #20283a, 0 0 0 12px #36405a, inset 0 0 0 1px rgba(0,0,0,.5);
+  overflow:hidden;flex:none;
+}
+.screen{position:absolute;inset:0;border-radius:54px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+.screen::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 60% at 88% -6%, rgba(249,115,22,.10), transparent 56%),
+    radial-gradient(95% 50% at -4% 1%, rgba(245,163,10,.07), transparent 52%),
+    radial-gradient(120% 55% at 50% 112%, rgba(59,130,246,.08), transparent 60%);
+}
+.screen>*{position:relative;z-index:1}
+
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:108px;height:30px;background:#000;border-radius:18px;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 4px;font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.2px;color:var(--text)}
+.status .ico{display:flex;gap:6px;align-items:center;opacity:.92}
+.status .ico svg{display:block}
+
+/* ---------- page header ---------- */
+.topbar{padding:6px 20px 12px}
+.top-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.pagehead h1{font-family:var(--display);font-weight:700;font-size:29px;line-height:1.05;letter-spacing:-.5px}
+.top-actions{display:flex;gap:10px;align-items:center;flex:none}
+.tg-btn,.chat-btn{width:44px;height:44px;border-radius:14px;cursor:pointer;position:relative;display:grid;place-items:center;transition:transform .15s ease, box-shadow .2s ease}
+.tg-btn{border:1px solid rgba(14,165,233,.36);color:var(--sky);background:rgba(14,165,233,.10);box-shadow:0 6px 16px rgba(14,165,233,.16)}
+.tg-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(14,165,233,.3)}
+.tg-btn svg{transform:translate(-1px,1px)}
+.chat-btn{border:1px solid rgba(249,115,22,.32);color:var(--accent);background:rgba(249,115,22,.10);box-shadow:0 6px 16px rgba(249,115,22,.18)}
+.chat-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(249,115,22,.32)}
+.chat-btn .dot{position:absolute;margin:-16px 0 0 16px;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px #fff}
+
+.divide{height:1px;background:var(--line);margin:2px 20px 0}
+
+/* ---------- content ---------- */
+.content{flex:1;overflow-y:auto;padding:16px 20px 6px;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+
+/* hero */
+.hero{display:flex;align-items:center;gap:15px;animation:rise .5s cubic-bezier(.2,.7,.2,1) both}
+.avatar{width:72px;height:72px;border-radius:24px;flex:none;display:grid;place-items:center;font-size:36px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);box-shadow:0 10px 24px rgba(59,130,246,.18)}
+.hero .who{flex:1;min-width:0}
+.hero .name{font-family:var(--display);font-weight:700;font-size:23px;letter-spacing:-.3px}
+
+/* stat duo */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+.stat{border-radius:var(--r-sm);padding:14px 8px;background:var(--surface);border:1px solid var(--line);text-align:center;box-shadow:0 6px 16px rgba(17,24,39,.05)}
+.stat .n{font-family:var(--display);font-weight:700;font-size:22px;display:flex;justify-content:center;align-items:center;gap:5px}
+.stat .l{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700;letter-spacing:.3px;text-transform:uppercase}
+.stat.flame .n{color:var(--amber)}
+.stat.reps .n{color:var(--green)}
+
+/* community + support menu */
+.menu{margin-top:14px;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--surface);box-shadow:0 6px 18px rgba(17,24,39,.06)}
+.mitem{display:flex;align-items:center;gap:13px;padding:14px 15px;cursor:pointer;border-bottom:1px solid var(--line)}
+.mitem:last-child{border-bottom:none}
+.mitem:hover{background:#F8FAFC}
+.mitem .mi{width:38px;height:38px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:18px;border:1px solid var(--line);background:#F8FAFC}
+.mitem .ml{flex:1;font-weight:600;font-size:14.5px}
+.mitem .chev{color:var(--faint);display:grid;place-items:center}
+.mitem.tg .mi{border-color:rgba(14,165,233,.36);background:rgba(14,165,233,.1);color:var(--sky)}
+.mitem.tg .pill{font-family:var(--display);font-weight:700;font-size:11px;color:var(--sky);background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.36);padding:4px 10px;border-radius:999px}
+.signout{margin:14px 2px 4px;text-align:center;font-size:13px;color:var(--faint);font-weight:600;cursor:pointer}
+
+/* ---------- bottom tabs ---------- */
+.tabs{
+  display:flex;align-items:flex-end;justify-content:space-around;
+  padding:12px 14px calc(20px + env(safe-area-inset-bottom));
+  background:#ffffff;
+  border-top:1px solid var(--line);box-shadow:0 -2px 20px rgba(17,24,39,.06);
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);position:relative;cursor:pointer;flex:1;padding-top:4px}
+.tab svg{width:25px;height:25px}
+.tab span{font-size:11px;font-weight:600;letter-spacing:.2px}
+.tab.active{color:var(--primary-2)}
+.tab.active svg{transform:scale(1.08)}
+.tab.active span{font-weight:700}
+.tab.active::before{content:"";position:absolute;top:-12px;width:40px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(135deg,var(--primary-2),var(--accent))}
+.tab.disabled{color:#b8c0cd;cursor:default}
+.soon{position:absolute;top:-3px;right:50%;transform:translateX(26px);font-size:8px;font-weight:800;letter-spacing:.6px;color:var(--accent);background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.4);padding:2px 5px;border-radius:6px;text-transform:uppercase}
+
+/* ---------- chat sheet ---------- */
+.scrim{position:absolute;inset:0;z-index:20;background:rgba(17,24,39,.4);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:21;
+  background:#ffffff;
+  border-radius:24px 24px 54px 54px;padding:14px 22px 34px;
+  border-top:1px solid var(--line);box-shadow:0 -20px 60px rgba(17,24,39,.18);
+  transform:translateY(102%);transition:transform .36s cubic-bezier(.2,.8,.2,1);
+}
+.sheet .grab{width:42px;height:5px;border-radius:5px;background:var(--line-2);margin:2px auto 18px}
+.sheet h2{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;letter-spacing:-.3px}
+.sheet p{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sheet textarea{width:100%;margin-top:16px;min-height:96px;resize:none;border-radius:var(--r-sm);border:1px solid var(--line-2);background:#F8FAFC;color:var(--text);padding:13px 14px;font-family:var(--body);font-size:14px;outline:none}
+.sheet textarea:focus{border-color:var(--primary)}
+.sheet textarea::placeholder{color:var(--faint)}
+.send{width:100%;margin-top:14px;padding:15px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:var(--display);font-weight:700;font-size:16px;color:#fff;background:var(--warm);box-shadow:0 12px 24px rgba(249,115,22,.3)}
+.send:hover{filter:brightness(1.03)}
+.tag{display:inline-flex;gap:6px;font-size:11.5px;color:var(--faint);margin-top:14px}
+body.chat-open .scrim{opacity:1;pointer-events:auto}
+body.chat-open .sheet{transform:translateY(0)}
+
+/* ---------- Witty+ upsell card (entry point) ---------- */
+.upsell{margin-top:14px;border-radius:var(--r);padding:15px 16px;cursor:pointer;display:flex;align-items:center;gap:13px;
+  background:linear-gradient(135deg,rgba(249,115,22,.12),rgba(59,130,246,.10) 72%);
+  border:1px solid rgba(249,115,22,.36);box-shadow:0 12px 26px rgba(249,115,22,.14);
+  animation:rise .5s cubic-bezier(.2,.7,.2,1) .1s both}
+.upsell .us-ic{width:50px;height:50px;border-radius:16px;flex:none;display:grid;place-items:center;font-size:26px;background:rgba(249,115,22,.14);border:1px solid rgba(249,115,22,.3)}
+.upsell .us-info{flex:1;min-width:0}
+.upsell .us-info h3{font-family:var(--display);font-weight:700;font-size:17px;display:flex;align-items:center;gap:7px;letter-spacing:-.2px}
+.upsell .us-info p{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}
+.upsell .us-go{font-family:var(--display);font-weight:700;font-size:13px;color:#fff;background:var(--warm);padding:9px 14px;border-radius:999px;flex:none;box-shadow:0 8px 16px rgba(249,115,22,.28)}
+
+/* ---------- Witty+ paywall sheet (RevenueCat) ---------- */
+.pw-scrim{position:absolute;inset:0;z-index:30;background:rgba(17,24,39,.5);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .3s}
+.pw-sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:31;
+  background:#ffffff;
+  border-radius:26px 26px 54px 54px;padding:12px 22px 26px;
+  border-top:1px solid var(--line);box-shadow:0 -24px 70px rgba(17,24,39,.22);
+  max-height:94%;overflow-y:auto;scrollbar-width:none;
+  transform:translateY(103%);transition:transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.pw-sheet::-webkit-scrollbar{display:none}
+.pw-sheet::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(85% 38% at 50% -3%, rgba(249,115,22,.10), transparent 60%),radial-gradient(70% 30% at 82% 1%, rgba(59,130,246,.08), transparent 60%)}
+.pw-sheet>*{position:relative}
+.pw-close{position:absolute;top:12px;right:16px;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:#F8FAFC;color:var(--muted);font-size:13px;cursor:pointer;z-index:2}
+.pw-hero{text-align:center}
+.pw-spark{width:60px;height:60px;margin:0 auto 12px;border-radius:20px;display:grid;place-items:center;font-size:29px;background:rgba(249,115,22,.14);border:1px solid rgba(249,115,22,.3);box-shadow:0 12px 24px rgba(249,115,22,.2)}
+.pw-hero h2{font-family:var(--display);font-weight:700;font-size:24px;letter-spacing:-.3px}
+.pw-hero p{font-size:13px;color:var(--muted);margin:7px auto 0;line-height:1.5;max-width:32ch}
+.pw-hero b{color:var(--text)}
+.pw-feats{list-style:none;margin:18px 6px 0;display:flex;flex-direction:column;gap:11px}
+.pw-feats li{display:flex;align-items:center;gap:12px;font-size:13.5px;font-weight:500}
+.pw-feats .fi{width:30px;height:30px;border-radius:9px;flex:none;display:grid;place-items:center;font-size:15px;background:#F8FAFC;border:1px solid var(--line)}
+.pw-feats em{color:var(--faint);font-style:normal;font-size:12px}
+.pw-plans{margin-top:22px;display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.pw-plan{position:relative;border-radius:var(--r-sm);border:1px solid var(--line);background:#fff;padding:15px 14px 13px;cursor:pointer;display:flex;flex-direction:column;gap:3px}
+.pw-plan .pbadge{position:absolute;top:-9px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:9px;font-weight:800;letter-spacing:.5px;color:#fff;background:var(--accent);padding:3px 9px;border-radius:6px;text-transform:uppercase}
+.pw-plan .pn{font-family:var(--display);font-weight:600;font-size:13.5px;color:var(--muted)}
+.pw-plan .price{font-family:var(--display);font-weight:700;font-size:21px;margin-top:1px;letter-spacing:-.3px}
+.pw-plan .price small{font-size:12px;color:var(--muted);font-weight:500}
+.pw-plan .psub{font-size:11px;color:var(--faint);font-weight:600;margin-top:1px}
+.pw-plan .tick{position:absolute;top:11px;right:11px;width:18px;height:18px;border-radius:50%;border:2px solid var(--line-2)}
+.pw-plan.sel{border-color:var(--primary);background:linear-gradient(160deg,rgba(59,130,246,.1),#fff);box-shadow:inset 0 0 0 1px var(--primary),0 10px 22px rgba(59,130,246,.18)}
+.pw-plan.sel .tick{border-color:var(--primary);background:radial-gradient(circle,var(--primary) 0 42%,transparent 46%)}
+.pw-trial{text-align:center;font-size:12px;color:var(--muted);margin-top:15px;font-weight:600}
+.pw-cta{width:100%;margin-top:11px;padding:16px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:var(--display);font-weight:700;font-size:16.5px;color:#fff;background:var(--warm);box-shadow:0 14px 28px rgba(249,115,22,.3)}
+.pw-cta:hover{filter:brightness(1.03)}
+.pw-fine{display:flex;justify-content:center;gap:8px;margin-top:13px;font-size:11.5px;color:var(--faint);font-weight:600}
+.pw-fine span{cursor:pointer}.pw-fine .ds{cursor:default;opacity:.6}
+.pw-later{text-align:center;margin-top:13px;font-size:13px;color:var(--muted);font-weight:600;cursor:pointer}
+body.pw-open .pw-scrim{opacity:1;pointer-events:auto}
+body.pw-open .pw-sheet{transform:translateY(0)}
+
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.caption{font-family:var(--display);color:#9aa3b2;font-size:13px;font-weight:500}
+.caption b{color:#6b7589;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="island"></div>
+
+    <!-- status bar -->
+    <div class="status">
+      <span>9:41</span>
+      <span class="ico">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l1.3-1.4A10 10 0 0 0 8 .5 10 10 0 0 0 1 3.3l1.3 1.4A8 8 0 0 1 8 2.5Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.3-1.4A7.5 7.5 0 0 0 8 3.8a7.5 7.5 0 0 0-4.7 1.9l1.3 1.4A5.5 5.5 0 0 1 8 5.8Zm0 3.2c.6 0 1.2.2 1.6.7L8 11.5 6.4 9.7c.4-.5 1-.7 1.6-.7Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+      </span>
+    </div>
+
+    <!-- page header -->
+    <header class="topbar">
+      <div class="top-row">
+        <div class="pagehead"><h1>Profile</h1></div>
+        <div class="top-actions">
+          <button class="tg-btn" aria-label="Join our Telegram community">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+          <button class="chat-btn" onclick="document.body.classList.add('chat-open')" aria-label="Chat with us">
+            <span class="dot"></span>
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="divide"></div>
+
+    <!-- content -->
+    <main class="content">
+      <!-- hero -->
+      <div class="hero">
+        <div class="avatar">🦊</div>
+        <div class="who">
+          <div class="name">Maya</div>
+        </div>
+      </div>
+
+      <!-- stat duo -->
+      <div class="stats">
+        <div class="stat flame"><div class="n">🔥 5</div><div class="l">Day streak</div></div>
+        <div class="stat reps"><div class="n">🎭 23</div><div class="l">Exercises</div></div>
+      </div>
+
+      <!-- Witty+ upsell (opens paywall) -->
+      <div class="upsell" onclick="document.body.classList.add('pw-open')">
+        <div class="us-ic">✨</div>
+        <div class="us-info">
+          <h3>Go unlimited with Witty+</h3>
+          <p>Unlimited practice, deeper feedback &amp; more.</p>
+        </div>
+        <div class="us-go">Upgrade</div>
+      </div>
+
+      <!-- community + support -->
+      <div class="menu">
+        <div class="mitem tg">
+          <div class="mi"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg></div>
+          <div class="ml">Join our Telegram community</div>
+          <div class="pill">Join</div>
+        </div>
+        <div class="mitem" onclick="document.body.classList.add('chat-open')">
+          <div class="mi">💬</div>
+          <div class="ml">Chat with us</div>
+          <div class="chev"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></div>
+        </div>
+      </div>
+      <div class="signout">Sign out</div>
+    </main>
+
+    <!-- bottom tabs -->
+    <nav class="tabs">
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+        <span>Practice</span>
+      </div>
+      <div class="tab disabled">
+        <span class="soon">Soon</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 13.5h5"/><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12Z"/></svg>
+        <span>Role play</span>
+      </div>
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        <span>Profile</span>
+      </div>
+    </nav>
+
+    <!-- Witty+ paywall (opened from the upsell card or settings row) -->
+    <div class="pw-scrim" onclick="document.body.classList.remove('pw-open')"></div>
+    <div class="pw-sheet">
+      <div class="grab"></div>
+      <button class="pw-close" aria-label="Close" onclick="document.body.classList.remove('pw-open')">✕</button>
+      <div class="pw-hero">
+        <div class="pw-spark">✨</div>
+        <h2>Unlock unlimited play</h2>
+        <p>Practice as much as you like and get more from every take with <b>Witty+</b>.</p>
+      </div>
+      <ul class="pw-feats">
+        <li><span class="fi">♾️</span> Unlimited practice, every day</li>
+        <li><span class="fi">🎙️</span> Deeper feedback on every take</li>
+        <li><span class="fi">🎭</span> The full library + Role play <em>(soon)</em></li>
+        <li><span class="fi">❄️</span> Extra streak freezes · no ads, ever</li>
+      </ul>
+      <div class="pw-plans">
+        <label class="pw-plan sel">
+          <span class="pbadge">Best value</span>
+          <span class="tick"></span>
+          <span class="pn">Annual</span>
+          <span class="price">$39.99<small>/yr</small></span>
+          <span class="psub">≈ $3.33 / mo · save 44%</span>
+        </label>
+        <label class="pw-plan">
+          <span class="tick"></span>
+          <span class="pn">Monthly</span>
+          <span class="price">$5.99<small>/mo</small></span>
+          <span class="psub">billed monthly</span>
+        </label>
+      </div>
+      <div class="pw-trial">✨ 7 days free, then $39.99/yr · cancel anytime</div>
+      <button class="pw-cta">Start my free trial →</button>
+      <div class="pw-fine"><span>Restore</span><span class="ds">·</span><span>Terms</span><span class="ds">·</span><span>Privacy</span></div>
+      <div class="pw-later" onclick="document.body.classList.remove('pw-open')">Maybe later</div>
+    </div>
+
+    <!-- chat sheet -->
+    <div class="scrim" onclick="document.body.classList.remove('chat-open')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h2>Got an idea, or did something break?</h2>
+      <p>Tell us anything — a bug, a half-baked idea, or just a hi. A real human reads every single message. 💬</p>
+      <textarea placeholder="Type away…"></textarea>
+      <button class="send" onclick="this.textContent='Thanks — got it! 🙌';this.disabled=true">Send it our way →</button>
+      <div class="tag">🔒 Private · always here, on every screen</div>
+    </div>
+
+  </div>
+</div>
+
+<p class="caption"><b>Profile</b> — i-am-witty · light &amp; warm (production theme) · progress vs. your past self, never others</p>
+
+</body>
+</html>

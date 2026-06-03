@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i-am-witty — Home (mockup · production theme)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   i-am-witty — Home screen mockup (PRODUCTION theme)
+   Theme: "Light & Warm" — mirrors the shipped wittifyme app
+   (Material UI · Inter · white surfaces · orange + blue).
+   Same elements & placement as ../ux/ — light re-skin only.
+   ============================================================ */
+:root{
+  --bg:#F7F8FA; --bg-2:#FFFFFF; --surface:#FFFFFF; --surface-2:#FFFFFF;
+  --line:#E5EAF1; --line-2:#D8E0EA;
+  --text:#2B2F3A; --muted:#6B7589; --faint:#9AA3B2;
+  --primary:#3B82F6; --primary-2:#0A8FF2; --accent:#F97316; --accent-2:#F7C13B;
+  --green:#16A34A; --amber:#F5A30A; --sky:#0EA5E9; --red:#EF4444;
+  --r:16px; --r-sm:12px; --r-xs:9px;
+  --display:'Inter',sans-serif; --body:'Inter',system-ui,sans-serif;
+  --warm:linear-gradient(135deg,#F97316,#F7C13B);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:var(--body);
+  background:
+    radial-gradient(80% 50% at 50% 0%, #ffffff, #eaeef3 72%),
+    #eaeef3;
+  color:var(--text);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:18px;min-height:100vh;padding:40px 16px;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- phone frame ---------- */
+.phone{
+  position:relative;width:392px;height:850px;border-radius:54px;
+  background:#1b2230;
+  box-shadow:0 50px 130px rgba(17,24,39,.30), 0 0 0 11px #20283a, 0 0 0 12px #36405a, inset 0 0 0 1px rgba(0,0,0,.5);
+  overflow:hidden;flex:none;
+}
+.screen{
+  position:absolute;inset:0;border-radius:54px;overflow:hidden;
+  display:flex;flex-direction:column;
+  background:var(--bg);
+}
+/* atmosphere: soft warm wash */
+.screen::before{
+  content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(120% 60% at 88% -6%, rgba(249,115,22,.10), transparent 56%),
+    radial-gradient(95% 50% at -4% 1%, rgba(59,130,246,.07), transparent 52%),
+    radial-gradient(120% 55% at 50% 112%, rgba(247,193,59,.10), transparent 60%);
+}
+.screen>*{position:relative;z-index:1}
+
+/* dynamic island + status bar */
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:108px;height:30px;background:#000;border-radius:18px;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 4px;font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.2px;color:var(--text)}
+.status .ico{display:flex;gap:6px;align-items:center;opacity:.92}
+.status .ico svg{display:block}
+
+/* ---------- top bar ---------- */
+.topbar{padding:8px 20px 14px}
+.top-row{display:flex;align-items:center;justify-content:space-between}
+.streaks{display:flex;gap:10px}
+.chip{
+  display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--display);font-weight:700;font-size:17px;
+  padding:7px 13px 7px 10px;border-radius:999px;border:1px solid var(--line);
+  background:#fff;box-shadow:0 2px 8px rgba(17,24,39,.05);
+}
+.chip .emo{font-size:17px;line-height:1}
+.chip.flame{color:var(--amber);border-color:rgba(245,163,10,.4);background:rgba(245,163,10,.08)}
+
+.chat-btn{
+  width:44px;height:44px;border-radius:14px;cursor:pointer;
+  border:1px solid rgba(249,115,22,.32);color:var(--accent);
+  background:rgba(249,115,22,.10);
+  display:grid;place-items:center;transition:transform .15s ease, box-shadow .2s ease;
+  box-shadow:0 6px 16px rgba(249,115,22,.18);
+}
+.chat-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(249,115,22,.32)}
+.chat-btn .dot{position:absolute;margin:-16px 0 0 16px;width:9px;height:9px;border-radius:50%;background:var(--red);box-shadow:0 0 0 2px #fff}
+
+/* top-right action cluster: telegram + chat */
+.top-actions{display:flex;gap:10px;align-items:center}
+.tg-btn{
+  width:44px;height:44px;border-radius:14px;cursor:pointer;position:relative;
+  border:1px solid rgba(14,165,233,.36);color:var(--sky);
+  background:rgba(14,165,233,.10);
+  display:grid;place-items:center;transition:transform .15s ease, box-shadow .2s ease;
+  box-shadow:0 6px 16px rgba(14,165,233,.16);
+}
+.tg-btn:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(14,165,233,.3)}
+.tg-btn svg{transform:translate(-1px,1px)}
+
+/* week dots */
+.week{display:flex;justify-content:space-between;margin-top:18px}
+.day{display:flex;flex-direction:column;align-items:center;gap:7px;flex:1}
+.day .lbl{font-size:12px;font-weight:600;color:var(--faint);letter-spacing:.4px}
+.day.today .lbl{color:var(--primary-2)}
+.cell{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:700;font-family:var(--display)}
+.cell.done{background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.3)}
+.cell.missed{background:#fff;color:var(--faint);border:1px solid var(--line)}
+.cell.today{background:linear-gradient(150deg,var(--primary),var(--primary-2));color:#fff;box-shadow:0 0 0 4px rgba(59,130,246,.16),0 6px 14px rgba(59,130,246,.4)}
+.cell.up{background:#fff;color:transparent;border:1.5px dashed var(--line-2)}
+
+/* divider */
+.divide{height:1px;background:var(--line);margin:6px 20px 0}
+
+/* ---------- content ---------- */
+.content{flex:1;overflow-y:auto;padding:18px 20px 6px;scrollbar-width:none}
+.content::-webkit-scrollbar{display:none}
+.greet .hi{font-size:14px;color:var(--muted);font-weight:600}
+.greet .plan-title{font-family:var(--display);font-weight:700;font-size:30px;line-height:1.05;letter-spacing:-.5px;margin-top:3px;display:flex;align-items:center;gap:9px}
+.greet .help{margin-left:auto;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);color:var(--faint);font-size:14px;display:grid;place-items:center;font-weight:700;background:#fff}
+.greet .plan-sub{font-size:13.5px;color:var(--muted);margin-top:7px;max-width:30ch;line-height:1.45}
+
+/* path */
+.path{margin-top:20px;display:flex;flex-direction:column}
+.row{display:grid;grid-template-columns:30px 1fr;gap:14px;animation:rise .55s cubic-bezier(.2,.7,.2,1) both}
+.rail{display:flex;flex-direction:column;align-items:center}
+.node{width:26px;height:26px;border-radius:50%;flex:none;display:grid;place-items:center;margin-top:20px}
+.node.cur{background:#fff;border:none;box-shadow:0 0 0 4px rgba(59,130,246,.2)}
+.node.cur::after{content:"";width:14px;height:14px;border-radius:50%;background:linear-gradient(150deg,var(--primary),var(--primary-2));box-shadow:0 0 10px rgba(59,130,246,.6)}
+.node.done{background:rgba(22,163,74,.12);color:var(--green);border:1px solid rgba(22,163,74,.4);font-size:13px;font-weight:800}
+.node.up{border:1.5px dashed var(--line-2);background:#fff}
+.connector{width:2px;flex:1;margin:6px 0 -8px;background:repeating-linear-gradient(var(--line-2) 0 4px,transparent 4px 9px)}
+
+/* cards */
+.card{
+  margin:10px 0 4px;border-radius:var(--r);padding:16px;
+  background:var(--surface);border:1px solid var(--line);
+  display:flex;align-items:center;gap:14px;
+  box-shadow:0 6px 18px rgba(17,24,39,.06);
+}
+.card.next{
+  background:linear-gradient(150deg,rgba(59,130,246,.12),#ffffff 58%);
+  border:1px solid rgba(59,130,246,.45);
+  box-shadow:0 14px 30px rgba(59,130,246,.18);
+  animation:rise .55s cubic-bezier(.2,.7,.2,1) both, glow 3.6s ease-in-out infinite 1s;
+}
+.card .info{flex:1;min-width:0}
+.badge{display:inline-block;font-family:var(--display);font-weight:800;font-size:10.5px;letter-spacing:1.4px;color:var(--primary-2);background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.34);padding:3px 9px;border-radius:7px;margin-bottom:8px}
+.card h3{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.2px}
+.meta{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12.5px;color:var(--muted);font-weight:500}
+.meta .sep{color:var(--faint)}
+.meta .type{color:var(--text);font-weight:600}
+.thumb{width:62px;height:62px;border-radius:18px;flex:none;display:grid;place-items:center;font-size:30px}
+.thumb.purple{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.22)}
+.thumb.lime{background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.22)}
+.thumb.coral{background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.22)}
+.thumb.ice{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.22)}
+
+/* ---------- bottom tabs ---------- */
+.tabs{
+  display:flex;align-items:flex-end;justify-content:space-around;
+  padding:12px 14px calc(20px + env(safe-area-inset-bottom));
+  background:#ffffff;
+  border-top:1px solid var(--line);box-shadow:0 -2px 20px rgba(17,24,39,.06);
+}
+.tab{display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--muted);position:relative;cursor:pointer;flex:1;padding-top:4px}
+.tab svg{width:25px;height:25px}
+.tab span{font-size:11px;font-weight:600;letter-spacing:.2px}
+.tab.active{color:var(--primary-2)}
+.tab.active svg{transform:scale(1.08)}
+.tab.active span{font-weight:700}
+.tab.active::before{content:"";position:absolute;top:-12px;width:40px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(135deg,var(--primary-2),var(--accent))}
+.tab.disabled{color:#b8c0cd;cursor:default}
+.soon{position:absolute;top:-3px;right:50%;transform:translateX(26px);font-size:8px;font-weight:800;letter-spacing:.6px;color:var(--accent);background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.4);padding:2px 5px;border-radius:6px;text-transform:uppercase}
+
+/* ---------- chat sheet ---------- */
+.scrim{position:absolute;inset:0;z-index:20;background:rgba(17,24,39,.4);backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sheet{
+  position:absolute;left:0;right:0;bottom:0;z-index:21;
+  background:#ffffff;
+  border-radius:24px 24px 54px 54px;padding:14px 22px 34px;
+  border-top:1px solid var(--line);box-shadow:0 -20px 60px rgba(17,24,39,.18);
+  transform:translateY(102%);transition:transform .36s cubic-bezier(.2,.8,.2,1);
+}
+.sheet .grab{width:42px;height:5px;border-radius:5px;background:var(--line-2);margin:2px auto 18px}
+.sheet h2{font-family:var(--display);font-weight:700;font-size:21px;line-height:1.15;letter-spacing:-.3px}
+.sheet p{font-size:13.5px;color:var(--muted);margin-top:8px;line-height:1.5}
+.sheet textarea{width:100%;margin-top:16px;min-height:96px;resize:none;border-radius:var(--r-sm);border:1px solid var(--line-2);background:#F8FAFC;color:var(--text);padding:13px 14px;font-family:var(--body);font-size:14px;outline:none}
+.sheet textarea:focus{border-color:var(--primary)}
+.sheet textarea::placeholder{color:var(--faint)}
+.send{width:100%;margin-top:14px;padding:15px;border:none;border-radius:var(--r-sm);cursor:pointer;font-family:var(--display);font-weight:700;font-size:16px;color:#fff;background:var(--warm);box-shadow:0 12px 24px rgba(249,115,22,.3)}
+.send:hover{filter:brightness(1.03)}
+.tag{display:inline-flex;gap:6px;font-size:11.5px;color:var(--faint);margin-top:14px}
+body.chat-open .scrim{opacity:1;pointer-events:auto}
+body.chat-open .sheet{transform:translateY(0)}
+
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes glow{0%,100%{box-shadow:0 14px 30px rgba(59,130,246,.14)}50%{box-shadow:0 14px 34px rgba(59,130,246,.26)}}
+
+.caption{font-family:var(--display);color:#9aa3b2;font-size:13px;font-weight:500}
+.caption b{color:#6b7589;font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+    <div class="island"></div>
+
+    <!-- status bar -->
+    <div class="status">
+      <span>9:41</span>
+      <span class="ico">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l1.3-1.4A10 10 0 0 0 8 .5 10 10 0 0 0 1 3.3l1.3 1.4A8 8 0 0 1 8 2.5Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.3-1.4A7.5 7.5 0 0 0 8 3.8a7.5 7.5 0 0 0-4.7 1.9l1.3 1.4A5.5 5.5 0 0 1 8 5.8Zm0 3.2c.6 0 1.2.2 1.6.7L8 11.5 6.4 9.7c.4-.5 1-.7 1.6-.7Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+      </span>
+    </div>
+
+    <!-- top bar: streak + chat -->
+    <header class="topbar">
+      <div class="top-row">
+        <div class="streaks">
+          <span class="chip flame"><span class="emo">🔥</span>5</span>
+        </div>
+        <div class="top-actions">
+          <button class="tg-btn" aria-label="Join our Telegram community">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7Z"/><path d="M22 2 11 13"/></svg>
+          </button>
+          <button class="chat-btn" onclick="document.body.classList.add('chat-open')" aria-label="Chat with us">
+            <span class="dot"></span>
+            <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z"/><path d="M8.5 12h.01M12 12h.01M15.5 12h.01"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- week dots -->
+      <div class="week">
+        <div class="day"><span class="lbl">Su</span><span class="cell done">✓</span></div>
+        <div class="day"><span class="lbl">Mo</span><span class="cell done">✓</span></div>
+        <div class="day"><span class="lbl">Tu</span><span class="cell missed">✕</span></div>
+        <div class="day today"><span class="lbl">We</span><span class="cell today"></span></div>
+        <div class="day"><span class="lbl">Th</span><span class="cell up">·</span></div>
+        <div class="day"><span class="lbl">Fr</span><span class="cell up">·</span></div>
+        <div class="day"><span class="lbl">Sa</span><span class="cell up">·</span></div>
+      </div>
+    </header>
+
+    <div class="divide"></div>
+
+    <!-- content: today's plan -->
+    <main class="content">
+      <div class="greet">
+        <p class="hi">Hey, you 👋</p>
+        <div class="plan-title">Today’s plan <span class="help">?</span></div>
+        <p class="plan-sub">A few tiny wins. No pressure — just pick up where you left off.</p>
+      </div>
+
+      <div class="path">
+        <!-- NEXT (current) -->
+        <div class="row" style="animation-delay:.05s">
+          <div class="rail"><span class="node cur"></span><span class="connector"></span></div>
+          <div class="card next">
+            <div class="info">
+              <span class="badge">NEXT UP</span>
+              <h3>Yes, And…</h3>
+              <div class="meta"><span>⏱ 2 min</span><span class="sep">·</span><span class="type">Practice</span></div>
+            </div>
+            <div class="thumb purple">🎭</div>
+          </div>
+        </div>
+
+        <!-- sprint -->
+        <div class="row" style="animation-delay:.14s">
+          <div class="rail"><span class="node up"></span><span class="connector"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>Warm-up riff</h3>
+              <div class="meta"><span>⏱ 1 min</span><span class="sep">·</span><span class="type">Sprint</span></div>
+            </div>
+            <div class="thumb lime">⚡</div>
+          </div>
+        </div>
+
+        <!-- radio / lesson -->
+        <div class="row" style="animation-delay:.22s">
+          <div class="rail"><span class="node up"></span><span class="connector"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>The Peak–End story</h3>
+              <div class="meta"><span>⏱ 1 min</span><span class="sep">·</span><span class="type">Radio</span></div>
+            </div>
+            <div class="thumb coral">🎙️</div>
+          </div>
+        </div>
+
+        <!-- breath / confidence -->
+        <div class="row" style="animation-delay:.30s">
+          <div class="rail"><span class="node up"></span></div>
+          <div class="card">
+            <div class="info">
+              <h3>Confidence reset</h3>
+              <div class="meta"><span>⏱ 3 min</span><span class="sep">·</span><span class="type">Breath</span></div>
+            </div>
+            <div class="thumb ice">🌬️</div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- bottom tabs -->
+    <nav class="tabs">
+      <div class="tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+        <span>Practice</span>
+      </div>
+      <div class="tab disabled">
+        <span class="soon">Soon</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10h8M8 13.5h5"/><path d="M21 12a8 8 0 0 1-11.6 7.2L4 21l1.8-5.4A8 8 0 1 1 21 12Z"/></svg>
+        <span>Role play</span>
+      </div>
+      <div class="tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5"/></svg>
+        <span>Profile</span>
+      </div>
+    </nav>
+
+    <!-- chat sheet (tap the bubble top-right) -->
+    <div class="scrim" onclick="document.body.classList.remove('chat-open')"></div>
+    <div class="sheet">
+      <div class="grab"></div>
+      <h2>Got an idea, or did something break?</h2>
+      <p>Tell us anything — a bug, a half-baked idea, or just a hi. A real human reads every single message. 💬</p>
+      <textarea placeholder="Type away…"></textarea>
+      <button class="send" onclick="this.textContent='Thanks — got it! 🙌';this.disabled=true">Send it our way →</button>
+      <div class="tag">🔒 Private · always here, on every screen</div>
+    </div>
+
+  </div>
+</div>
+
+<p class="caption"><b>Home</b> — i-am-witty · light &amp; warm (production theme) · tap the 💬 to see the chat sheet</p>
+
+</body>
+</html>
