@@ -55,15 +55,9 @@ The golden rule: the push must target something trivial and observable — never
    - "You're such a walking disaster... and somehow the most interesting person in this room."
 
 3. **Feigned Reluctance**: Act like you didn't want to admit the pull.
-   - "I wasn't going to say this, but — you're actually kind of fascinating."
-
-4. **Fake Threat**: Turn the pull into a mock consequence.
-   - "Stop being this interesting or I'm leaving. I had plans tonight."
-
-5. **Buried Pull**: Heavy push, with one small genuine thing placed at the very end.
-   - "You've reorganized this conversation three times already. Impossible to keep up with. I'm in."''',
+   - "I wasn't going to say this, but — you're actually kind of fascinating."''',
         "evaluation_criteria": '''=== EVALUATION CRITERIA ===
-1. **Both sides present**: Is there a clear push AND a clear pull? If one is missing entirely, it is not push-pull.
+1. **Both sides present (cover-half test)**: Cover the pull — does a SPECIFIC tease about something she did/wore/said remain? Cover the push — does a SPECIFIC compliment remain (not "you're interesting/amazing/fascinating")? If covering either half leaves something generic or empty, it is NOT push-pull. An intensified compliment ("distractingly gorgeous", "annoyingly perfect", "stop being this radiant") is still ALL PULL — the intensifier points at the speaker's reaction, not a real tease about her.
 2. **Push is trivial**: Does the push target something observable and silly — not a real insecurity? If it could genuinely hurt on a bad day, it fails.
 3. **Push is about her**: Does the push tease something about HER — a habit, trait, or observable detail? Pushes that target the dynamic ("you seem bored of me", "you're ignoring me") are accusations about the interaction, not playful teases about her. They fail.
 4. **Pull is genuine**: Does the pull feel real? Not sarcastic, not hollow, not a copy-paste compliment. Something actually meant.
@@ -85,6 +79,7 @@ The golden rule: the push must target something trivial and observable — never
                 "ALL PUSH: Just teasing with no genuine interest signal — she thinks you don't like her",
                 "ACCUSATION PUSH: Targeting the dynamic instead of her — 'you seem bored of me / you're ignoring me' is an accusation about the interaction, not a playful tease about her",
                 "ALL PULL: Just complimenting with no edge — warm but forgettable",
+                "FAKE PUSH: A compliment wearing a complaint's coat — 'distractingly beautiful', 'you're a problem', 'stop being this interesting'. Feels like a push, teases nothing real about her. Still ALL PULL",
                 "MEAN: Crossed from playful into actually hurtful — targeted something real, not trivial",
                 "HOLLOW PULL: The compliment sounds nice but means nothing ('you're so interesting')",
                 "GENERIC: Could apply to anyone — not connected to the actual scenario",

@@ -8,6 +8,30 @@ from prompts._shared_components import (
 )
 
 
+# Local override: unlike other exercises, each sample answer is broken into the
+# three beats of the move (ordinary detail → unusual thing → association) so the
+# learner sees the anatomy, not just a finished one-liner.
+FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT = '''=== JSON OUTPUT FORMAT (CRITICAL) ===
+Respond with ONLY valid JSON, no text before or after, no markdown code blocks.
+
+{
+    "feedback": "<HTML formatted feedback using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift>",
+    "sample_answer": "<3 answers, each broken into 3 labeled lines, formatted exactly as described below>"
+}
+
+Rules:
+- feedback MUST follow the exact 4-section structure defined above.
+- sample_answer must contain exactly 3 answers, separated by <br><br>.
+- Each answer begins with its number (<b>1.</b>, <b>2.</b>, <b>3.</b>) followed by <br>, then exactly three lines separated by <br>, in this order:
+  <b>Ordinary detail:</b> <the base-reality detail from the scene being tilted>
+  <b>Unusual thing:</b> <the single deviation, stated straight as if normal>
+  <b>Association:</b> <the "if this is true, what else is true" build, or an exaggeration of the tilt>
+- Keep each line short and punchy. No text outside the three labeled lines.
+
+Example of ONE answer's exact formatting:
+<b>1.</b><br><b>Ordinary detail:</b> the TV's on in the background<br><b>Unusual thing:</b> I pause it whenever someone on screen stands up, out of respect<br><b>Association:</b> standing ovations are exhausting, but you don't skip them'''
+
+
 PROMPT_COMPONENTS = {
     "shared": {
         "intro": 'You are a wit coach evaluating "First Unusual Thing" responses — the skill of taking a completely ordinary moment and introducing the ONE unusual thing that breaks its base reality and opens a game.',
@@ -28,9 +52,12 @@ The strongest answers do Frame + Associate together: introduce the unusual thing
         "what_counts": '''=== WHAT COUNTS AS A FIRST UNUSUAL THING ===
 A valid response must introduce **exactly one** deviation from the scene's base reality that is **anchored** to something in the scene and **buildable** into a game.
 
+The tilt must stay **humanly real**: it reveals an odd belief, habit, reaction, compulsion, or ritual that a real PERSON could actually have. The physical world itself stays normal — floors don't have feelings, objects don't have memory, physics doesn't bend. If you catch yourself giving an object a superpower, move the strangeness back into the person (their compulsion about the object, their superstition or ritual around it). The funniest tilts make the listener think "I know someone exactly like that," not "that's fantasy."
+
 A response FAILS if it:
 - Stays in base reality — reacts normally, agrees, or continues the scene without tilting anything (TOO NORMAL)
 - Throws in chaos or a non-sequitur with no connection to the scene — unusual but ungrounded, nothing to build on (TOO RANDOM)
+- Makes the world magical or fictional — objects with feelings or memory, physics breaking, supernatural events — instead of revealing something odd about a real person (FICTIONAL)
 - Introduces three weird things at once, so there's no single game (MULTIPLE THINGS)
 - Starts at maximum absurdity with no base reality left to deviate from (TOO BIG TOO FAST)
 - Explains, justifies, or winks at the bit instead of committing (EXPLAINED IT)
@@ -40,7 +67,11 @@ A response FAILS if it:
 ❌ Scene: "I'm folding laundry while the TV plays in the background."
 ❌ Response: "Folding laundry is so boring, I hate it." → TOO NORMAL (stayed in base reality, just reacted).
 ❌ Response: "Suddenly a dragon made of taxes flew through the window screaming about Tuesdays." → TOO RANDOM (chaos, anchored to nothing, nowhere to build).
-✅ Response: "I fold every shirt exactly the same way the store does — if it's off by an inch, it goes back in the basket." → ONE tilt (a strange over-serious ritual), anchored to the folding, and obviously buildable.''',
+✅ Response: "I fold every shirt exactly the same way the store does — if it's off by an inch, it goes back in the basket." → ONE tilt (a strange over-serious ritual), anchored to the folding, and obviously buildable.
+
+❌ Scene: "You scuffle your shoes on the doormat before stepping inside to keep the floor clean."
+❌ Response: "The floor remembers who dirtied it and gets colder toward them." → FICTIONAL (gave the floor supernatural memory — the world stopped being real; the tilt should expose something odd about YOU, not magic about the floor).
+✅ Response: "One speck gets through and I'm re-mopping the entire entryway — guests call it a quirk, I call it the bare minimum." → ONE tilt (a real, OCD-ish cleaning compulsion), the world stays normal, and it's obviously buildable.''',
         "unusual_thing_techniques": '''=== TECHNIQUES FOR INTRODUCING THE UNUSUAL THING ===
 1. **Disproportionate Reaction**: Have a huge emotional reaction to something completely mundane in the scene.
    - "I'm at the laundromat." → "Watching that one sock tumble alone is the most emotional I've been all month. I'm not okay."
@@ -63,7 +94,7 @@ A response FAILS if it:
 1. **Anchored (Notice)**: Name the specific ordinary detail from the scene that was tilted. If you can't point to it, the move was random — fail it.
 2. **Singular & Committed (Frame)**: Is there exactly ONE clear deviation, stated straight as if normal? Multiple tilts, hedging, or "haha just kidding" all fail.
 3. **Buildable (Associate)**: Could the next "if this is true, what else is true?" line obviously follow? Bonus if they already took that first step. Dead-end non-sequiturs fail.
-4. **Grounded, Not Random**: Did they keep most of base reality intact, or blow up the whole scene? If everything is weird, nothing is unusual.
+4. **Grounded, Not Random**: Did they keep most of base reality intact, or blow up the whole scene? If everything is weird, nothing is unusual. The tilt must also be **humanly real** — an odd person, not a magical world. Floors don't have feelings; if an object got superpowers or physics bent, it failed (FICTIONAL). The strangeness belongs in the person's psychology (a belief, compulsion, ritual), not in the world's physics.
 5. **Right Size**: A tiny, specific deviation beats a big loud joke. Did they tilt, or did they swing for the fences and miss the base reality?
 6. **Brevity**: One or two sentences. Longer = explaining the bit instead of dropping it.
 7. **Wit**: Is the tilt surprising and genuinely funny?
@@ -74,13 +105,14 @@ A response FAILS if it:
                 "Second: completely new approach using a different technique",
                 "Third: another new approach using yet another technique",
             ],
-            "Separate with <br><br>. Keep each SHORT — one clear tilt, stated straight, anchored to the scene.",
+            'Break EACH answer into three labeled lines — <b>Ordinary detail</b> (the scene detail being tilted), <b>Unusual thing</b> (the single deviation, stated straight), and <b>Association</b> (the "if this is true, what else is true" build, or an exaggeration of the tilt). Keep each line SHORT and anchored to the scene. See the JSON OUTPUT FORMAT below for the exact <br> structure.',
         ),
         "feedback_style": build_feedback_style(
             "The specific mistake. Common first-unusual-thing traps:",
             [
                 "TOO NORMAL: Reacted to the scene without tilting anything — stayed in base reality, the #1 failure",
                 "TOO RANDOM: Threw in chaos or a non-sequitur anchored to nothing — unusual but unbuildable",
+                "FICTIONAL: Made the world magical — objects with feelings/memory, physics breaking — instead of revealing something odd about a real person. Keep the world real; put the strangeness in the PERSON (a compulsion, superstition, or ritual)",
                 "MULTIPLE THINGS: Introduced several weird things at once, so there's no single game",
                 "TOO BIG TOO FAST: Started at maximum absurdity with no base reality left to deviate from",
                 "EXPLAINED IT: Justified or winked at the bit instead of committing to it",
@@ -114,7 +146,10 @@ Examples:
 - "I'm reheating last night's pasta in the office microwave."
 - "We're walking the dog around the block before it gets dark."''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
+    "evaluator": {
+        **STANDARD_EVALUATOR_COMPONENTS,
+        "json_output_format_critical": FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT,
+    },
 }
 
 

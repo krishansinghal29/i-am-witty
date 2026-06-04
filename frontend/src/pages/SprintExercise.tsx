@@ -48,6 +48,11 @@ export default function SprintExercise() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recordingTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const processedKeyRef = useRef<string | null>(null);
+  // Guards the advance/submit effect so a single recording is only handled once.
+  // stopRecording() flips isRecording synchronously but resolves audioBase64
+  // asynchronously, so the effect fires twice per recording; without this lock
+  // the late audioBase64 fire can advance the scaffold a second time (skipping a stage).
+  const recordingProcessedRef = useRef(false);
   const scaffoldStageRef = useRef(scaffoldStage);
   scaffoldStageRef.current = scaffoldStage;
 
@@ -145,6 +150,8 @@ export default function SprintExercise() {
   }, []);
 
   const handleStartRecording = useCallback(async () => {
+    // A fresh recording is starting — allow the advance/submit effect to handle it once.
+    recordingProcessedRef.current = false;
     setRecordingTimeLeft(RECORDING_LIMIT_SECONDS);
     await stt.startRecording();
     // Timer starts in the useEffect below once stt.isRecording becomes true
@@ -192,6 +199,10 @@ export default function SprintExercise() {
     if (step !== 'recording') return;
     if (stt.isRecording || stt.isConnecting) return;
     if (!stt.audioBase64 && !stt.transcript) return;
+    // Only handle each recording once: the effect re-fires when the async
+    // audioBase64 resolves, which must not trigger a second stage advance.
+    if (recordingProcessedRef.current) return;
+    recordingProcessedRef.current = true;
 
     if (
       isScaffoldedExercise(exerciseId || '') &&
