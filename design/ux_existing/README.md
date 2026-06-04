@@ -2,7 +2,7 @@
 
 AI-assisted practice app for **humour, communication, storytelling, and confidence**.
 This folder mirrors the **shipped app's** look & feel (the `wittifyme` /
-`get-game-frontend-react` codebase) — a **light, warm, MUI-based** theme. The screens,
+`get-game-frontend-react` codebase) — a **light, warm** theme built on **Ionic React**. The screens,
 elements, and placements are identical to [`../ux/`](../ux/); only the **visual theme**
 differs. Think of `../ux/` as the proposed *"Cozy Dark Arcade"* redesign and this folder
 as the *current production* baseline to compare it against.
@@ -14,9 +14,9 @@ and friendly** — clean white cards, soft orange warmth, a clear single next st
 ## Theme: "Light & Warm" (production)
 Light-first, warm, approachable. White surfaces with a soft warm wash, **orange** as the
 emotional/celebration accent and **blue** as the primary action / active state. Built on
-**Material UI**, so it reads as a polished, conventional mobile app.
+**Ionic React** (themed via Ionic CSS variables), so it reads as a polished, conventional mobile app.
 
-## Color palette (from `src/index.css` + `shared-theme/`)
+## Color palette (applied via Ionic CSS variables)
 | Token | Hex (≈) | Use |
 |-------|---------|-----|
 | bg | `#F7F8FA` | page (soft off-white) |
@@ -46,7 +46,7 @@ tab indicator runs blue→orange `linear-gradient(135deg,#0A8FF2,#F97316)`.
 - *(Note: the proposed redesign in `../ux/` swaps this for Fredoka + Hanken Grotesk.)*
 
 ## Icons & imagery
-- **Icons:** MUI / lucide-react line icons (`@mui/icons-material`, `lucide-react`).
+- **Icons:** `IonIcon` line icons (ionicons / `lucide-react`), ~2px stroke, consistent weight.
 - **Imagery:** the shipped app uses **real photo personas** (e.g. Anya) for conversation
   practice. These mockups keep the same emoji thumbnails as `../ux/` so the two themes are
   directly comparable element-for-element.
