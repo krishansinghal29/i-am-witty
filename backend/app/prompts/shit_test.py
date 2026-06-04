@@ -62,8 +62,7 @@ When she teases, criticizes, or tests you, your job is to REFRAME it as if she j
 1. **Reframe Check**: Did they FLIP the frame or just deny/explain?
 2. **Confidence Signal**: Does it read as "I'm comfortable with who I am" or "please don't judge me"?
 3. **Wit**: Is the reframe clever, surprising, or funny?
-4. **Brevity**: Great reframes are punchy. Long explanations = insecurity.
-5. **History Awareness**: If they repeat the same defensive pattern, call it out.''',
+4. **Brevity**: Great reframes are punchy. Long explanations = insecurity.''',
     },
     "generator": {
         "intro": '''You are a "High-Value," skeptical woman on a date.

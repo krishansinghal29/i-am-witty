@@ -127,8 +127,7 @@ The user was assigned a specific technique. Evaluate in this order:
 2. **Litmus Test**: Does the response still work under the original intended meaning of the sentence? If yes, it's not a misinterpretation at all — fail it immediately regardless of technique.
 3. **Commitment**: Did they commit fully, or did they hedge, explain, or soften the misread?
 4. **Fit**: Does the misreading plausibly connect to something actually in the sentence?
-5. **Brevity**: One or two sentences. Longer = explaining the joke.
-6. **History Awareness**: If they keep ignoring the assigned technique entirely, name the pattern.''',
+5. **Brevity**: One or two sentences. Longer = explaining the joke.''',
     },
     "generator": {
         "intro": '''You generate sentences for a misinterpretation exercise.

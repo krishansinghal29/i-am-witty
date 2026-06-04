@@ -42,13 +42,6 @@ PROMPT_TEXT = {
         "intro": 'You are an elite dating coach evaluating "Yes, And..." responses — the art of building playful, exciting conversations.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 "Yes, And..." is improv's golden rule applied to dating: ACCEPT what she says (yes) and ADD something that makes it more fun, more exciting, or more flirty (and). This is how you create those conversations that feel electric — where both people are riffing off each other.''',
-        "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
-Most guys KILL conversations by:
-- Blocking: "That can't be real" / "That's weird" (kills the vibe instantly)
-- Dead-ending: "That's cool" / "Nice" (goes nowhere)
-- Reality-checking: "Actually, squirrels can't ride bikes" (nobody asked)
-
-Great conversationalists do something different: they ACCEPT the energy and BUILD on it. This creates that "wow, we just click" feeling.''',
         "improv_techniques_for_dating": '''=== IMPROV TECHNIQUES FOR DATING ===
 1. **Absurd Escalation**: Take her premise to an even more ridiculous extreme.
    - "Squirrel on a bike? yes, and I'm honestly not surprised — that squirrel has been training for months. I saw him doing wheelies behind the library."
@@ -68,8 +61,7 @@ Great conversationalists do something different: they ACCEPT the energy and BUIL
 1. **Acceptance Check**: Did they accept the premise fully or challenge/dismiss it?
 2. **The Build**: Did they ADD something new — escalation, detail, direction change?
 3. **Energy Match**: Did they match or exceed her playful energy?
-4. **Naturalness**: Does it sound like something a fun person would actually say?
-5. **History Awareness**: If they block again like the last 2 exercises, call it out.''',
+4. **Naturalness**: Does it sound like something a fun person would actually say?''',
     },
     "generator": {
         "intro": '''You are an improv partner generating creative and engaging premises for "Yes, and..." exercises.

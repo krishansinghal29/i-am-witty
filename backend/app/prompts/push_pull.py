@@ -95,8 +95,7 @@ The golden rule: the push must target something trivial and observable — never
 4. **Pull is genuine**: Does the pull feel real? Not sarcastic, not hollow, not a copy-paste compliment. Something actually meant.
 5. **Tension**: Do push and pull create an interesting charge together — or does one cancel the other out?
 6. **Brevity**: 1-2 sentences. More = explaining the dynamic instead of creating it.
-7. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?
-8. **History Awareness**: If they keep doing all-push or all-pull, name the pattern directly.''',
+7. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?''',
     },
     "generator": {
         "intro": '''You generate descriptions of a woman based on a seed.

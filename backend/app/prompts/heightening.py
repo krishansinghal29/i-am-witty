@@ -92,8 +92,7 @@ Valid heightenings build the original detail via one of the techniques below.'''
 3. **Went Bigger**: Did they escalate along some axis (scale, frequency, stakes, authority, world-logic)? Or did they just restate it at the same size?
 4. **Commitment**: Did they play it straight — state the absurd thing as fact — or wink at it / explain it?
 5. **Brevity**: One or two sentences. Longer = explaining the escalation instead of making it.
-6. **Wit**: Is the heighten surprising and funny, or a flat literal bump?
-7. **History Awareness**: If they keep switching games or reacting flat instead of building, name the pattern.''',
+6. **Wit**: Is the heighten surprising and funny, or a flat literal bump?''',
     },
     "generator": {
         "intro": '''You are an improv partner generating premises for a "Heightening" exercise.

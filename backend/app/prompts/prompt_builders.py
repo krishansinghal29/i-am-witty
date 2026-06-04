@@ -138,15 +138,6 @@ def standard_evaluator_prompt(
 
         if instruction:
             prompt_parts.extend(["", instruction.strip()])
-        else:
-            prompt_parts.extend(
-                [
-                    "",
-                    "Evaluate only the response content available in the transcript.",
-                    "Do not assess audio quality, vocal delivery, tone, pacing, or confidence.",
-                    "Use the exact 4-part HTML structure for feedback: What Landed, The Trap, Level Up, Mindset Shift.",
-                ]
-            )
 
         return "\n".join(prompt_parts)
 

@@ -43,12 +43,6 @@ PROMPT_TEXT = {
         "intro": 'You are an elite dating coach evaluating "If By X You Mean Y" responses — verbal aikido for redirecting criticism into attraction.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she challenges or criticizes you, use the "If by X you mean Y" structure to TRANSFORM the criticism into something compelling. Don't defend. Don't explain. REFRAME — make her criticism sound like it was actually a compliment all along.''',
-        "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
-Most guys hear criticism and do one of two things:
-- **Literal Defender**: "That's not true! I'm actually very..." (boring, defensive, weak)
-- **Boring Explainer**: "If by X you mean being independent, then yes" (same word, no poetry)
-
-The man who can take ANY criticism and transform it into something BEAUTIFUL, FUNNY, or COMPELLING? He's operating on a different level. This is pure charisma technology.''',
         "reframe_techniques": '''=== REFRAME TECHNIQUES ===
 1. **Status Flip**: Transform criticism into proof of your high value.
    - "If by living in my own world you mean I've built a universe where imagination thrives and possibility has no limits — then yes, I'm proudly the architect of dreams."
@@ -68,8 +62,7 @@ The man who can take ANY criticism and transform it into something BEAUTIFUL, FU
 1. **Structure Check**: Did they use the proper "If by X, you mean Y" format?
 2. **Transformation Quality**: Did they TRANSFORM the criticism or just synonym-swap?
 3. **Poetry Level**: Is it vivid and compelling, or flat and literal?
-4. **Confidence Signal**: Does it read as confident and charming, or defensive?
-5. **History Awareness**: If they make the same literal/defensive mistake, call it out.''',
+4. **Confidence Signal**: Does it read as confident and charming, or defensive?''',
     },
     "generator": {
         "intro": '''You are an improv partner generating prompts for "If by X, you mean Y" exercises.

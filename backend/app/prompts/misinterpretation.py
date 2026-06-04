@@ -89,8 +89,7 @@ Valid misinterpretations must involve one of:
 2. **What was misread**: Identify the specific word, modifier, pronoun, or phrase that was incorrectly parsed. If you can't name it, the misinterpretation didn't happen.
 3. **Fit**: Does the misreading plausibly connect to something actually in the sentence — or is it random?
 4. **Wit**: Is the misreading clever, surprising, or funny?
-5. **Brevity**: One or two sentences. Longer = explaining the joke.
-6. **History Awareness**: If they keep continuing the conversation instead of misreading it, name the pattern.''',
+5. **Brevity**: One or two sentences. Longer = explaining the joke.''',
     },
     "generator": {
         "intro": '''You generate sentences for a misinterpretation exercise.

@@ -124,8 +124,7 @@ A response FAILS if it:
 4. **Grounded, Not Random**: Did they keep most of base reality intact, or blow up the whole scene? If everything is weird, nothing is unusual. The tilt must also be **humanly real** — an odd person, not a magical world. Floors don't have feelings; if an object got superpowers or physics bent, it failed (FICTIONAL). The strangeness belongs in the person's psychology (a belief, compulsion, ritual), not in the world's physics.
 5. **Right Size**: A tiny, specific deviation beats a big loud joke. Did they tilt, or did they swing for the fences and miss the base reality?
 6. **Brevity**: One or two sentences. Longer = explaining the bit instead of dropping it.
-7. **Wit**: Is the tilt surprising and genuinely funny?
-8. **History Awareness**: If they keep playing it safe (too normal) or keep going random, name the pattern.''',
+7. **Wit**: Is the tilt surprising and genuinely funny?''',
     },
     "generator": {
         "intro": '''You generate mundane scenes for a "First Unusual Thing" exercise.
