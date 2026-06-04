@@ -40,23 +40,3 @@ def get_exercise_spec(exercise_key: str) -> ExerciseSpec:
 
 def get_supported_exercise_keys() -> frozenset[str]:
     return frozenset(_EXERCISES)
-
-
-def get_exercise_prompt(exercise_key: str, prompt_type: str) -> str:
-    spec = get_exercise_spec(exercise_key)
-    if prompt_type == "generator":
-        return spec.generator_system
-    if prompt_type == "evaluator":
-        return spec.evaluator_system
-    raise ValueError(
-        f"Prompt type '{prompt_type}' not configured for exercise '{exercise_key}'"
-    )
-
-
-def get_sprint_question_label(exercise_key: str) -> str:
-    return get_exercise_spec(exercise_key).sprint_question_label
-
-
-def get_technique_for_exercise(exercise_key: str) -> dict | None:
-    spec = get_exercise_spec(exercise_key)
-    return spec.technique_picker() if spec.technique_picker else None
