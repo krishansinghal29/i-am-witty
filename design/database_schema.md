@@ -9,6 +9,8 @@ Target backend: Supabase + Postgres, with RevenueCat for subscriptions and PostH
 - Use one durable app identity table, `app_users`, for both guest and authenticated users.
 - Reference Supabase `auth.users` only after a user signs in.
 - Keep tasks generic. A task has metadata and a type, but task-specific interaction behavior is not modeled here.
+- Let `task_types` define the shared UI/runtime structure for a family of tasks.
+- Let `tasks` define per-task content and assets, such as text, image, and thumbnail.
 - Store user-specific daily plans as plan instances, not only derived views, so progress can resume reliably.
 - Treat RevenueCat as the source of subscription truth, while keeping a local entitlement mirror for access checks.
 - Treat PostHog as the source for analytics/session replay/feature flags, while keeping only local config or overrides that the backend must enforce.
@@ -26,8 +28,8 @@ Onboarding:
 - `onboarding_trigger_task_mappings`: Mapping from onboarding trigger choices to candidate first tasks.
 
 Tasks and plans:
-- `task_types`: High-level categories/types that tasks belong to.
-- `tasks`: Reusable catalog of tasks available across onboarding, daily plans, and Practice.
+- `task_types`: High-level task families that define shared UI structure and runtime behavior.
+- `tasks`: Reusable task records with per-task content, image, thumbnail, and availability.
 - `daily_plans`: A user's generated daily plan for a specific local date.
 - `daily_plan_items`: Ordered task items inside a user's daily plan.
 - `task_attempts`: Records of each time a user starts, completes, or abandons a task.
@@ -132,7 +134,6 @@ Profile data rendered in the Profile screen.
 create table user_profiles (
   app_user_id uuid primary key references app_users(id) on delete cascade,
   display_name text,
-  avatar_key text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -193,13 +194,16 @@ alter table onboarding_states
 
 ### task_types
 
-Defines high-level task types without defining task behavior.
+Defines high-level task types without defining task-specific content.
 
 ```sql
 create table task_types (
   id text primary key,
   display_name text not null,
   description text,
+  ui_schema_key text not null,
+  runtime_engine_key text,
+  default_duration_seconds integer check (default_duration_seconds > 0),
   is_active boolean not null default true,
   sort_order integer not null default 0,
   metadata jsonb not null default '{}'::jsonb,
@@ -214,6 +218,11 @@ Seed examples:
 - `calm`
 - `story`
 
+Notes:
+- `ui_schema_key` tells the client which shared UI structure to render for tasks of this type.
+- `runtime_engine_key` tells the backend which task engine, if any, handles generation/completion for this type.
+- `metadata` is type-level config shared by all tasks of this type.
+
 ### tasks
 
 Catalog of tasks available to onboarding, daily plans, and the Practice screen.
@@ -223,9 +232,13 @@ create table tasks (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   title text not null,
+  description text,
   task_type_id text not null references task_types(id),
   duration_seconds integer check (duration_seconds > 0),
   thumbnail_key text,
+  image_key text,
+  content jsonb not null default '{}'::jsonb,
+  runtime_config jsonb not null default '{}'::jsonb,
   access_tier task_access_tier not null default 'free',
   status task_status not null default 'active',
   sort_order integer not null default 0,
@@ -244,6 +257,12 @@ Seed examples:
 - `punch-it-up`
 - `sixty-second-story`
 - `power-pose`
+
+Notes:
+- Tasks of the same `task_type_id` share the same `ui_schema_key` through `task_types`.
+- Task-specific text, image, thumbnail, and prompt/runtime parameters live on `tasks`.
+- `content` should hold client-renderable text/data for the shared UI structure.
+- `runtime_config` should hold backend runtime pointers, such as existing exercise keys, without changing the shared task type.
 
 ### onboarding_trigger_task_mappings
 
@@ -555,7 +574,7 @@ create table app_release_channels (
 - `app_users.auth_user_id` optionally links to `auth.users.id`.
 - `guest_sessions.app_user_id` links guest sessions to a durable app user.
 - `user_profiles`, `user_progress_summaries`, `onboarding_states`, `reminder_preferences`, and `revenuecat_customers` are one-to-one with `app_users`.
-- `tasks.task_type_id` links each task to a generic task type.
+- `tasks.task_type_id` links each task to the task type that defines its shared UI and runtime structure.
 - `onboarding_trigger_task_mappings` maps onboarding triggers to first-task candidates.
 - `daily_plans` has many `daily_plan_items`.
 - `daily_plan_items.task_id` points to the catalog task.
@@ -571,6 +590,8 @@ create index guest_sessions_app_user_id_idx on guest_sessions (app_user_id);
 
 create index tasks_status_sort_idx on tasks (status, sort_order);
 create index tasks_type_idx on tasks (task_type_id);
+create index task_types_ui_schema_idx on task_types (ui_schema_key);
+create index task_types_runtime_engine_idx on task_types (runtime_engine_key);
 
 create index daily_plans_user_date_idx on daily_plans (app_user_id, plan_date desc);
 create index daily_plan_items_plan_status_idx on daily_plan_items (daily_plan_id, status, position);
@@ -605,7 +626,8 @@ Recommended Supabase policy direction:
 - Read or update profile.
 - Save onboarding trigger.
 - Assign first onboarding task.
-- Get Practice task catalog.
+- Get Practice task catalog with task type UI metadata.
+- Get task runtime payload for a selected task.
 - Get or create today's plan.
 - Start task attempt.
 - Complete task attempt.

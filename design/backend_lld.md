@@ -31,6 +31,7 @@ backend/
     update_onboarding.py
     get_home.py
     get_practice_catalog.py
+    get_task_runtime.py
     start_task.py
     complete_task.py
     save_reminder.py
@@ -42,6 +43,7 @@ backend/
       identity_service.py
       onboarding_service.py
       task_catalog_service.py
+      task_runtime_service.py
       daily_plan_service.py
       task_attempt_service.py
       progress_service.py
@@ -53,6 +55,7 @@ backend/
     domain/
       models/
         app_user.py
+        task_type.py
         task.py
         daily_plan.py
         task_attempt.py
@@ -81,6 +84,7 @@ backend/
       integrations/
         subscription_provider.py
         analytics.py
+      task_runtime_engine.py
 
     infrastructure/
       db/
@@ -108,6 +112,7 @@ backend/
       integrations/
         revenue_cat_client.py
         posthog_client.py
+      task_engines.py
 
     composition/
       container.py
@@ -132,6 +137,7 @@ Use-case orchestration layer. Services coordinate repositories, policies, transa
 Examples:
 - `TaskAttemptService.start_task`
 - `TaskAttemptService.complete_task`
+- `TaskRuntimeService.get_task_runtime`
 - `DailyPlanService.get_or_create_today_plan`
 - `OnboardingService.save_trigger_and_assign_first_task`
 - `EntitlementService.sync_revenue_cat_event`
@@ -268,6 +274,64 @@ class TaskAttemptService:
 
         return StartTaskResult(attempt=attempt)
 ```
+
+## Task Type UI And Runtime Config
+
+Tasks of the same type should share the same client UI structure. The task type owns that structure through a `ui_schema_key`; each task owns the content and assets that fill that structure.
+
+Example:
+
+```text
+task_types
+  id = sprint
+  ui_schema_key = sprint_voice_v1
+  runtime_engine_key = sprint_voice_v1
+
+tasks
+  slug = push-pull
+  task_type_id = sprint
+  title = Push/Pull
+  thumbnail_key = ...
+  image_key = ...
+  content = task-specific copy and client-renderable text
+  runtime_config = {"backend_key": "pushPull"}
+```
+
+The backend should expose enough data for the client to render the shared UI without hardcoding per-task copy or assets.
+
+Recommended application service:
+
+```text
+TaskRuntimeService
+  - loads task + task type
+  - checks availability and entitlement
+  - returns ui_schema_key and task content/assets
+  - routes generation/completion to the right task engine when needed
+```
+
+Recommended port:
+
+```python
+from typing import Protocol
+
+class TaskRuntimeEngine(Protocol):
+    async def generate(self, input: GenerateTaskInput) -> GeneratedTaskPayload:
+        ...
+
+    async def complete(self, input: CompleteTaskRuntimeInput) -> TaskRuntimeResult:
+        ...
+```
+
+Current supported sprint exercises can be wrapped by one implementation:
+
+```text
+SprintVoiceTaskEngine
+  - uses runtime_config.backend_key such as "pushPull"
+  - calls the existing generator/evaluator code
+  - returns sprint_voice_v1-compatible payloads
+```
+
+Task images and thumbnails are enough for the current requirement.
 
 ## Transaction Guidance
 

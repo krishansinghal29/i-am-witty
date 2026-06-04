@@ -32,7 +32,7 @@ Key backend needs:
 - Create or track a guest user/session before login so onboarding and the first task can happen without authentication.
 - Support Apple and Google authentication.
 - Link guest progress to an authenticated account when the user signs in.
-- Store profile fields needed by the app, including display name, avatar, current streak, and completed task count.
+- Store profile fields needed by the app, including display name, current streak, and completed task count.
 - Support sign-out/session invalidation.
 - Use Supabase/Postgres as the system of record for user profile and progress data.
 
@@ -52,7 +52,8 @@ Key backend needs:
 The backend shall maintain a catalog of available tasks that can appear in onboarding, daily plans, and the Practice screen.
 
 Key backend needs:
-- Store task metadata: title, duration, type/category, thumbnail/icon, availability, and ordering where needed.
+- Store task metadata: title, duration, type/category, thumbnail/icon, image, task text/content, availability, and ordering where needed.
+- Ensure tasks of the same type can share the same client UI structure while varying their content and assets.
 - Support task types such as sprint, improv, calm, story, and future types.
 - Support tasks shown in the mockups, including Warm-up riff, Yes And, Box breathing, Peak-End hook, One-word story, Punch it up, 60-second story, and Power pose.
 - Allow task definitions to be active, inactive, free, premium, or future-gated.
