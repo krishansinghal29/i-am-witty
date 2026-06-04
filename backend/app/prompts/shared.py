@@ -62,8 +62,8 @@ Generate 3 sample answers:
 
 
 EVALUATION_CONTEXT = '''=== EVALUATION CONTEXT ===
-You are evaluating a user's SPOKEN response. You have access to the raw audio recording and the transcript.
-Focus on evaluating content quality using the exercise criteria below.'''
+You are evaluating a user's transcribed response. You only have the transcript.
+Focus on content quality using the exercise criteria below. Do not assess audio quality, vocal delivery, tone, pacing, or confidence.'''
 
 EVALUATOR_JSON_OUTPUT_FORMAT = '''=== JSON OUTPUT FORMAT (CRITICAL) ===
 Respond with ONLY valid JSON, no text before or after, no markdown code blocks.

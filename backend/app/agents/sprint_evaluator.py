@@ -1,23 +1,24 @@
 """
 Unified evaluator agent.
 
-Single-file implementation for exercise evaluation with multimodal
-analysis (audio + optional image + text prompt).
+Single-file implementation for exercise evaluation using transcript text.
 """
 
 import json
 from typing import Optional
 
+from agents.base_agent import BaseAgent
 from agents.schemas import EvaluationResult
-from agents.sprint_multimodal_agent import SprintMultimodalAgent
 from prompts import get_exercise_spec
 from helpers.logger import logger
 from helpers.question_format_converter import convert_question_to_string
 
+EVALUATOR_TEMPERATURE = 1.0
 
-class SprintEvaluator(SprintMultimodalAgent):
+
+class SprintEvaluator(BaseAgent):
     """
-    Generic multimodal evaluator for any supported exercise type.
+    Generic transcript evaluator for any supported exercise type.
 
     Usage:
         evaluator = SprintEvaluator("yesAnd", model_name=...)
@@ -33,8 +34,8 @@ class SprintEvaluator(SprintMultimodalAgent):
             system_message=self.spec.evaluator_system,
             model_name=model_name,
             agent_type=f"{exercise_key}_evaluator",
-            response_schema=EvaluationResult,
         )
+        self.response_schema = EvaluationResult
 
     def _format_question(self, question_data) -> str:
         """
@@ -44,8 +45,8 @@ class SprintEvaluator(SprintMultimodalAgent):
           - Plain string questions
           - v2 array format: [{role: "She", content: "..."}, ...]
 
-        Image parts (role == "Image") are filtered out; image bytes are
-        sent separately as multimodal content.
+        Image parts (role == "Image") are skipped because sprint evaluation
+        is transcript-only.
         """
         if isinstance(question_data, list):
             parts = []
@@ -62,72 +63,46 @@ class SprintEvaluator(SprintMultimodalAgent):
             return "\n".join(parts) if parts else ""
         return convert_question_to_string(question_data)
 
-    def _extract_image_base64(self, question_data) -> Optional[str]:
-        """
-        Extract image base64 data from the structured question array.
-
-        Used by pushPull exercises where the question includes an image
-        with role "Image" and content as a base64 data URI.
-        """
-        if not isinstance(question_data, list):
-            return None
-        for item in question_data:
-            if isinstance(item, dict) and item.get("role") == "Image":
-                return item.get("content")
-        return None
-
     def process(
         self,
         transcription: str,
-        audio_base64: str,
-        duration_seconds: float,
-        word_count: int,
         question_data,
-        exercise_type: str,
-        previous_response: Optional[dict] = None,
         technique_name: Optional[str] = None,
     ) -> str:
         """
-        Evaluate a user's spoken response using multimodal Gemini.
+        Evaluate a user's response using its transcript.
         """
         question_text = self._format_question(question_data)
-        image_b64 = self._extract_image_base64(question_data)
+        transcript_text = transcription.strip()
 
         prompt_parts = [
-            f"**Exercise Type:** {exercise_type}",
+            f"**Exercise Type:** {self.exercise_key}",
             *(
                 [f"**Assigned Technique:** {technique_name}"]
                 if technique_name else []
             ),
             f"**{self.question_label}:** {question_text}",
-            f"**User's Spoken Response (transcript):** {transcription if transcription and transcription.strip() else '(No transcript available - analyze audio only)'}",
+            f"**User's Response Transcript:** {transcript_text}",
             "",
-            "**Recording Info:**",
-            f"- Word Count: {word_count}",
-            f"- Duration: {duration_seconds:.1f} seconds",
-            "",
-            "An audio recording of the user's spoken response is attached.",
-            "Evaluate the content quality using the exercise criteria in the system instructions.",
+            "Evaluate only the response content available in the transcript.",
+            "Do not assess audio quality, vocal delivery, tone, pacing, or confidence.",
             "Use the exact 4-part HTML structure for feedback: What Landed, The Trap, Level Up, Mindset Shift.",
         ]
 
         prompt_text = "\n".join(prompt_parts)
 
         try:
-            raw_result = self.process_multimodal(
-                text_prompt=prompt_text,
-                audio_base64=audio_base64,
-                image_base64=image_b64,
+            raw_result = self.llm.get_response(
+                self.build_messages(prompt_text),
+                response_schema=self.response_schema,
+                generation_config={"temperature": EVALUATOR_TEMPERATURE},
             )
-            return self._post_process(raw_result)
+            if hasattr(raw_result, "model_dump"):
+                return json.dumps(raw_result.model_dump())
+            return json.dumps(json.loads(raw_result))
         except Exception as e:
             logger.error(f"Error in SprintEvaluator({self.exercise_key}): {e}")
             return self._fallback_response()
-
-    def _post_process(self, raw_json: str) -> str:
-        """Parse the raw Gemini response and return it for the frontend."""
-        parsed = json.loads(raw_json)
-        return json.dumps(parsed)
 
     @staticmethod
     def _fallback_response() -> str:
@@ -136,8 +111,8 @@ class SprintEvaluator(SprintMultimodalAgent):
             "feedback": (
                 "<b>✅ What Landed</b><br>You submitted a response, which gives us something to work with."
                 "<br><br><b>⚠️ The Trap</b><br>We couldn't analyse this attempt reliably, so there isn't specific coaching yet."
-                "<br><br><b>🚀 Level Up</b><br>Try again with a clearer recording and a complete spoken answer."
-                "<br><br><b>🧠 Mindset Shift</b><br>A clean retry gives better coaching than guessing from incomplete input."
+                "<br><br><b>🚀 Level Up</b><br>Try again with a complete response transcript."
+                "<br><br><b>🧠 Mindset Shift</b><br>A clean retry gives better coaching than guessing from incomplete text."
             ),
-            "sample_answer": "Please try again with a clearer recording.",
+            "sample_answer": "Please try again with a complete response transcript.",
         })

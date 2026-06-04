@@ -103,10 +103,7 @@ async def analyze_sprint_response(request: Request):
     if not is_valid:
         return JSONResponse({"error": error_msg}, status_code=400)
 
-    transcription = body.get("transcription", "")
-    audio_base64 = body["audio_base64"]
-    duration_seconds = float(body.get("duration_seconds", 0))
-    word_count = int(body.get("word_count", 0))
+    transcription = body["transcription"].strip()
     question_data = body["question_data"]
     exercise_type = body["exercise_type"]
     technique_name = body.get("technique_name")
@@ -117,11 +114,7 @@ async def analyze_sprint_response(request: Request):
         agent = create_sprint_agent(exercise_type)
         raw_result = agent.process(
             transcription=transcription,
-            audio_base64=audio_base64,
-            duration_seconds=duration_seconds,
-            word_count=word_count,
             question_data=question_data,
-            exercise_type=exercise_type,
             technique_name=technique_name,
         )
         result = json.loads(raw_result)

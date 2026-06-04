@@ -2,8 +2,7 @@
 Sprint Evaluation Helpers
 
 Utility functions for the analyze_sprint_response endpoint.
-Handles agent dispatch, question formatting, and result parsing
-for sprint (spoken response) exercises.
+Handles agent dispatch and request validation for sprint transcript evaluation.
 """
 
 from agents.sprint_evaluator import SprintEvaluator
@@ -41,9 +40,7 @@ def validate_sprint_request(body: dict) -> tuple[bool, str]:
 
     required_fields = [
         "uid",
-        "audio_base64",
-        "duration_seconds",
-        "word_count",
+        "transcription",
         "question_data",
         "exercise_type",
     ]
@@ -51,19 +48,9 @@ def validate_sprint_request(body: dict) -> tuple[bool, str]:
         if field not in body:
             return False, f"Missing required field: {field}"
 
-    try:
-        duration_seconds = float(body["duration_seconds"])
-        if duration_seconds < 0:
-            return False, "duration_seconds must be >= 0"
-    except (TypeError, ValueError):
-        return False, "duration_seconds must be a number"
-
-    try:
-        word_count = int(body["word_count"])
-        if word_count < 0:
-            return False, "word_count must be >= 0"
-    except (TypeError, ValueError):
-        return False, "word_count must be an integer"
+    transcription = body["transcription"]
+    if not isinstance(transcription, str) or not transcription.strip():
+        return False, "transcription must be a non-empty string"
 
     question_data = body["question_data"]
     if not isinstance(question_data, list) or len(question_data) == 0:
