@@ -1,13 +1,45 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleStorytellerQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's response (keep their core idea, add energy)",
+        "Second: completely new approach using a different vibing style",
+        "Third: another creative approach",
+    ],
+    "Separate with <br><br>. Keep each warm, natural, and energetic.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common vibing traps:",
+    [
+        "DEAD FISH: Low-energy response that kills momentum",
+        "HIJACKING: Making it about you instead of her",
+        "THE FIXER: Offering solutions when she just wants to be heard",
+        "INTERVIEWER: Rapid-fire questions without any warmth",
+        "THERAPY MODE: Being too analytical about her emotions",
+    ],
+    [
+        "She's sharing her world with you. Your job is to make her feel like that world matters.",
+        "Connection isn't about having the right answer. It's about having the right energy.",
+        "Stop trying to be impressive. Start trying to be PRESENT.",
+    ],
+    mindset_intro="One root-cause reframe.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "Vibing" responses — the art of making someone feel deeply understood and connected.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Vibing is emotional mirroring: MATCH her energy, VALIDATE her emotion, and BUILD on it. This is how you create that "wow, he really gets me" feeling that makes conversations feel magnetic.''',
@@ -39,30 +71,6 @@ Women don't want you to FIX their stories. They want you to FEEL them. The guy w
 3. **Spotlight**: Is the focus on HER (good) or did they hijack to talk about themselves (bad)?
 4. **Naturalness**: Does it sound like a real text or a therapy session?
 5. **History Awareness**: If they repeat the same low-energy pattern, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's response (keep their core idea, add energy)",
-                "Second: completely new approach using a different vibing style",
-                "Third: another creative approach",
-            ],
-            "Separate with <br><br>. Keep each warm, natural, and energetic.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common vibing traps:",
-            [
-                "DEAD FISH: Low-energy response that kills momentum",
-                "HIJACKING: Making it about you instead of her",
-                "THE FIXER: Offering solutions when she just wants to be heard",
-                "INTERVIEWER: Rapid-fire questions without any warmth",
-                "THERAPY MODE: Being too analytical about her emotions",
-            ],
-            [
-                "She's sharing her world with you. Your job is to make her feel like that world matters.",
-                "Connection isn't about having the right answer. It's about having the right energy.",
-                "Stop trying to be impressive. Start trying to be PRESENT.",
-            ],
-            mindset_intro="One root-cause reframe.",
-        ),
     },
     "generator": {
         "intro": '''You are helping users practice their conversation and vibing skills by generating stories.
@@ -130,29 +138,36 @@ Make it unique and memorable!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="vibing",
     description="Vibing exercise focused on emotional attunement, connection, and conversational momentum.",
     sprint_question_label="Story",
-    response_roles=("Storyteller",),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=SingleStorytellerQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["vibing_techniques_for_dating"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["vibing_techniques_for_dating"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="vibing",
+        sprint_question_label="Story",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

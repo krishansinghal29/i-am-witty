@@ -1,21 +1,23 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import verb_seed_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, verb_seed_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
 
 
 # Local override: unlike other exercises, each sample answer is broken into the
 # three beats of the move (ordinary detail → unusual thing → association) so the
 # learner sees the anatomy, not just a finished one-liner.
-FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT = '''=== JSON OUTPUT FORMAT (CRITICAL) ===
-Respond with ONLY valid JSON, no text before or after, no markdown code blocks.
-
-{
-    "feedback": "<HTML formatted feedback using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift>",
-    "sample_answer": "<3 answers, each broken into 3 labeled lines, formatted exactly as described below>"
-}
+FIRST_UNUSUAL_THING_OUTPUT_CONTRACT = '''=== STRUCTURED OUTPUT CONTRACT (CRITICAL) ===
+The response schema has exactly these fields:
+- feedback: HTML formatted feedback using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift.
+- sample_answer: 3 answers, each broken into 3 labeled lines, formatted exactly as described below.
 
 Rules:
 - feedback MUST follow the exact 4-section structure defined above.
@@ -30,8 +32,36 @@ Example of ONE answer's exact formatting:
 <b>1.</b><br><b>Ordinary detail:</b> the TV's on in the background<br><b>Unusual thing:</b> I pause it whenever someone on screen stands up, out of respect<br><b>Association:</b> standing ovations are exhausting, but you don't skip them'''
 
 
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their tilt, anchor it harder or commit more)",
+        "Second: completely new approach using a different technique",
+        "Third: another new approach using yet another technique",
+    ],
+    'Break EACH answer into three labeled lines — <b>Ordinary detail</b> (the scene detail being tilted), <b>Unusual thing</b> (the single deviation, stated straight), and <b>Association</b> (the "if this is true, what else is true" build, or an exaggeration of the tilt). Keep each line SHORT and anchored to the scene. See the structured output contract below for the exact <br> structure.',
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common first-unusual-thing traps:",
+    [
+        "TOO NORMAL: Reacted to the scene without tilting anything — stayed in base reality, the #1 failure",
+        "TOO RANDOM: Threw in chaos or a non-sequitur anchored to nothing — unusual but unbuildable",
+        "FICTIONAL: Made the world magical — objects with feelings/memory, physics breaking — instead of revealing something odd about a real person. Keep the world real; put the strangeness in the PERSON (a compulsion, superstition, or ritual)",
+        "MULTIPLE THINGS: Introduced several weird things at once, so there's no single game",
+        "TOO BIG TOO FAST: Started at maximum absurdity with no base reality left to deviate from",
+        "EXPLAINED IT: Justified or winked at the bit instead of committing to it",
+    ],
+    [
+        "You don't need a big joke. The funniest move is one small, sincere deviation from normal.",
+        "Keep almost everything ordinary — the tilt only reads as unusual against a normal background.",
+        "Commit like it's a documentary. State the strange thing as plain fact and let it breathe.",
+    ],
+    mindset_intro="One root-cause observation.",
+)
+
+
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are a wit coach evaluating "First Unusual Thing" responses — the skill of taking a completely ordinary moment and introducing the ONE unusual thing that breaks its base reality and opens a game.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 You are given a deliberately mundane scene — a slice of ordinary, everyday reality with nothing funny in it yet. This is the **base reality**. Your job is to introduce the **first unusual thing**: the single small tilt that knocks the scene off-center and makes it interesting.
@@ -96,31 +126,6 @@ A response FAILS if it:
 6. **Brevity**: One or two sentences. Longer = explaining the bit instead of dropping it.
 7. **Wit**: Is the tilt surprising and genuinely funny?
 8. **History Awareness**: If they keep playing it safe (too normal) or keep going random, name the pattern.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their tilt, anchor it harder or commit more)",
-                "Second: completely new approach using a different technique",
-                "Third: another new approach using yet another technique",
-            ],
-            'Break EACH answer into three labeled lines — <b>Ordinary detail</b> (the scene detail being tilted), <b>Unusual thing</b> (the single deviation, stated straight), and <b>Association</b> (the "if this is true, what else is true" build, or an exaggeration of the tilt). Keep each line SHORT and anchored to the scene. See the JSON OUTPUT FORMAT below for the exact <br> structure.',
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common first-unusual-thing traps:",
-            [
-                "TOO NORMAL: Reacted to the scene without tilting anything — stayed in base reality, the #1 failure",
-                "TOO RANDOM: Threw in chaos or a non-sequitur anchored to nothing — unusual but unbuildable",
-                "FICTIONAL: Made the world magical — objects with feelings/memory, physics breaking — instead of revealing something odd about a real person. Keep the world real; put the strangeness in the PERSON (a compulsion, superstition, or ritual)",
-                "MULTIPLE THINGS: Introduced several weird things at once, so there's no single game",
-                "TOO BIG TOO FAST: Started at maximum absurdity with no base reality left to deviate from",
-                "EXPLAINED IT: Justified or winked at the bit instead of committing to it",
-            ],
-            [
-                "You don't need a big joke. The funniest move is one small, sincere deviation from normal.",
-                "Keep almost everything ordinary — the tilt only reads as unusual against a normal background.",
-                "Commit like it's a documentary. State the strange thing as plain fact and let it breathe.",
-            ],
-            mindset_intro="One root-cause observation.",
-        ),
     },
     "generator": {
         "intro": '''You generate mundane scenes for a "First Unusual Thing" exercise.
@@ -146,27 +151,34 @@ Examples:
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="firstUnusualThing",
     description="First Unusual Thing exercise — take a mundane scene and introduce the one grounded tilt that breaks base reality and opens a game.",
     sprint_question_label="Scene",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=verb_seed_generator_prompt,
+    generator_prompt=verb_seed_generator_prompt,
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["the_process"],
-            _shared["what_counts"],
-            _shared["unusual_thing_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["the_process"],
+            _evaluator["what_counts"],
+            _evaluator["unusual_thing_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
-        json_output_format=FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT,
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
+        output_contract=FIRST_UNUSUAL_THING_OUTPUT_CONTRACT,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="firstUnusualThing",
+        sprint_question_label="Scene",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

@@ -1,13 +1,45 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleTopicQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's response (keep their stance, add passion)",
+        "Second: completely new approach using a different expression style",
+        "Third: another creative approach",
+    ],
+    "Separate with <br><br>. Keep each vivid, personal, and punchy.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common Love-Hate traps:",
+    [
+        'FENCE-SITTING: "I kind of like it sometimes" (pick a side)',
+        'GENERIC: "It\'s good" / "I don\'t like it" (WHY? show personality)',
+        "EXPLAINING: Writing an essay instead of expressing a feeling",
+        "NO STORY: Stating an opinion without painting a picture",
+        "BOTH SIDES: Trying to be balanced instead of bold",
+    ],
+    [
+        "You're playing it safe because you're afraid of being judged. But being SAFE is what's actually boring.",
+        "Strong opinions don't make you difficult. They make you INTERESTING.",
+        "Nobody remembers the guy who said 'yeah, it's fine.' They remember the guy who made them FEEL something.",
+    ],
+    mindset_intro="One root-cause reframe.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "Love/Hate" responses — the art of expressing strong opinions that make you unforgettable.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Pick a side — LOVE or HATE — and go ALL IN. No fence-sitting, no "it depends," no lukewarm takes. Express your opinion with conviction, personality, and passion that makes her think "wow, he actually stands for something."''',
@@ -39,30 +71,6 @@ Women are attracted to men with CONVICTION. Not because they agree with the opin
 3. **Personality**: Can you HEAR their voice in it? Does it reveal who they are?
 4. **Specificity**: Specific details > generic statements. Always.
 5. **History Awareness**: If they fence-sit again like last time, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's response (keep their stance, add passion)",
-                "Second: completely new approach using a different expression style",
-                "Third: another creative approach",
-            ],
-            "Separate with <br><br>. Keep each vivid, personal, and punchy.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common Love-Hate traps:",
-            [
-                'FENCE-SITTING: "I kind of like it sometimes" (pick a side)',
-                'GENERIC: "It\'s good" / "I don\'t like it" (WHY? show personality)',
-                "EXPLAINING: Writing an essay instead of expressing a feeling",
-                "NO STORY: Stating an opinion without painting a picture",
-                "BOTH SIDES: Trying to be balanced instead of bold",
-            ],
-            [
-                "You're playing it safe because you're afraid of being judged. But being SAFE is what's actually boring.",
-                "Strong opinions don't make you difficult. They make you INTERESTING.",
-                "Nobody remembers the guy who said 'yeah, it's fine.' They remember the guy who made them FEEL something.",
-            ],
-            mindset_intro="One root-cause reframe.",
-        ),
     },
     "generator": {
         "intro": '''You are an improv partner generating creative topics for "Love/Hate" exercises.
@@ -133,29 +141,36 @@ Make it unique and opinion-provoking!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="loveHate",
     description="Love/Hate contrast exercise for expressing nuanced, opinionated takes with charm.",
     sprint_question_label="Topic",
-    response_roles=("Topic",),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=SingleTopicQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["passion_expression_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["passion_expression_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="loveHate",
+        sprint_question_label="Topic",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

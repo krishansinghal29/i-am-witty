@@ -1,13 +1,45 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, QuestionAnswerTeaseQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's tease (keep their core angle, sharpen it)",
+        "Second: completely new tease using a different technique",
+        "Third: another new approach with a different frame",
+    ],
+    "Separate with <br><br>. Keep each SHORT and punchy — like a real text.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common QAT traps:",
+    [
+        'NICE GUY: Validating her instead of teasing ("that\'s great!")',
+        "TOO MEAN: Insulting instead of teasing (she'd block you)",
+        "GENERIC: A tease that could apply to any answer",
+        "TRY-HARD: Forcing humor that doesn't land naturally",
+        "INTERVIEWER: Asking another question instead of teasing",
+    ],
+    [
+        "You're trying to make her comfortable. Your job is to make her CURIOUS.",
+        "Stop responding like a friend. Start responding like someone she wants to impress.",
+        "Being agreeable is safe. Being playfully challenging is attractive.",
+    ],
+    mindset_intro="One root-cause reframe.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "Question-Answer-Tease" responses — the art of playful teasing that creates attraction.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 She answered a question. Your job: TEASE her about it. Not insult. Not agree. Not interview. TEASE — with the confidence of someone who knows they're the prize and the humor of someone she can't stop texting back.''',
@@ -38,30 +70,6 @@ The sweet spot is **Cocky-Funny**: you challenge her playfully while making her 
 3. **Specificity**: Does the tease reference HER actual answer or is it generic?
 4. **Brevity**: Great teases are punchy. If it's longer than 2 sentences, it's a speech.
 5. **History Awareness**: If he repeats the same mistake, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's tease (keep their core angle, sharpen it)",
-                "Second: completely new tease using a different technique",
-                "Third: another new approach with a different frame",
-            ],
-            "Separate with <br><br>. Keep each SHORT and punchy — like a real text.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common QAT traps:",
-            [
-                'NICE GUY: Validating her instead of teasing ("that\'s great!")',
-                "TOO MEAN: Insulting instead of teasing (she'd block you)",
-                "GENERIC: A tease that could apply to any answer",
-                "TRY-HARD: Forcing humor that doesn't land naturally",
-                "INTERVIEWER: Asking another question instead of teasing",
-            ],
-            [
-                "You're trying to make her comfortable. Your job is to make her CURIOUS.",
-                "Stop responding like a friend. Start responding like someone she wants to impress.",
-                "Being agreeable is safe. Being playfully challenging is attractive.",
-            ],
-            mindset_intro="One root-cause reframe.",
-        ),
     },
     "generator": {
         "intro": '''You are helping me practice my flirting skills by generating question-answer pairs for the "Question, Answer and Tease" exercise.
@@ -142,29 +150,36 @@ Make it unique and memorable!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="questionAnswerTease",
     description="Question-Answer-Tease exercise for balancing direct answers with playful tension.",
     sprint_question_label="Question",
-    response_roles=("You", "She"),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=QuestionAnswerTeaseQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["tease_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["tease_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="questionAnswerTease",
+        sprint_question_label="Question",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

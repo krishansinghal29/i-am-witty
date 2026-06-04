@@ -1,13 +1,46 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their detail, take it one rung higher)",
+        "Second: completely new approach using a different heightening technique",
+        "Third: another new approach using yet another technique",
+    ],
+    "Separate with <br><br>. Keep each SHORT and punchy — one clean escalation, played straight.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common heightening traps:",
+    [
+        "SWITCHED THE GAME: Jumped to a new unrelated joke instead of building the same one — the #1 killer",
+        "FLAT REACTION: Just reacted ('haha that's crazy') without escalating anything",
+        "SAME SIZE: Restated the premise without making it bigger — that's a pattern, not a heighten",
+        "WINKED AT IT: Explained the joke or signalled 'I'm being silly' instead of committing to the absurd world",
+        "RANDOM: Built on a detail that wasn't in the statement, so it feels disconnected",
+        "TOO LONG: A heighten that needs three sentences is just narrating",
+    ],
+    [
+        "Don't reach for a new joke. The funniest thing is already on the table — make it bigger.",
+        "Heightening is one question on a loop: if this is true, what else is true?",
+        "Commit like it's a documentary. The more matter-of-fact you are about the absurd thing, the funnier it lands.",
+    ],
+    mindset_intro="One root-cause observation.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are a wit coach evaluating "Heightening" responses — the skill of taking one unusual detail and escalating it bigger and bigger on the same thread until an ordinary moment becomes a whole absurd world.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Given a statement that contains one slightly unusual or interesting detail, find that detail — the "unusual thing" — and HEIGHTEN it. Heightening means "do it again, but bigger." You take the one funny element and escalate it: more extreme, more frequent, higher stakes, treated as established fact.
@@ -61,31 +94,6 @@ Valid heightenings build the original detail via one of the techniques below.'''
 5. **Brevity**: One or two sentences. Longer = explaining the escalation instead of making it.
 6. **Wit**: Is the heighten surprising and funny, or a flat literal bump?
 7. **History Awareness**: If they keep switching games or reacting flat instead of building, name the pattern.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their detail, take it one rung higher)",
-                "Second: completely new approach using a different heightening technique",
-                "Third: another new approach using yet another technique",
-            ],
-            "Separate with <br><br>. Keep each SHORT and punchy — one clean escalation, played straight.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common heightening traps:",
-            [
-                "SWITCHED THE GAME: Jumped to a new unrelated joke instead of building the same one — the #1 killer",
-                "FLAT REACTION: Just reacted ('haha that's crazy') without escalating anything",
-                "SAME SIZE: Restated the premise without making it bigger — that's a pattern, not a heighten",
-                "WINKED AT IT: Explained the joke or signalled 'I'm being silly' instead of committing to the absurd world",
-                "RANDOM: Built on a detail that wasn't in the statement, so it feels disconnected",
-                "TOO LONG: A heighten that needs three sentences is just narrating",
-            ],
-            [
-                "Don't reach for a new joke. The funniest thing is already on the table — make it bigger.",
-                "Heightening is one question on a loop: if this is true, what else is true?",
-                "Commit like it's a documentary. The more matter-of-fact you are about the absurd thing, the funnier it lands.",
-            ],
-            mindset_intro="One root-cause observation.",
-        ),
     },
     "generator": {
         "intro": '''You are an improv partner generating premises for a "Heightening" exercise.
@@ -147,30 +155,37 @@ Make each premise feel real, particular, and new!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="heightening",
     description="Heightening exercise — take one unusual detail and escalate it bigger on the same thread until an ordinary moment becomes an absurd world.",
     sprint_question_label="Premise",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["what_counts"],
-            _shared["heightening_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["what_counts"],
+            _evaluator["heightening_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="heightening",
+        sprint_question_label="Premise",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

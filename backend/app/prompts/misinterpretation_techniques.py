@@ -1,11 +1,16 @@
 import random
 
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import verb_seed_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, verb_seed_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
 
 
 TECHNIQUES = [
@@ -56,8 +61,35 @@ def pick_random_technique() -> dict:
     return random.choice(TECHNIQUES)
 
 
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt using the same assigned technique",
+        "Second: completely different execution of the same technique",
+        "Third: a different technique entirely — to show the contrast",
+    ],
+    "Separate with <br><br>. Label the third one with its technique name in parentheses. Keep each SHORT.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "Whether they hit the technique or missed it:",
+    [
+        "WRONG TECHNIQUE: Used a different technique than assigned — note which one they actually used",
+        "NO TECHNIQUE: Just reacted naturally to the sentence — failed the litmus test entirely",
+        "HALF-HIT: Partially got the technique but pulled back or softened the misread",
+        "BROKE THE BIT: Added 'haha just kidding' or explained the joke — kills it instantly",
+        "TOO LONG: A misinterpretation that needs 3 sentences is a speech, not a wit move",
+    ],
+    [
+        "The technique is a lens — once you pick it, everything you say comes from inside that lens.",
+        "Commitment is the whole skill. A half-committed misinterpretation is just a weird comment.",
+        "If you can't find the angle for this technique on this sentence, pick any word and start there.",
+    ],
+    mindset_intro="One observation about their relationship with committing to the bit.",
+)
+
+
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are a wit coach evaluating "Misinterpretation Techniques" responses — the skill of applying a specific misinterpretation technique to redirect an everyday sentence.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 The user is given an everyday sentence AND a specific misinterpretation technique to apply. They must respond as if they understood the sentence differently — using exactly that technique. This trains deliberate technique selection, not just general misinterpretation.
@@ -97,30 +129,6 @@ The user was assigned a specific technique. Evaluate in this order:
 4. **Fit**: Does the misreading plausibly connect to something actually in the sentence?
 5. **Brevity**: One or two sentences. Longer = explaining the joke.
 6. **History Awareness**: If they keep ignoring the assigned technique entirely, name the pattern.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt using the same assigned technique",
-                "Second: completely different execution of the same technique",
-                "Third: a different technique entirely — to show the contrast",
-            ],
-            "Separate with <br><br>. Label the third one with its technique name in parentheses. Keep each SHORT.",
-        ),
-        "feedback_style": build_feedback_style(
-            "Whether they hit the technique or missed it:",
-            [
-                "WRONG TECHNIQUE: Used a different technique than assigned — note which one they actually used",
-                "NO TECHNIQUE: Just reacted naturally to the sentence — failed the litmus test entirely",
-                "HALF-HIT: Partially got the technique but pulled back or softened the misread",
-                "BROKE THE BIT: Added 'haha just kidding' or explained the joke — kills it instantly",
-                "TOO LONG: A misinterpretation that needs 3 sentences is a speech, not a wit move",
-            ],
-            [
-                "The technique is a lens — once you pick it, everything you say comes from inside that lens.",
-                "Commitment is the whole skill. A half-committed misinterpretation is just a weird comment.",
-                "If you can't find the angle for this technique on this sentence, pick any word and start there.",
-            ],
-            mindset_intro="One observation about their relationship with committing to the bit.",
-        ),
     },
     "generator": {
         "intro": '''You generate sentences for a misinterpretation exercise.
@@ -137,25 +145,32 @@ Rules:
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="misinterpretationTechniques",
     description="Misinterpretation Techniques — practice applying a specific misinterpretation technique to any everyday sentence.",
     sprint_question_label="Tease/Statement",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=verb_seed_generator_prompt,
+    generator_prompt=verb_seed_generator_prompt,
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["techniques_reference"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["techniques_reference"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="misinterpretationTechniques",
+        sprint_question_label="Tease/Statement",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
     technique_picker=pick_random_technique,
 )

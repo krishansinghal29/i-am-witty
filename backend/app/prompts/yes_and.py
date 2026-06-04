@@ -1,13 +1,44 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their core idea, expand it)",
+        "Second: completely new approach using a different improv style",
+        "Third: another new creative approach",
+    ],
+    "Separate with <br><br>. Keep each conversational and fun.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    'The specific mistake. Common "Yes, And" traps:',
+    [
+        'BLOCKING: Rejecting the premise ("that\'s not possible" / "that\'s weird")',
+        'DEAD-ENDING: Accepting but adding nothing ("haha that\'s funny")',
+        "REALITY-CHECKING: Being the logic police instead of playing",
+        "LOW ENERGY: Matching a 10/10 energy with a 3/10 response",
+        "HIJACKING: Ignoring her scenario and starting your own",
+    ],
+    [
+        "Stop trying to make sense. Start trying to make FUN.",
+        "She's inviting you to play. Blocking is like refusing to dance when someone asks.",
+        "In dating, being RIGHT is less attractive than being FUN.",
+    ],
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "Yes, And..." responses — the art of building playful, exciting conversations.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 "Yes, And..." is improv's golden rule applied to dating: ACCEPT what she says (yes) and ADD something that makes it more fun, more exciting, or more flirty (and). This is how you create those conversations that feel electric — where both people are riffing off each other.''',
@@ -39,29 +70,6 @@ Great conversationalists do something different: they ACCEPT the energy and BUIL
 3. **Energy Match**: Did they match or exceed her playful energy?
 4. **Naturalness**: Does it sound like something a fun person would actually say?
 5. **History Awareness**: If they block again like the last 2 exercises, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their core idea, expand it)",
-                "Second: completely new approach using a different improv style",
-                "Third: another new creative approach",
-            ],
-            "Separate with <br><br>. Keep each conversational and fun.",
-        ),
-        "feedback_style": build_feedback_style(
-            'The specific mistake. Common "Yes, And" traps:',
-            [
-                'BLOCKING: Rejecting the premise ("that\'s not possible" / "that\'s weird")',
-                'DEAD-ENDING: Accepting but adding nothing ("haha that\'s funny")',
-                "REALITY-CHECKING: Being the logic police instead of playing",
-                "LOW ENERGY: Matching a 10/10 energy with a 3/10 response",
-                "HIJACKING: Ignoring her scenario and starting your own",
-            ],
-            [
-                "Stop trying to make sense. Start trying to make FUN.",
-                "She's inviting you to play. Blocking is like refusing to dance when someone asks.",
-                "In dating, being RIGHT is less attractive than being FUN.",
-            ],
-        ),
     },
     "generator": {
         "intro": '''You are an improv partner generating creative and engaging premises for "Yes, and..." exercises.
@@ -131,29 +139,36 @@ Make it unique and inspiring!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="yesAnd",
     description='"Yes, and..." improv exercise that trains premise acceptance and creative expansion.',
     sprint_question_label="Premise",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["improv_techniques_for_dating"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["improv_techniques_for_dating"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="yesAnd",
+        sprint_question_label="Premise",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

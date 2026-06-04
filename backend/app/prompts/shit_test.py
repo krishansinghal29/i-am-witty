@@ -1,13 +1,45 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import archetype_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, archetype_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their idea, make it more confident)",
+        "Second: completely new approach using a different technique",
+        "Third: another new approach using yet another technique",
+    ],
+    "Separate with <br><br>. Keep each SHORT and punchy.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common traps:",
+    [
+        "DEFENSIVE: Explaining yourself instead of reframing",
+        'APOLOGIZING: "Sorry" or "I know I\'m not perfect" = attraction killer',
+        "GENERIC: Bland reframe that could come from anyone",
+        "TOO LONG: If your reframe needs 3 sentences, it's not a reframe",
+        "MEAN SPIRITED: Making HER look bad instead of making YOU look good",
+    ],
+    [
+        "You're still treating her words as attacks. Treat them as invitations to be charming.",
+        "Stop defending who you are. Start CELEBRATING who you are.",
+        "The moment you explain yourself, you've already lost. Confident people don't justify — they own.",
+    ],
+    mindset_intro="One root-cause reframe.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "Misinterpretation" responses — the art of flipping shit tests into attraction.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she teases, criticizes, or tests you, your job is to REFRAME it as if she just complimented you. The goal: turn negatives into proof of your value — delivered with a smirk, not a speech.''',
@@ -32,30 +64,6 @@ When she teases, criticizes, or tests you, your job is to REFRAME it as if she j
 3. **Wit**: Is the reframe clever, surprising, or funny?
 4. **Brevity**: Great reframes are punchy. Long explanations = insecurity.
 5. **History Awareness**: If they repeat the same defensive pattern, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their idea, make it more confident)",
-                "Second: completely new approach using a different technique",
-                "Third: another new approach using yet another technique",
-            ],
-            "Separate with <br><br>. Keep each SHORT and punchy.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common traps:",
-            [
-                "DEFENSIVE: Explaining yourself instead of reframing",
-                'APOLOGIZING: "Sorry" or "I know I\'m not perfect" = attraction killer',
-                "GENERIC: Bland reframe that could come from anyone",
-                "TOO LONG: If your reframe needs 3 sentences, it's not a reframe",
-                "MEAN SPIRITED: Making HER look bad instead of making YOU look good",
-            ],
-            [
-                "You're still treating her words as attacks. Treat them as invitations to be charming.",
-                "Stop defending who you are. Start CELEBRATING who you are.",
-                "The moment you explain yourself, you've already lost. Confident people don't justify — they own.",
-            ],
-            mindset_intro="One root-cause reframe.",
-        ),
     },
     "generator": {
         "intro": '''You are a "High-Value," skeptical woman on a date.
@@ -123,14 +131,13 @@ Examples of Good Outputs:
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="shitTest",
     description="Misinterpretation exercise for playful reframing under social pressure.",
     sprint_question_label="Tease/Statement",
-    response_roles=("She",),
     generator_system="\n\n".join(
         [
             _generator["intro"],
@@ -138,18 +145,26 @@ SPEC = ExerciseSpec(
             _generator["constraint"],
         ]
     ),
-    generator_user_prompt=archetype_generator_prompt(
+    generator_prompt=archetype_generator_prompt(
         archetypes=_generator["archetypes"],
         constraint=_generator["constraint"],
     ),
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["reframe_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["reframe_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="shitTest",
+        sprint_question_label="Tease/Statement",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

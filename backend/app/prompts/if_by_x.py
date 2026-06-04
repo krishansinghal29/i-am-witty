@@ -1,13 +1,45 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import creative_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, creative_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
+
+
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their core idea, add poetry)",
+        "Second: completely new reframe using a different technique",
+        "Third: another creative approach",
+    ],
+    "Separate with <br><br>. Keep each vivid, confident, and compelling.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common If-By-X traps:",
+    [
+        'LITERAL SWAP: Just replacing one word with a synonym ("If by X you mean being independent")',
+        "DEFENSIVE: Explaining yourself instead of reframing with flair",
+        "FLAT: A correct structure but zero poetry, zero punch",
+        "TOO LONG: Great reframes are punchy, not paragraphs",
+        "MEAN-SPIRITED: Attacking her instead of elevating yourself",
+    ],
+    [
+        "Don't just SWAP the word. PAINT A PICTURE. Make her SEE the world you're describing.",
+        "Your reframe should make her forget what she originally said because YOUR version is so much more interesting.",
+        "Think of it like this: she's handing you clay. Don't hand it back — sculpt something beautiful.",
+    ],
+    mindset_intro="One root-cause reframe.",
+)
 
 
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are an elite dating coach evaluating "If By X You Mean Y" responses — verbal aikido for redirecting criticism into attraction.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she challenges or criticizes you, use the "If by X you mean Y" structure to TRANSFORM the criticism into something compelling. Don't defend. Don't explain. REFRAME — make her criticism sound like it was actually a compliment all along.''',
@@ -38,30 +70,6 @@ The man who can take ANY criticism and transform it into something BEAUTIFUL, FU
 3. **Poetry Level**: Is it vivid and compelling, or flat and literal?
 4. **Confidence Signal**: Does it read as confident and charming, or defensive?
 5. **History Awareness**: If they make the same literal/defensive mistake, call it out.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their core idea, add poetry)",
-                "Second: completely new reframe using a different technique",
-                "Third: another creative approach",
-            ],
-            "Separate with <br><br>. Keep each vivid, confident, and compelling.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common If-By-X traps:",
-            [
-                'LITERAL SWAP: Just replacing one word with a synonym ("If by X you mean being independent")',
-                "DEFENSIVE: Explaining yourself instead of reframing with flair",
-                "FLAT: A correct structure but zero poetry, zero punch",
-                "TOO LONG: Great reframes are punchy, not paragraphs",
-                "MEAN-SPIRITED: Attacking her instead of elevating yourself",
-            ],
-            [
-                "Don't just SWAP the word. PAINT A PICTURE. Make her SEE the world you're describing.",
-                "Your reframe should make her forget what she originally said because YOUR version is so much more interesting.",
-                "Think of it like this: she's handing you clay. Don't hand it back — sculpt something beautiful.",
-            ],
-            mindset_intro="One root-cause reframe.",
-        ),
     },
     "generator": {
         "intro": '''You are an improv partner generating prompts for "If by X, you mean Y" exercises.
@@ -134,29 +142,36 @@ Make it unique and cleverly reframable!''',
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="ifByXYouMeanY",
     description="If-by-X-you-mean-Y verbal reframe exercise for redirecting criticism into status.",
     sprint_question_label="Statement",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=creative_generator_prompt(
+    generator_prompt=creative_generator_prompt(
         prompt_styles=_generator["prompt_styles"],
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
     ),
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["reframe_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["reframe_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="ifByXYouMeanY",
+        sprint_question_label="Statement",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

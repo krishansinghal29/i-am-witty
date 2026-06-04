@@ -1,9 +1,14 @@
-from prompts.shared import (
+from prompts.fallbacks import standard_evaluator_fallback
+from prompts.generator_strategies import weighted_seed_generator_prompt
+from prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
     build_evaluator_system,
+    standard_evaluator_prompt,
 )
-from prompts.spec import ExerciseSpec, weighted_seed_generator_prompt
+from prompts.prompt_contracts import EVALUATION_CONTEXT
+from prompts.spec import ExerciseSpec
 
 
 APPEARANCE_SEED_CATEGORIES = [
@@ -35,8 +40,38 @@ VIBE_SEED_CATEGORIES = [
 ]
 
 
+SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
+    [
+        "First: improved version of user's attempt (keep their angle, fix the balance)",
+        "Second: completely new approach using a different technique",
+        "Third: another new approach using yet another technique",
+    ],
+    "Separate with <br><br>. Keep each SHORT — 1-2 sentences max. Each must have both a push and a pull.",
+)
+
+FEEDBACK_STYLE = build_feedback_style(
+    "The specific mistake. Common push-pull traps:",
+    [
+        "ALL PUSH: Just teasing with no genuine interest signal — she thinks you don't like her",
+        "ACCUSATION PUSH: Targeting the dynamic instead of her — 'you seem bored of me / you're ignoring me' is an accusation about the interaction, not a playful tease about her",
+        "ALL PULL: Just complimenting with no edge — warm but forgettable",
+        "FAKE PUSH: A compliment wearing a complaint's coat — 'distractingly beautiful', 'you're a problem', 'stop being this interesting'. Feels like a push, teases nothing real about her. Still ALL PULL",
+        "MEAN: Crossed from playful into actually hurtful — targeted something real, not trivial",
+        "HOLLOW PULL: The compliment sounds nice but means nothing ('you're so interesting')",
+        "GENERIC: Could apply to anyone — not connected to the actual scenario",
+        "TOO LONG: More than 2 sentences is explaining the dynamic, not creating it",
+    ],
+    [
+        "The push proves you're paying attention. The pull proves you like what you see. Both have to be true.",
+        "A push without a pull is just criticism. A pull without a push is just flattery. The tension is the whole point.",
+        "If your push could hurt her feelings on a bad day, it's too sharp. If your pull could apply to anyone, it's too soft.",
+    ],
+    mindset_intro="One root-cause observation.",
+)
+
+
 PROMPT_TEXT = {
-    "shared": {
+    "evaluator": {
         "intro": 'You are a wit coach evaluating "Push-Pull" responses — the skill of balancing genuine interest (the pull) with playful challenge (the push) to create memorable emotional tension.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Given an observable scenario about a woman — something she's wearing, doing, saying, or how she carries herself — write a 1-2 sentence push-pull response.
@@ -62,33 +97,6 @@ The golden rule: the push must target something trivial and observable — never
 6. **Brevity**: 1-2 sentences. More = explaining the dynamic instead of creating it.
 7. **Naturalness**: Does it sound like something a real person would say — or like a formula being executed?
 8. **History Awareness**: If they keep doing all-push or all-pull, name the pattern directly.''',
-        "sample_answer_guidelines": build_sample_answer_guidelines(
-            [
-                "First: improved version of user's attempt (keep their angle, fix the balance)",
-                "Second: completely new approach using a different technique",
-                "Third: another new approach using yet another technique",
-            ],
-            "Separate with <br><br>. Keep each SHORT — 1-2 sentences max. Each must have both a push and a pull.",
-        ),
-        "feedback_style": build_feedback_style(
-            "The specific mistake. Common push-pull traps:",
-            [
-                "ALL PUSH: Just teasing with no genuine interest signal — she thinks you don't like her",
-                "ACCUSATION PUSH: Targeting the dynamic instead of her — 'you seem bored of me / you're ignoring me' is an accusation about the interaction, not a playful tease about her",
-                "ALL PULL: Just complimenting with no edge — warm but forgettable",
-                "FAKE PUSH: A compliment wearing a complaint's coat — 'distractingly beautiful', 'you're a problem', 'stop being this interesting'. Feels like a push, teases nothing real about her. Still ALL PULL",
-                "MEAN: Crossed from playful into actually hurtful — targeted something real, not trivial",
-                "HOLLOW PULL: The compliment sounds nice but means nothing ('you're so interesting')",
-                "GENERIC: Could apply to anyone — not connected to the actual scenario",
-                "TOO LONG: More than 2 sentences is explaining the dynamic, not creating it",
-            ],
-            [
-                "The push proves you're paying attention. The pull proves you like what you see. Both have to be true.",
-                "A push without a pull is just criticism. A pull without a push is just flattery. The tension is the whole point.",
-                "If your push could hurt her feelings on a bad day, it's too sharp. If your pull could apply to anyone, it's too soft.",
-            ],
-            mindset_intro="One root-cause observation.",
-        ),
     },
     "generator": {
         "intro": '''You generate descriptions of a woman based on a seed.
@@ -110,27 +118,34 @@ Rules:
 }
 
 
-_shared = PROMPT_TEXT["shared"]
+_evaluator = PROMPT_TEXT["evaluator"]
 _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="pushPull",
     description="Push-Pull exercise — balance genuine interest and playful challenge across observable scenarios.",
     sprint_question_label="Scenario",
-    response_roles=("She",),
     generator_system=_generator["intro"],
-    generator_user_prompt=weighted_seed_generator_prompt(
+    generator_prompt=weighted_seed_generator_prompt(
         appearance_categories=APPEARANCE_SEED_CATEGORIES,
         vibe_categories=VIBE_SEED_CATEGORIES,
     ),
+    generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
-        intro=_shared["intro"],
+        intro=_evaluator["intro"],
+        evaluation_context=EVALUATION_CONTEXT,
         sections=[
-            _shared["what_this_exercise_is"],
-            _shared["push_pull_techniques"],
-            _shared["evaluation_criteria"],
+            _evaluator["what_this_exercise_is"],
+            _evaluator["push_pull_techniques"],
+            _evaluator["evaluation_criteria"],
         ],
-        feedback_style=_shared["feedback_style"],
-        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        feedback_style=FEEDBACK_STYLE,
+        sample_answer_guidelines=SAMPLE_ANSWER_GUIDELINES,
     ),
+    evaluator_prompt=standard_evaluator_prompt(
+        exercise_key="pushPull",
+        sprint_question_label="Scenario",
+    ),
+    evaluator_response_schema=EvaluationResult,
+    evaluator_fallback=standard_evaluator_fallback,
 )

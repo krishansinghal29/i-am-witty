@@ -53,17 +53,10 @@ def get_exercise_prompt(exercise_key: str, prompt_type: str) -> str:
     )
 
 
-def build_generator_prompt(exercise_key: str) -> str:
-    return get_exercise_spec(exercise_key).build_generator_prompt()
-
-
 def get_sprint_question_label(exercise_key: str) -> str:
     return get_exercise_spec(exercise_key).sprint_question_label
 
 
-def get_response_roles(exercise_key: str) -> tuple[str, ...]:
-    return get_exercise_spec(exercise_key).response_roles
-
-
 def get_technique_for_exercise(exercise_key: str) -> dict | None:
-    return get_exercise_spec(exercise_key).pick_technique()
+    spec = get_exercise_spec(exercise_key)
+    return spec.technique_picker() if spec.technique_picker else None
