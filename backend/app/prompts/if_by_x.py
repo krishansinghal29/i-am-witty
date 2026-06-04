@@ -1,18 +1,14 @@
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    CREATIVE_GENERATOR_SEQUENCE,
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, creative_generator_prompt
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "If By X You Mean Y" responses — verbal aikido for redirecting criticism into attraction.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she challenges or criticizes you, use the "If by X you mean Y" structure to TRANSFORM the criticism into something compelling. Don't defend. Don't explain. REFRAME — make her criticism sound like it was actually a compliment all along.''',
         "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
@@ -135,25 +131,32 @@ Think of the most interesting criticism possible!
 Be creative and original!
 Make it unique and cleverly reframable!''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': CREATIVE_GENERATOR_SEQUENCE,
-    'evaluator': build_evaluator_sequence('reframe_techniques'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'ifByXYouMeanY',
-    "description": 'If-by-X-you-mean-Y verbal reframe exercise for redirecting criticism into status.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Statement',
-    "generator": {
-        'mode': 'creative',
-        'response_roles': [{'role': 'She'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="ifByXYouMeanY",
+    description="If-by-X-you-mean-Y verbal reframe exercise for redirecting criticism into status.",
+    sprint_question_label="Statement",
+    response_roles=("She",),
+    generator_system=_generator["intro"],
+    generator_user_prompt=creative_generator_prompt(
+        prompt_styles=_generator["prompt_styles"],
+        contexts=_generator["contexts"],
+        topic_suggestions=_generator["topic_suggestions"],
+        creativity_boosters=_generator["creativity_boosters"],
+    ),
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["reframe_techniques"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+    ),
+)

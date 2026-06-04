@@ -7,20 +7,10 @@ for sprint (spoken response) exercises.
 """
 
 from agents.sprint_evaluator import SprintEvaluator
+from prompts import get_supported_exercise_keys
 
 
-_SUPPORTED_SPRINT_EXERCISES = {
-    "yesAnd",
-    "misinterpretation",
-    "misinterpretationTechniques",
-    "loveHate",
-    "ifByXYouMeanY",
-    "questionAnswerTease",
-    "vibing",
-    "pushPull",
-    "heightening",
-    "firstUnusualThing",
-}
+_SUPPORTED_SPRINT_EXERCISES = get_supported_exercise_keys()
 
 
 def create_sprint_agent(exercise_type: str, model_name: str = None) -> SprintEvaluator:

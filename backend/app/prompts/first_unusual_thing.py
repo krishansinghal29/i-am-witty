@@ -1,11 +1,9 @@
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, verb_seed_generator_prompt
 
 
 # Local override: unlike other exercises, each sample answer is broken into the
@@ -32,10 +30,9 @@ Example of ONE answer's exact formatting:
 <b>1.</b><br><b>Ordinary detail:</b> the TV's on in the background<br><b>Unusual thing:</b> I pause it whenever someone on screen stands up, out of respect<br><b>Association:</b> standing ovations are exhausting, but you don't skip them'''
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are a wit coach evaluating "First Unusual Thing" responses — the skill of taking a completely ordinary moment and introducing the ONE unusual thing that breaks its base reality and opens a game.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 You are given a deliberately mundane scene — a slice of ordinary, everyday reality with nothing funny in it yet. This is the **base reality**. Your job is to introduce the **first unusual thing**: the single small tilt that knocks the scene off-center and makes it interesting.
 
@@ -146,28 +143,30 @@ Examples:
 - "I'm reheating last night's pasta in the office microwave."
 - "We're walking the dog around the block before it gets dark."''',
     },
-    "evaluator": {
-        **STANDARD_EVALUATOR_COMPONENTS,
-        "json_output_format_critical": FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT,
-    },
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': ['generator.intro'],
-    'evaluator': build_evaluator_sequence('the_process', 'what_counts', 'unusual_thing_techniques'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'firstUnusualThing',
-    "description": 'First Unusual Thing exercise — take a mundane scene and introduce the one grounded tilt that breaks base reality and opens a game.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Scene',
-    "generator": {
-        'mode': 'verb_seed',
-        'response_roles': [{'role': 'She'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="firstUnusualThing",
+    description="First Unusual Thing exercise — take a mundane scene and introduce the one grounded tilt that breaks base reality and opens a game.",
+    sprint_question_label="Scene",
+    response_roles=("She",),
+    generator_system=_generator["intro"],
+    generator_user_prompt=verb_seed_generator_prompt,
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["the_process"],
+            _shared["what_counts"],
+            _shared["unusual_thing_techniques"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+        json_output_format=FIRST_UNUSUAL_THING_JSON_OUTPUT_FORMAT,
+    ),
+)

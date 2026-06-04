@@ -10,7 +10,7 @@ from typing import Optional
 
 from agents.schemas import EvaluationResult
 from agents.sprint_multimodal_agent import SprintMultimodalAgent
-from prompts import get_exercise_prompt, get_sprint_question_label
+from prompts import get_exercise_spec
 from helpers.logger import logger
 from helpers.question_format_converter import convert_question_to_string
 
@@ -26,11 +26,11 @@ class SprintEvaluator(SprintMultimodalAgent):
 
     def __init__(self, exercise_key: str, model_name: str = None):
         self.exercise_key = exercise_key
-        system_message = get_exercise_prompt(exercise_key, "evaluator")
-        self.question_label = get_sprint_question_label(exercise_key)
+        self.spec = get_exercise_spec(exercise_key)
+        self.question_label = self.spec.sprint_question_label
 
         super().__init__(
-            system_message=system_message,
+            system_message=self.spec.evaluator_system,
             model_name=model_name,
             agent_type=f"{exercise_key}_evaluator",
             response_schema=EvaluationResult,

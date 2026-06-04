@@ -1,18 +1,14 @@
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    CREATIVE_GENERATOR_SEQUENCE,
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, creative_generator_prompt
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Vibing" responses — the art of making someone feel deeply understood and connected.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Vibing is emotional mirroring: MATCH her energy, VALIDATE her emotion, and BUILD on it. This is how you create that "wow, he really gets me" feeling that makes conversations feel magnetic.''',
         "why_this_matters_in_dating": '''=== WHY THIS MATTERS IN DATING ===
@@ -131,25 +127,32 @@ Think of the most interesting life experience possible!
 Be creative and original with your anecdote!
 Make it unique and memorable!''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': CREATIVE_GENERATOR_SEQUENCE,
-    'evaluator': build_evaluator_sequence('vibing_techniques_for_dating'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'vibing',
-    "description": 'Vibing exercise focused on emotional attunement, connection, and conversational momentum.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Story',
-    "generator": {
-        'mode': 'creative',
-        'response_roles': [{'role': 'Storyteller'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="vibing",
+    description="Vibing exercise focused on emotional attunement, connection, and conversational momentum.",
+    sprint_question_label="Story",
+    response_roles=("Storyteller",),
+    generator_system=_generator["intro"],
+    generator_user_prompt=creative_generator_prompt(
+        prompt_styles=_generator["prompt_styles"],
+        contexts=_generator["contexts"],
+        topic_suggestions=_generator["topic_suggestions"],
+        creativity_boosters=_generator["creativity_boosters"],
+    ),
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["vibing_techniques_for_dating"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+    ),
+)

@@ -1,13 +1,11 @@
 import random
 
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, verb_seed_generator_prompt
 
 
 TECHNIQUES = [
@@ -58,10 +56,9 @@ def pick_random_technique() -> dict:
     return random.choice(TECHNIQUES)
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are a wit coach evaluating "Misinterpretation Techniques" responses — the skill of applying a specific misinterpretation technique to redirect an everyday sentence.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 The user is given an everyday sentence AND a specific misinterpretation technique to apply. They must respond as if they understood the sentence differently — using exactly that technique. This trains deliberate technique selection, not just general misinterpretation.
 
@@ -137,25 +134,28 @@ Rules:
 - 1 sentence only, no punctuation theatrics
 - Output only the sentence, nothing else''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': ['generator.intro'],
-    'evaluator': build_evaluator_sequence('what_this_exercise_is', 'techniques_reference', 'evaluation_criteria'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'misinterpretationTechniques',
-    "description": 'Misinterpretation Techniques — practice applying a specific misinterpretation technique to any everyday sentence.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Tease/Statement',
-    "generator": {
-        'mode': 'verb_seed',
-        'response_roles': [{'role': 'She'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="misinterpretationTechniques",
+    description="Misinterpretation Techniques — practice applying a specific misinterpretation technique to any everyday sentence.",
+    sprint_question_label="Tease/Statement",
+    response_roles=("She",),
+    generator_system=_generator["intro"],
+    generator_user_prompt=verb_seed_generator_prompt,
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["techniques_reference"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+    ),
+    technique_picker=pick_random_technique,
+)

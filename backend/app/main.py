@@ -14,6 +14,7 @@ from helpers.avatar_utils import get_random_avatar_url
 from helpers.logger import logger
 from helpers.openai_tts import text_to_speech_multi_role
 from helpers.sprint_evaluation_helpers import create_sprint_agent, validate_sprint_request
+from prompts import get_supported_exercise_keys
 
 app = FastAPI(title="i-am-witty backend")
 
@@ -29,10 +30,7 @@ static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.isdir(static_dir):
     app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-_SUPPORTED_EXERCISES = {
-    "yesAnd", "misinterpretation", "misinterpretationTechniques", "loveHate", "ifByXYouMeanY",
-    "questionAnswerTease", "vibing", "pushPull", "heightening", "firstUnusualThing",
-}
+_SUPPORTED_EXERCISES = get_supported_exercise_keys()
 
 
 @app.get("/health")

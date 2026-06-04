@@ -1,17 +1,14 @@
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, archetype_generator_prompt
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are an elite dating coach evaluating "Misinterpretation" responses — the art of flipping shit tests into attraction.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 When she teases, criticizes, or tests you, your job is to REFRAME it as if she just complimented you. The goal: turn negatives into proof of your value — delivered with a smirk, not a speech.''',
         "reframe_techniques": '''=== REFRAME TECHNIQUES ===
@@ -123,29 +120,36 @@ Examples of Good Outputs:
 - The Skepticism Frame: Express total disbelief in his story or doubt his authenticity. Say 'Yeah right' or 'I don't buy it.'
 - The 'Too Nice' Accusation: Accuse him of being a 'Goody Two-Shoes', innocent, or bad at lying.''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': [
-        'generator.intro',
-        'generator.archetypes_text',
-        'generator.constraint',
-    ],
-    'evaluator': build_evaluator_sequence('reframe_techniques'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'shitTest',
-    "description": 'Misinterpretation exercise for playful reframing under social pressure.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Tease/Statement',
-    "generator": {
-        'mode': 'archetype',
-        'response_roles': [{'role': 'She'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="shitTest",
+    description="Misinterpretation exercise for playful reframing under social pressure.",
+    sprint_question_label="Tease/Statement",
+    response_roles=("She",),
+    generator_system="\n\n".join(
+        [
+            _generator["intro"],
+            _generator["archetypes_text"],
+            _generator["constraint"],
+        ]
+    ),
+    generator_user_prompt=archetype_generator_prompt(
+        archetypes=_generator["archetypes"],
+        constraint=_generator["constraint"],
+    ),
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["reframe_techniques"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+    ),
+)

@@ -1,17 +1,14 @@
-from prompts.prompt_builder import build_system_prompts
-from prompts._shared_components import (
-    EVALUATION_CONTEXT,
-    STANDARD_EVALUATOR_COMPONENTS,
-    build_evaluator_sequence,
+from prompts.shared import (
     build_feedback_style,
     build_sample_answer_guidelines,
+    build_evaluator_system,
 )
+from prompts.spec import ExerciseSpec, verb_seed_generator_prompt
 
 
-PROMPT_COMPONENTS = {
+PROMPT_TEXT = {
     "shared": {
         "intro": 'You are a wit coach evaluating "Misinterpretation" responses — the skill of finding an unexpected meaning in an ordinary sentence.',
-        "evaluation_context": EVALUATION_CONTEXT,
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
 Given an everyday sentence containing "I", "you", or "we", respond as if you understood it differently. The goal is not to correct the other person — it's to find an alternative reading of the sentence and run with it confidently. Any kind of misinterpretation counts: literal, absurd, flirty, context-shifted, or scope-exploded.''',
         "what_counts": '''=== WHAT COUNTS AS MISINTERPRETATION ===
@@ -99,25 +96,28 @@ Rules:
 - 1 sentence only, no punctuation theatrics
 - Output only the sentence, nothing else''',
     },
-    "evaluator": STANDARD_EVALUATOR_COMPONENTS,
 }
 
 
-PROMPT_SEQUENCES = {
-    'generator': ['generator.intro'],
-    'evaluator': build_evaluator_sequence('what_counts', 'misinterpretation_techniques'),
-}
+_shared = PROMPT_TEXT["shared"]
+_generator = PROMPT_TEXT["generator"]
 
-
-PROMPT_CONFIG = {
-    "exercise_key": 'misinterpretation',
-    "description": 'Misinterpretation exercise — find an unexpected reading in any everyday sentence with I, you, or we.',
-    "prompt_components": PROMPT_COMPONENTS,
-    "prompt_sequences": PROMPT_SEQUENCES,
-    "system_prompts": build_system_prompts(PROMPT_COMPONENTS, PROMPT_SEQUENCES),
-    "sprint_question_label": 'Tease/Statement',
-    "generator": {
-        'mode': 'verb_seed',
-        'response_roles': [{'role': 'She'}],
-    },
-}
+SPEC = ExerciseSpec(
+    key="misinterpretation",
+    description="Misinterpretation exercise — find an unexpected reading in any everyday sentence with I, you, or we.",
+    sprint_question_label="Tease/Statement",
+    response_roles=("She",),
+    generator_system=_generator["intro"],
+    generator_user_prompt=verb_seed_generator_prompt,
+    evaluator_system=build_evaluator_system(
+        intro=_shared["intro"],
+        sections=[
+            _shared["what_this_exercise_is"],
+            _shared["what_counts"],
+            _shared["misinterpretation_techniques"],
+            _shared["evaluation_criteria"],
+        ],
+        feedback_style=_shared["feedback_style"],
+        sample_answer_guidelines=_shared["sample_answer_guidelines"],
+    ),
+)

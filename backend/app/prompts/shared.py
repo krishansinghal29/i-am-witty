@@ -1,9 +1,8 @@
-"""
-Shared prompt components used identically across ALL exercises.
+"""Shared prompt text helpers for exercise specs."""
 
-Instead of copy-pasting these blocks into every exercise prompt file,
-import them here and reference in each exercise's PROMPT_COMPONENTS dict.
-"""
+from __future__ import annotations
+
+from collections.abc import Iterable
 
 
 def _render_bullets(items: list[str]) -> str:
@@ -78,28 +77,22 @@ Rules:
 - feedback MUST follow the exact 4-section structure defined above.
 - sample_answer must contain exactly 3 responses separated by <br><br>. Each should be short and punchy.'''
 
-STANDARD_EVALUATOR_COMPONENTS = {
-    "json_output_format_critical": EVALUATOR_JSON_OUTPUT_FORMAT,
-}
 
-CREATIVE_GENERATOR_SEQUENCE = [
-    'generator.intro',
-    'generator.prompt_styles',
-    'generator.contexts',
-    'generator.topic_suggestions',
-    'generator.creativity_boosters',
-]
-
-
-def build_evaluator_sequence(*technique_keys: str) -> list[str]:
-    """Build the standard evaluator sequence with exercise-specific technique blocks in the middle."""
-    return [
-        'shared.intro',
-        'shared.evaluation_context',
-        'shared.what_this_exercise_is',
-        *[f'shared.{k}' for k in technique_keys],
-        'shared.evaluation_criteria',
-        'shared.feedback_style',
-        'shared.sample_answer_guidelines',
-        'evaluator.json_output_format_critical',
+def build_evaluator_system(
+    *,
+    intro: str,
+    sections: Iterable[str],
+    feedback_style: str,
+    sample_answer_guidelines: str,
+    json_output_format: str = EVALUATOR_JSON_OUTPUT_FORMAT,
+) -> str:
+    """Assemble an evaluator system prompt in the standard order."""
+    parts = [
+        intro,
+        EVALUATION_CONTEXT,
+        *sections,
+        feedback_style,
+        sample_answer_guidelines,
+        json_output_format,
     ]
+    return "\n\n".join(part.strip("\n") for part in parts if part).strip()
