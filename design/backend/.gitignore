@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+
+# Environment variables (never commit real credentials)
+.env
+
+# IDE / editor cruft
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# uv / build artifacts
+*.egg-info/
+build/
+dist/
+
+# Note: .python-version is intentionally kept tracked.
