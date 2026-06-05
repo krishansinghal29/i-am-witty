@@ -14,6 +14,8 @@ from app.infrastructure.db.orm.base import Base
 # Import ORM modules so their tables register on Base.metadata before
 # autogenerate compares the model against the live database.
 import app.infrastructure.db.orm.users  # noqa: F401
+import app.infrastructure.db.orm.tasks  # noqa: F401
+import app.infrastructure.db.orm.onboarding  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

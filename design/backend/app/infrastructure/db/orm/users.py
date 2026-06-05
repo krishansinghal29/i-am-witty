@@ -2,10 +2,19 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime
+from datetime import date, datetime
 
 import sqlalchemy as sa
-from sqlalchemy import DateTime, Index, Text, text
+from sqlalchemy import (
+    CheckConstraint,
+    Date,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    Text,
+    text,
+)
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -56,3 +65,94 @@ class AppUser(Base):
     deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
     __table_args__ = (Index("app_users_firebase_uid_idx", "firebase_uid"),)
+
+
+class GuestSession(Base):
+    __tablename__ = "guest_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    app_user_id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        ForeignKey("app_users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    session_token_hash: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # "metadata" is reserved on the declarative class (Base.metadata), so map a
+    # differently-named attribute to the real "metadata" column.
+    session_metadata: Mapped[dict] = mapped_column(
+        "metadata",
+        postgresql.JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+    )
+
+    __table_args__ = (Index("guest_sessions_app_user_id_idx", "app_user_id"),)
+
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    app_user_id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        ForeignKey("app_users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    display_name: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
+        onupdate=text("now()"),
+    )
+
+
+class UserProgressSummary(Base):
+    __tablename__ = "user_progress_summaries"
+
+    app_user_id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        ForeignKey("app_users.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    completed_task_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
+    current_streak_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
+    longest_streak_count: Mapped[int] = mapped_column(
+        Integer, nullable=False, server_default=text("0")
+    )
+    last_activity_date: Mapped[date | None] = mapped_column(Date)
+    last_qualified_streak_date: Mapped[date | None] = mapped_column(Date)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
+        onupdate=text("now()"),
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "completed_task_count >= 0", name="completed_task_count_nonneg"
+        ),
+        CheckConstraint(
+            "current_streak_count >= 0", name="current_streak_count_nonneg"
+        ),
+        CheckConstraint(
+            "longest_streak_count >= 0", name="longest_streak_count_nonneg"
+        ),
+    )
