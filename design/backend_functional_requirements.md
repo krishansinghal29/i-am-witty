@@ -10,8 +10,9 @@ These requirements describe the backend capabilities needed to support the app e
 
 The following parts of the proposed stack are relevant to backend design:
 
-- Python: backend language for APIs, services, repository implementations, and integration clients.
-- Supabase + Postgres: primary backend, database, auth-adjacent storage, APIs, and server-side data model.
+- Python + FastAPI on Cloud Run: backend language and API/service runtime hosting the route handlers, services, repository implementations, and integration clients.
+- Neon Postgres: primary database and server-side data model (plain Postgres, accessed by the FastAPI service rather than exposed directly to clients).
+- Firebase Auth: authentication provider for Apple/Google sign-in; the backend verifies Firebase ID tokens and resolves the app user.
 - RevenueCat: subscription purchase, entitlement, restore-purchase, and paywall-related state.
 - PostHog: analytics, feature flag management, and session/video recording metadata where needed.
 - Capgo: app update/release delivery service; relevant only where backend behavior depends on app version, channel, or rollout state.
@@ -19,8 +20,8 @@ The following parts of the proposed stack are relevant to backend design:
 The following stack items are primarily client/app concerns and are not expected to shape backend schema directly:
 
 - Capacitor
-- Ionic React
-- Material UI / Paper component library
+- Ionic React (component library)
+- Firebase Auth client SDK (drives the native sign-in handshake; the backend remains the token-verification authority)
 
 ## Main Backend Requirements
 
@@ -30,11 +31,11 @@ The backend shall support guest users, authenticated users, and user profile dat
 
 Key backend needs:
 - Create or track a guest user/session before login so onboarding and the first task can happen without authentication.
-- Support Apple and Google authentication.
+- Support Apple and Google authentication through Firebase Auth.
 - Link guest progress to an authenticated account when the user signs in.
 - Store profile fields needed by the app, including display name, current streak, and completed task count.
 - Support sign-out/session invalidation.
-- Use Supabase/Postgres as the system of record for user profile and progress data.
+- Use Neon Postgres as the system of record for user profile and progress data.
 
 ### 2. Onboarding State And Personalization
 

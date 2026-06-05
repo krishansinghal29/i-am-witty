@@ -15,7 +15,7 @@ The client stack, per the UX implementation brief:
 - React + TypeScript: application code, state, and view logic.
 - RevenueCat SDK (client): fetch Offerings/packages, present the paywall, run purchase and restore flows, and read the `Witty+` entitlement.
 - PostHog SDK (client): product analytics, feature flag evaluation, and session/replay capture where enabled.
-- Supabase client: Apple/Google authentication and authenticated calls; most data access goes through backend APIs/Edge Functions.
+- Firebase Auth (client SDK): Apple/Google sign-in and ID tokens attached to authenticated calls; most data access goes through the FastAPI backend on Cloud Run.
 - Capgo: over-the-air app update/release delivery.
 
 Theming and content presentation are client concerns: the "Light & Warm" theme applied via Ionic CSS variables (light surfaces, orange accent for CTAs/celebration, blue for primary/active states), Inter as the app font, rounded line icons (~2px stroke), and a 12px radius token. The shipped app uses real photo personas for conversation practice; the mockups stand in with emoji thumbnails.
@@ -150,7 +150,7 @@ The frontend shall support guest use first, then optional sign-in that preserves
 
 Key frontend needs:
 - Establish a guest/anonymous session locally and via the backend before login, so onboarding and the first task work without authentication.
-- Support Apple and Google sign-in through Supabase.
+- Support Apple and Google sign-in through Firebase Auth.
 - Link guest progress to the authenticated account on sign-in.
 - Support sign-out and session invalidation.
 - Store and read the durable app identity/session needed for authenticated API calls.

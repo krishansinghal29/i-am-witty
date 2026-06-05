@@ -4,7 +4,7 @@ Source: `frontend_functional_requirements.md`, `ux_existing/README.md` (and `ux_
 
 ## Goal
 
-Define an Ionic React + TypeScript client structure that keeps screens and UI logic independent of vendor SDK details (Supabase, RevenueCat, PostHog, Capacitor, Capgo) and of backend payload shapes, while still fitting the current stack. SDK and transport code lives behind adapters/ports in one area so a vendor can be swapped with limited changes. Tasks of the same type render through one shared, data-driven runtime so new exercises are content, not new screens.
+Define an Ionic React + TypeScript client structure that keeps screens and UI logic independent of vendor SDK details (Firebase Auth, RevenueCat, PostHog, Capacitor, Capgo) and of backend payload shapes, while still fitting the current stack. SDK and transport code lives behind adapters/ports in one area so a vendor can be swapped with limited changes. Tasks of the same type render through one shared, data-driven runtime so new exercises are content, not new screens.
 
 This document mirrors the layering discipline of `backend_lld.md`: the frontend's load-bearing decisions are **navigation/routing** and **state management** (the client analog of the backend's repositories and transactions).
 
@@ -17,7 +17,7 @@ Per `frontend_functional_requirements.md` §0:
 - React + TypeScript: application code, state, and view logic.
 - RevenueCat SDK (client): Offerings/packages, paywall, purchase/restore, `Witty+` entitlement.
 - PostHog SDK (client): analytics, feature flags, session replay where enabled.
-- Supabase client: Apple/Google auth and authenticated calls; most data goes through backend APIs/Edge Functions.
+- Firebase Auth (client SDK): Apple/Google sign-in and ID tokens; most data goes through the FastAPI backend on Cloud Run.
 - Capgo: over-the-air update/release delivery.
 - Speech-to-text (STT): Deepgram (streaming) is the current recognizer for the voice task runtime, reached only through a `TranscriptionGateway` port so the provider is swappable (e.g. to a Whisper-based recognizer) without touching screens or the runtime contract. The provider key never ships in the client bundle: the backend mints short-lived credentials for the live path and owns the authoritative final transcript (see "Client vs. backend split for speech-to-text"). A native fallback (`@capacitor-community/speech-recognition` / Web Speech) can implement the same port for offline/cheap capture.
 
@@ -39,7 +39,7 @@ Ionic Page (screen)
 Rules that keep this honest:
 
 - Screens depend on feature hooks, never on the API client or an SDK directly.
-- Feature hooks depend on the data layer and stores, never on `fetch`, Supabase, RevenueCat, PostHog, or Capacitor directly.
+- Feature hooks depend on the data layer and stores, never on `fetch`, Firebase, RevenueCat, PostHog, or Capacitor directly.
 - The data layer maps backend DTOs to view models; DTO shapes never leak into components.
 - Vendor SDKs are reached only through adapter interfaces (the client analog of backend repository/integration ports).
 
@@ -166,8 +166,8 @@ frontend/
         device_services.ts
         secure_store.ts
         transcription_gateway.ts
-      supabase/
-        supabase_auth_gateway.ts
+      firebase/
+        firebase_auth_gateway.ts
       revenuecat/
         revenuecat_subscription_gateway.ts
       posthog/
@@ -220,7 +220,7 @@ Two clearly separated kinds of state, never conflated:
 
 ### Data Layer
 
-Owns transport and shape translation. The HTTP client attaches the Supabase access token when authenticated or the guest session token header otherwise, parses responses, and normalizes failures into one `AppError`. DTO types match backend payloads exactly (e.g. the runtime payload in `tasks_trimmed.md`); mappers convert DTOs into view-model types in `types/models.ts`. Components and screens never import DTO types.
+Owns transport and shape translation. The HTTP client attaches the Firebase ID token when authenticated or the guest session token header otherwise, parses responses, and normalizes failures into one `AppError`. DTO types match backend payloads exactly (e.g. the runtime payload in `tasks_trimmed.md`); mappers convert DTOs into view-model types in `types/models.ts`. Components and screens never import DTO types.
 
 ### Integration Adapters (Ports)
 
@@ -313,7 +313,7 @@ export interface HttpClient {
 }
 
 // Implementation responsibilities:
-// - attach Supabase access token if authenticated, else X-Guest-Session header
+// - attach Firebase ID token if authenticated, else X-Guest-Session header
 // - JSON encode/decode
 // - map non-2xx and network failures to AppError (code + userMessage + cause)
 ```
@@ -424,7 +424,7 @@ export interface TranscriptionGateway {
 
 ### Client vs. backend split for auth and subscriptions
 
-The Supabase and RevenueCat client SDKs are **triggers + optimistic reads**, not a source of truth. The auth and in-app-purchase *handshakes* must run on-device (native sign-in sheets; StoreKit/Play Billing payment sheets cannot be initiated from a server), so they stay in the client adapters. The backend remains the **authority**: it validates the JWT on every call, owns entitlement truth via the RevenueCat webhook (`revenue_cat_webhook` → `EntitlementService.sync_revenue_cat_event`), and enforces the daily free limit (`daily_limit_policy`). After purchase/restore, the client invalidates `entitlement` + `freeLimit` and re-reads the backend value. Rule: gate UX off the SDK read for snappiness, but never unlock a server resource on the client entitlement — the enforcement number is always the backend's `freeLimit`/`entitlement`.
+The Firebase Auth and RevenueCat client SDKs are **triggers + optimistic reads**, not a source of truth. The auth and in-app-purchase *handshakes* must run on-device (native sign-in sheets; StoreKit/Play Billing payment sheets cannot be initiated from a server), so they stay in the client adapters. The backend remains the **authority**: it verifies the Firebase ID token (JWT) on every call, owns entitlement truth via the RevenueCat webhook (`revenue_cat_webhook` → `EntitlementService.sync_revenue_cat_event`), and enforces the daily free limit (`daily_limit_policy`). After purchase/restore, the client invalidates `entitlement` + `freeLimit` and re-reads the backend value. Rule: gate UX off the SDK read for snappiness, but never unlock a server resource on the client entitlement — the enforcement number is always the backend's `freeLimit`/`entitlement`.
 
 ### Client vs. backend split for speech-to-text (STT)
 
@@ -575,7 +575,7 @@ always offer "Maybe later" (no dark patterns)
 ### Guest → authenticated linking
 
 ```text
-signIn (Supabase Apple/Google) -> obtain auth session
+signIn (Firebase Apple/Google) -> obtain Firebase ID token / session
   -> linkAccount(app_user_id, auth) on backend (merges guest progress)
   -> persist identity via SecureStore
   -> invalidate session/progress/entitlement/freeLimit
@@ -599,7 +599,7 @@ signIn (Supabase Apple/Google) -> obtain auth session
 ```ts
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const secureStore = new CapacitorSecureStore();
-  const auth = new SupabaseAuthGateway(secureStore);
+  const auth = new FirebaseAuthGateway(secureStore);
   const subscriptions = new RevenueCatSubscriptionGateway();
   const analytics = new PostHogAnalyticsGateway();
   const device = new CapacitorDeviceServices();
@@ -620,7 +620,7 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
 }
 ```
 
-Swapping a vendor (e.g. RevenueCat → another provider, Supabase auth → another IdP, or Deepgram → a Whisper-style STT) is a change to one adapter and this wiring, not to screens or hooks.
+Swapping a vendor (e.g. RevenueCat → another provider, Firebase auth → another IdP, or Deepgram → a Whisper-style STT) is a change to one adapter and this wiring, not to screens or hooks.
 
 ## Why This Structure
 

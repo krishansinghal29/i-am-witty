@@ -4,14 +4,14 @@ Source: `backend_functional_requirements.md`, `database_schema.md`, and `tasks_t
 
 ## Goal
 
-Define a Python backend code structure that keeps business logic independent from Supabase/Postgres details, while still fitting the current stack. Repositories live in one infrastructure area so the database implementation can be replaced later with limited changes.
+Define a Python (FastAPI on Cloud Run) backend code structure that keeps business logic independent from Neon Postgres details, while still fitting the current stack. Repositories live in one infrastructure area so the database implementation can be replaced later with limited changes.
 
 ## Architectural Style
 
 Use a ports-and-adapters structure:
 
 ```text
-API / Python function or route handler
+FastAPI route handler (Cloud Run)
   -> Application Service
     -> Domain Policies
     -> Repository Ports
@@ -19,28 +19,31 @@ API / Python function or route handler
   -> Infrastructure Implementations
 ```
 
-Application services depend on Python protocols, not directly on Supabase clients.
+Application services depend on Python protocols, not directly on the Neon Postgres driver or other vendor SDKs.
 
 ## Suggested Directory Structure
 
 ```text
 backend/
-  functions/
-    create_guest_session.py
-    link_auth_user.py
-    update_onboarding.py
-    get_home.py
-    get_practice_catalog.py
-    get_task_runtime.py
-    start_task.py
-    complete_task.py
-    save_reminder.py
-    register_notification_device.py
-    submit_support.py
-    revenue_cat_webhook.py
-    create_transcription_token.py   # mints a short-lived STT credential for the client live path
+  app/                                 # single Python package; imports namespaced as app.<layer>.*
+    api/                               # inbound adapter: FastAPI app deployed to Cloud Run
+      main.py                          # ASGI app factory; mounts routers, middleware, container
+      deps.py                          # FastAPI dependencies: Firebase ID-token auth, guest-session resolution, container access
+      routes/
+        create_guest_session.py
+        link_auth_user.py
+        update_onboarding.py
+        get_home.py
+        get_practice_catalog.py
+        get_task_runtime.py
+        start_task.py
+        complete_task.py
+        save_reminder.py
+        register_notification_device.py
+        submit_support.py
+        revenue_cat_webhook.py
+        create_transcription_token.py  # mints a short-lived STT credential for the client live path
 
-  shared/
     application/
       identity_service.py
       onboarding_service.py
@@ -85,6 +88,7 @@ backend/
         support_repository.py
         config_repository.py
       integrations/
+        auth_token_verifier.py
         subscription_provider.py
         analytics.py
         transcription_provider.py
@@ -92,28 +96,38 @@ backend/
 
     infrastructure/
       db/
-        supabase_client.py
-        transaction.py
-        rpc.py
+        engine.py                          # SQLAlchemy async engine + async_sessionmaker (Neon/Postgres)
+        session.py                         # per-request AsyncSession provider + unit-of-work / transaction scope
+        orm/                               # SQLAlchemy declarative models (mapped tables); distinct from domain models
+          base.py                          # DeclarativeBase + MetaData (the Alembic autogenerate target)
+          users.py                         # app_users, guest_sessions, user_profiles, user_progress_summaries
+          onboarding.py                    # onboarding_states, onboarding_trigger_task_mappings
+          tasks.py                         # task_types, tasks
+          plans.py                         # daily_plans, daily_plan_items, task_attempts, user_day_activity
+          billing.py                       # daily_usage_counters, revenuecat_*, subscription_entitlements
+          comms.py                         # reminder_preferences, notification_devices, support_messages
+          config.py                        # app_config, feature_gate_defaults, app_release_channels
+        sql_functions.py                   # high-integrity stored-function calls via session.execute(text(...))
         sql/
           complete_task_attempt.sql
           link_guest_user.sql
       repositories/
-        supabase_user_repository.py
-        supabase_guest_session_repository.py
-        supabase_profile_repository.py
-        supabase_onboarding_repository.py
-        supabase_task_repository.py
-        supabase_daily_plan_repository.py
-        supabase_task_attempt_repository.py
-        supabase_progress_repository.py
-        supabase_usage_repository.py
-        supabase_entitlement_repository.py
-        supabase_reminder_repository.py
-        supabase_notification_device_repository.py
-        supabase_support_repository.py
-        supabase_config_repository.py
+        pg_user_repository.py              # SQLAlchemy ORM impl; maps ORM rows <-> domain models
+        pg_guest_session_repository.py
+        pg_profile_repository.py
+        pg_onboarding_repository.py
+        pg_task_repository.py
+        pg_daily_plan_repository.py
+        pg_task_attempt_repository.py
+        pg_progress_repository.py
+        pg_usage_repository.py
+        pg_entitlement_repository.py
+        pg_reminder_repository.py
+        pg_notification_device_repository.py
+        pg_support_repository.py
+        pg_config_repository.py
       integrations/
+        firebase_auth_verifier.py          # verifies Firebase ID tokens (Firebase Admin SDK)
         revenue_cat_client.py
         posthog_client.py
         deepgram_transcription_client.py   # swappable for a whisper_transcription_client.py
@@ -125,13 +139,18 @@ backend/
     errors/
       app_error.py
       http_errors.py
+
+  alembic/                                 # migrations, autogenerated from app.infrastructure.db.orm metadata
+    env.py
+    versions/
+  alembic.ini
 ```
 
 ## Layer Responsibilities
 
-### Functions
+### API (FastAPI Routes)
 
-Python function or route-handler entry points. They should parse HTTP input, authenticate or resolve guest sessions, call application services, and return API responses.
+FastAPI route handlers, served by a single ASGI app on Cloud Run (`api/main.py`). They parse HTTP input, authenticate the request (verify the Firebase ID token via the auth dependency) or resolve a guest session, call application services, and return API responses. Cross-cutting concerns — Firebase token verification, guest-session resolution, and access to the composition container — are provided as FastAPI dependencies in `api/deps.py`.
 
 They should not contain business rules or direct database queries.
 
@@ -158,11 +177,11 @@ Examples:
 
 ### Ports
 
-Python `Protocol` interfaces used by services. Ports describe what the application needs, not how Supabase implements it.
+Python `Protocol` interfaces used by services. Ports describe what the application needs, not how Neon/Postgres implements it.
 
 ### Infrastructure
 
-Concrete implementations of repository and integration ports. Supabase-specific query code lives here.
+Concrete implementations of repository and integration ports. Neon/Postgres-specific query code lives here. Persistence uses the SQLAlchemy ORM: declarative models live in `infrastructure/db/orm/` and are mapped to the schema in `database_schema.md`.
 
 If the database changes later, replace the repository implementations in `infrastructure/repositories/*` with new implementations while keeping application services largely unchanged.
 
@@ -171,13 +190,14 @@ If the database changes later, replace the repository implementations in `infras
 Postgres-specific logic should stay inside infrastructure, not application services.
 
 Use this split:
-- `infrastructure/repositories/*.py`: Supabase/Postgres query code for normal reads and writes.
-- `infrastructure/db/transaction.py`: transaction helpers and transaction boundary utilities.
-- `infrastructure/db/rpc.py`: wrappers for calling Postgres RPC functions.
+- `infrastructure/db/orm/*.py`: SQLAlchemy declarative models — the mapped tables — kept separate from `domain/models`.
+- `infrastructure/repositories/*.py`: SQLAlchemy ORM query code (over an `AsyncSession`) for normal reads and writes; each repository maps ORM rows to and from domain models.
+- `infrastructure/db/engine.py` and `session.py`: the async engine/sessionmaker and the per-request `AsyncSession` that serves as the unit of work / transaction scope.
+- `infrastructure/db/sql_functions.py`: wrappers that call high-integrity Postgres stored functions via `session.execute(text(...))`.
 - `infrastructure/db/sql/*.sql`: SQL bodies for high-integrity database functions that must run atomically.
-- migrations, if used by the project tooling: table definitions, indexes, constraints, triggers, and seed data.
+- `alembic/versions/*`: migrations, autogenerated from the ORM models' metadata, are the executable transcription of `database_schema.md`.
 
-Application services should call repository or RPC wrapper methods instead of embedding SQL.
+Application services should call repository or stored-function wrapper methods instead of embedding SQL.
 
 Example:
 
@@ -188,7 +208,7 @@ TaskAttemptService.complete_task
   -> UsageRepository.increment_daily_usage
 ```
 
-For a highly atomic operation, the service can call a single repository/RPC wrapper:
+For a highly atomic operation, the service can call a single repository/stored-function wrapper:
 
 ```text
 TaskAttemptService.complete_task
@@ -197,6 +217,17 @@ TaskAttemptService.complete_task
 ```
 
 This keeps Postgres replaceable at the service layer while still allowing Postgres to enforce critical consistency where needed.
+
+## ORM Models vs. Domain Models
+
+These are two distinct layers and must not be collapsed into one:
+
+- **ORM models** (`infrastructure/db/orm/*.py`): SQLAlchemy declarative classes mapped to the physical tables in `database_schema.md`. They carry columns, relationships, and persistence concerns, and their metadata is what Alembic autogenerates migrations from.
+- **Domain models** (`domain/models/*.py`): small, persistence-ignorant Python objects that express business state and feed the policies. They import no SQLAlchemy and have no notion of tables, sessions, or columns.
+
+Repositories are the only place the two meet: a repository loads ORM rows through the session and maps them into domain models on the way out, and maps domain input back to ORM writes on the way in. The ports in `ports/repositories` stay unchanged — they still speak in domain types — so the SQLAlchemy choice never leaks above `infrastructure/`.
+
+Cost: this mapping is boilerplate. If it grows tiresome, the lighter alternative is SQLAlchemy's imperative (classical) mapping — map plain domain dataclasses to `Table` definitions without decorating them — which keeps the domain free of ORM syntax while removing the duplicate class. Prefer the explicit two-class split first; reach for imperative mapping only if the duplication becomes a real burden.
 
 ## Repository Design
 
@@ -349,7 +380,7 @@ The first implementation can adapt the current generator/evaluator behavior behi
 
 ## Speech-to-Text (STT) Provider
 
-Voice tasks need a transcript, and the **backend is the authority** for the transcript that gets evaluated and stored. The provider (Deepgram today) is reached only through an integration port so it can be replaced later with a Whisper-style recognizer at the infrastructure layer — the same replaceability discipline applied to Supabase repositories and the RevenueCat client. The provider API key lives only on the backend; it must never be shipped in the client bundle. This mirrors the frontend's "Client vs. backend split for speech-to-text" in `frontend_lld.md`.
+Voice tasks need a transcript, and the **backend is the authority** for the transcript that gets evaluated and stored. The provider (Deepgram today) is reached only through an integration port so it can be replaced later with a Whisper-style recognizer at the infrastructure layer — the same replaceability discipline applied to the Postgres repositories and the RevenueCat client. The provider API key lives only on the backend; it must never be shipped in the client bundle. This mirrors the frontend's "Client vs. backend split for speech-to-text" in `frontend_lld.md`.
 
 The provider has two responsibilities, matching the client's two-path model:
 
@@ -414,8 +445,8 @@ onboarding_states, if onboarding task
 External network calls in `complete_task` — resolving the authoritative transcript (`TranscriptionService`) and LLM evaluation (`VoicePromptTaskEngine.complete`) — must complete **before** this transaction opens. Do not hold a database transaction open across an STT or model call; compute the transcript and evaluation first, then perform the atomic multi-table write.
 
 Implementation options:
-- Use a transaction helper if the Supabase runtime supports it cleanly.
-- Use Postgres RPC functions for high-integrity atomic operations.
+- Use the SQLAlchemy `AsyncSession` as the unit of work: open one session per request and wrap a multi-table mutation in `async with session.begin()` so the writes commit or roll back together. All repositories in a request share that one session.
+- Use Postgres stored functions (invoked through the session) for the highest-integrity atomic operations.
 - Keep orchestration in Python, but avoid non-transactional multi-table writes for critical flows.
 
 ## Handling Future Intermediate Task State
@@ -446,45 +477,76 @@ This keeps scaffolded tasks like Push/Pull additive and avoids adding brittle co
 
 ## Composition
 
-`composition/container.py` wires services to concrete implementations.
+`composition/container.py` wires services to concrete implementations. With the SQLAlchemy ORM there are **two scopes**: process-wide singletons built once at startup (engine, sessionmaker, stateless integration clients) and request-scoped services bound to a single `AsyncSession` so every repository in a request shares one unit of work.
 
-Example:
+Built once at startup (app lifespan):
 
 ```python
-def create_container() -> Container:
-    db = create_supabase_client()
+def create_app_container() -> AppContainer:
+    engine = create_async_engine(settings.database_url, pool_size=5, max_overflow=5)
+    session_factory = async_sessionmaker(engine, expire_on_commit=False)
 
-    task_repository = SupabaseTaskRepository(db)
-    attempt_repository = SupabaseTaskAttemptRepository(db)
-    daily_plan_repository = SupabaseDailyPlanRepository(db)
-    progress_repository = SupabaseProgressRepository(db)
-    usage_repository = SupabaseUsageRepository(db)
-    entitlement_repository = SupabaseEntitlementRepository(db)
-
+    # Stateless integrations are safe to share across requests.
+    auth_verifier = FirebaseAuthVerifier()
     # STT provider swap (Deepgram -> Whisper-style) is a one-line change here.
-    transcription_provider = DeepgramTranscriptionClient()
-    transcription_service = TranscriptionService(transcription_provider)
+    transcription_service = TranscriptionService(DeepgramTranscriptionClient())
 
-    return Container(
-        task_attempt_service=TaskAttemptService(
-            attempts=attempt_repository,
-            tasks=task_repository,
-            daily_plans=daily_plan_repository,
-            progress=progress_repository,
-            usage=usage_repository,
-            entitlements=entitlement_repository,
-        ),
+    return AppContainer(
+        engine=engine,
+        session_factory=session_factory,
+        auth_token_verifier=auth_verifier,
         transcription_service=transcription_service,
     )
 ```
 
+Built per request (in `api/deps.py`), bound to one `AsyncSession` so a multi-table write commits or rolls back as a unit:
+
+```python
+def build_request_services(session: AsyncSession, app: AppContainer) -> RequestServices:
+    tasks = PgTaskRepository(session)
+    attempts = PgTaskAttemptRepository(session)
+    daily_plans = PgDailyPlanRepository(session)
+    progress = PgProgressRepository(session)
+    usage = PgUsageRepository(session)
+    entitlements = PgEntitlementRepository(session)
+
+    return RequestServices(
+        task_attempt_service=TaskAttemptService(
+            attempts=attempts,
+            tasks=tasks,
+            daily_plans=daily_plans,
+            progress=progress,
+            usage=usage,
+            entitlements=entitlements,
+        ),
+    )
+```
+
+The FastAPI session dependency opens the `AsyncSession` (and its transaction scope) per request, builds the request services, and ensures commit/rollback and close at the end of the request.
+
 ## Why This Structure
 
-- Keeps Supabase-specific code centralized.
+- Keeps Postgres- and SQLAlchemy-specific code centralized in `infrastructure/`; ports and domain stay persistence-free.
 - Makes future database replacement possible.
 - Keeps business rules testable without a database.
-- Avoids pushing business logic into HTTP/function handlers.
+- Avoids pushing business logic into HTTP route handlers.
 - Supports additive complexity for future task types without rewriting the core task model.
+
+## Hosting Portability / Future Self-Hosting
+
+The target stack (FastAPI on Cloud Run + Neon Postgres) is deliberately portable to self-hosted Postgres and a self-hosted FastAPI process later. That migration is **low-code, moderate-ops**: it changes *where things run*, not *what the code does* — no business logic, schema, repository, or auth changes. Neon is wire-compatible Postgres reached via standard `asyncpg`/SQLAlchemy, so the DB move is mostly `DATABASE_URL` + data transfer (`pg_dump`/`pg_restore` or logical replication); FastAPI is a portable ASGI app, so the compute move is mostly packaging + deployment. What you take on by self-hosting is operational (TLS/reverse proxy, process supervision, autoscaling, backups/PITR, monitoring, public ingress for the `revenue_cat_webhook` endpoint), and no abstraction removes that burden.
+
+Cost posture (why this is sequenced, not a conflict):
+- At low/early scale, the managed stack is the **cheapest** option, not the expensive one: Cloud Run and Neon both **scale to zero**, so idle cost is ~$0. A self-hosted VM runs 24/7 at a fixed floor cost regardless of traffic.
+- Self-hosting becomes the cost win only under **sustained, predictable traffic**, where a fixed VM amortizes better than per-request billing + managed-DB markup. Treat the move as a future optimization triggered by that crossover.
+- The dominant cost driver for this backend is expected to be **per-task LLM evaluation + STT (Deepgram)**, not the web tier — focus cost effort there (model choice, caching, the free-task cap), not on hosting.
+- Cloud Run tradeoff to decide: `min-instances=0` keeps cost near $0 but allows cold starts; `min-instances=1` removes cold starts but adds an always-on floor cost.
+
+Keep the migration small by holding these constraints now:
+- Talk to Postgres only over the standard wire protocol (`asyncpg`/SQLAlchemy) — never a Neon-proprietary serverless/HTTP driver — so `infrastructure/db/engine.py` is host-agnostic.
+- Load all config (`DATABASE_URL`, secrets, port) from environment variables in one config module; never read config from a cloud-provider SDK inside services. Keep the container 12-factor (stateless, listens on `$PORT`, logs to stdout).
+- If any cloud-proprietary service is adopted (e.g. Cloud Tasks/Scheduler for the notification-delivery open question, Pub/Sub, object storage), place it behind a `ports/integrations` port like every other vendor, so self-hosting swaps an adapter, not the services.
+- Connection management: Cloud Run scales horizontally and each instance holds its own pool, which can exhaust Postgres `max_connections`. Keep a small per-instance pool, raise request concurrency (fewer instances for the same load = lower cost), and use a pooled (PgBouncer-style) endpoint. This same configuration carries over to a self-hosted PgBouncer unchanged.
 
 ## Practical Caution
 
