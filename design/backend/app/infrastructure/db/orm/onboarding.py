@@ -69,10 +69,15 @@ class OnboardingState(Base):
         postgresql.UUID(as_uuid=True),
         ForeignKey("tasks.id", ondelete="SET NULL"),
     )
-    # references task_attempts(id), but that table does not exist until Batch C,
-    # so this stays a plain nullable uuid (no FK) for now. Batch C adds the FK.
+    # task_attempts now exists (Batch C), so this previously-deferred FK is wired
+    # up with the doc's explicit constraint name.
     first_task_attempt_id: Mapped[uuid.UUID | None] = mapped_column(
-        postgresql.UUID(as_uuid=True)
+        postgresql.UUID(as_uuid=True),
+        ForeignKey(
+            "task_attempts.id",
+            ondelete="SET NULL",
+            name="onboarding_states_first_task_attempt_fk",
+        ),
     )
     first_win_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     account_prompt_seen_at: Mapped[datetime | None] = mapped_column(
