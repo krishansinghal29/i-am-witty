@@ -1,10 +1,10 @@
 # i-am-witty Frontend Functional Requirements
 
-Source: `ux_existing/` mockups (`onboarding`, `home`, `practice`, `profile`, `paywall`), the UX visual brief (`ux_existing/README.md`), and the onboarding flow spec (`onboarding.md`). Aligned with `backend_functional_requirements.md`, `backend_lld.md`, and `database_schema.md`.
+Source: `ux_existing/` mockups (`onboarding`, `home`, `practice`, `profile`, `paywall`), the UX visual brief (`ux_existing/README.md`), and the onboarding flow spec (`extra/onboarding.md`). Aligned with `backend_functional_requirements.md`, `backend_lld.md`, `database_schema.md`, and `tasks_trimmed.md`.
 
 ## Scope
 
-These requirements describe the client/app capabilities needed to deliver the experience shown in the mockups. They are written to guide later screen, component, state, navigation, and integration design. Task-specific in-exercise interaction behavior is intentionally out of scope; tasks are treated as typed runtime units rendered by a shared UI per task type, to be detailed in later deep dives (mirroring the backend's treatment of tasks).
+These requirements describe the client/app capabilities needed to deliver the experience shown in the mockups. They are written to guide later screen, component, state, navigation, and integration design. Task-specific runtime contracts are summarized in `design/tasks_trimmed.md`; this document focuses on app-level screens, navigation, state, and integration behavior.
 
 ## Frontend-Relevant Tech Stack
 
@@ -72,8 +72,8 @@ The frontend shall provide a calm, low-pressure library of exercises to repeat a
 
 Key frontend needs:
 - Render a grid of exercise tiles, each with a type-tinted thumbnail, title, duration, and type label.
-- Support the exercises shown in the mockups: Warm-up riff, Yes And, Box breathing, Peak–End hook, One-word story, Punch it up, 60-second story, and Power pose.
-- Support optional filter chips by activity family (All, Improv, Sprints, Stories) and optional sections (e.g. "Your regulars"), as previewed in the paywall backdrop.
+- Support the exercises shown in the mockups — the voice exercises (e.g. Yes And) alongside broader practice items: Warm-up riff, Box breathing, Peak–End hook, One-word story, Punch it up, 60-second story, and Power pose.
+- Support optional filter chips by activity family (All, Improv, Sprints, Stories, Calm) and optional sections (e.g. "Your regulars"), as previewed in the paywall backdrop.
 - Open the task runtime when a tile is tapped, subject to entitlement and the free daily limit.
 - Keep the screen non-graded and pressure-free; distinct from Home's curated daily path.
 
@@ -83,11 +83,12 @@ The frontend shall render a shared task UI per task type, filled with per-task c
 
 Key frontend needs:
 - Render the shared UI structure indicated by the task type (`ui_schema_key`), populated by per-task content, image, thumbnail, and prompt data from the backend.
-- Support the current task-type families: sprint (voice delivery), improv, calm/breath, and story/radio.
+- Support the current voice task types defined in `design/tasks_trimmed.md`: `voice_single_prompt`, `voice_dialogue_prompt`, and `voice_scaffolded_prompt`.
+- Treat product families such as sprint, improv, calm, and story as catalog metadata/filters unless they also define a distinct runtime UI shape.
 - Start a task attempt on entry and complete it on finish; reflect plan-item status changes.
 - Keep recording and practice calm; trigger a loud celebration only on completion.
 - Offer voice capture and/or text input per task type.
-- Treat detailed per-type interaction, generation, and feedback rendering as out of scope here; the runtime should route to the appropriate task-type behavior defined in later deep dives.
+- Route prompt rendering, assigned-technique UI, scaffold stages, generation, completion, and feedback rendering according to the task runtime payload contract in `design/tasks_trimmed.md`.
 
 ### 6. Streaks, Progress, and Celebration
 
@@ -97,7 +98,7 @@ Key frontend needs:
 - Display streak count, the weekly activity strip, and the completed-exercises count.
 - Express forgiving-streak behavior (never punish missed days) and reassure that the streak is safe when the free limit is reached.
 - Trigger celebration effects (confetti, glow) only on wins (completing a task/round).
-- Frame progress as XP/level vs. the past self; avoid leaderboards, public ranking, or harsh red scoring.
+- Frame progress against the user's past self; avoid leaderboards, public ranking, or harsh red scoring.
 
 ### 7. Subscription and Paywall (Witty+)
 
@@ -171,7 +172,7 @@ The frontend shall handle the states and accessibility concerns common to all sc
 Key frontend needs:
 - Provide loading, empty, and error states for data-backed screens (plan, catalog, profile, paywall offerings).
 - Honor reduced-motion preferences for confetti/glow and other celebration animations.
-- Maintain readable contrast on the dark theme and consistent rounded iconography.
+- Maintain readable contrast on the Light & Warm theme and consistent rounded iconography.
 - Surface privacy reassurances where the user is asked to produce content.
 - Keep optimistic/responsive interactions where it lowers perceived pressure (e.g. immediate "Next up" emphasis).
 
@@ -203,7 +204,7 @@ Key frontend needs:
 
 ## Out Of Scope For This Pass
 
-- Detailed in-exercise interaction, generation, and feedback UI for each task type.
+- Exact in-exercise component composition beyond the task runtime contracts in `design/tasks_trimmed.md`.
 - Exact component tree, styling specifics, and animation timings.
 - Exact API route names and payloads.
 - Role play screens and behavior (future, flag-gated).

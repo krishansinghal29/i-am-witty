@@ -1,6 +1,6 @@
 # i-am-witty Backend LLD
 
-Source: `functional_requirements.md` and `database_schema.md`
+Source: `backend_functional_requirements.md`, `database_schema.md`, and `tasks_trimmed.md`
 
 ## Goal
 
@@ -35,8 +35,10 @@ backend/
     start_task.py
     complete_task.py
     save_reminder.py
+    register_notification_device.py
     submit_support.py
     revenue_cat_webhook.py
+    create_transcription_token.py   # mints a short-lived STT credential for the client live path
 
   shared/
     application/
@@ -51,6 +53,7 @@ backend/
       reminder_service.py
       support_service.py
       app_config_service.py
+      transcription_service.py
 
     domain/
       models/
@@ -84,6 +87,7 @@ backend/
       integrations/
         subscription_provider.py
         analytics.py
+        transcription_provider.py
       task_runtime_engine.py
 
     infrastructure/
@@ -112,6 +116,7 @@ backend/
       integrations/
         revenue_cat_client.py
         posthog_client.py
+        deepgram_transcription_client.py   # swappable for a whisper_transcription_client.py
       task_engines.py
 
     composition/
@@ -279,22 +284,30 @@ class TaskAttemptService:
 
 Tasks of the same type should share the same client UI structure. The task type owns that structure through a `ui_schema_key`; each task owns the content and assets that fill that structure.
 
+The current task type catalog, representative per-exercise config, generated payload contracts, and prompt/evaluation behavior are defined in `design/tasks_trimmed.md`. The LLD should implement those contracts rather than re-deriving task behavior from legacy prompt files.
+
 Example:
 
 ```text
 task_types
-  id = sprint
-  ui_schema_key = sprint_voice_v1
-  runtime_engine_key = sprint_voice_v1
+  id = voice_scaffolded_prompt
+  ui_schema_key = voice_scaffolded_prompt_v1
+  runtime_engine_key = voice_prompt_v1
 
 tasks
   slug = push-pull
-  task_type_id = sprint
+  task_type_id = voice_scaffolded_prompt
   title = Push/Pull
   thumbnail_key = ...
   image_key = ...
-  content = task-specific copy and client-renderable text
-  runtime_config = {"backend_key": "pushPull"}
+  content = {
+    "prompt_label": "Scenario",
+    "scaffold_stages": [...]
+  }
+  runtime_config = {
+    "backend_key": "pushPull",
+    "prompt_bundle_key": "push_pull_v1"
+  }
 ```
 
 The backend should expose enough data for the client to render the shared UI without hardcoding per-task copy or assets.
@@ -322,16 +335,60 @@ class TaskRuntimeEngine(Protocol):
         ...
 ```
 
-Current supported sprint exercises can be wrapped by one implementation:
+Current voice exercises can be wrapped by one implementation:
 
 ```text
-SprintVoiceTaskEngine
+VoicePromptTaskEngine
+  - supports task type ids from design/tasks_trimmed.md
   - uses runtime_config.backend_key such as "pushPull"
-  - calls the existing generator/evaluator code
-  - returns sprint_voice_v1-compatible payloads
+  - selects the prompt bundle/generator/evaluator from runtime_config
+  - returns ui_schema_key-compatible payloads
 ```
 
-Task images and thumbnails are enough for the current requirement.
+The first implementation can adapt the current generator/evaluator behavior behind this engine, but `design/tasks_trimmed.md` is the contract. Task images and thumbnails are enough for the current catalog requirement.
+
+## Speech-to-Text (STT) Provider
+
+Voice tasks need a transcript, and the **backend is the authority** for the transcript that gets evaluated and stored. The provider (Deepgram today) is reached only through an integration port so it can be replaced later with a Whisper-style recognizer at the infrastructure layer — the same replaceability discipline applied to Supabase repositories and the RevenueCat client. The provider API key lives only on the backend; it must never be shipped in the client bundle. This mirrors the frontend's "Client vs. backend split for speech-to-text" in `frontend_lld.md`.
+
+The provider has two responsibilities, matching the client's two-path model:
+
+- **Mint a short-lived credential** for the client's live-transcript path (the client streams directly to the provider for low latency, using this ephemeral token rather than a static key). Exposed via `create_transcription_token`.
+- **Produce or confirm the authoritative final transcript** from the user's submitted answer audio on completion, before evaluation runs.
+
+Port:
+
+```python
+from typing import Protocol
+
+class TranscriptionProvider(Protocol):
+    async def create_ephemeral_credential(self) -> EphemeralCredential:
+        # short-lived, narrowly scoped; backend holds the real key
+        ...
+
+    async def transcribe(self, input: TranscribeInput) -> Transcript:
+        # batch transcription of submitted answer audio; returns text + optional
+        # prosody metadata (word/pause timings) when the provider supports it
+        ...
+```
+
+Service:
+
+```text
+TranscriptionService
+  - mint_live_credential()      -> used by create_transcription_token
+  - resolve_final_transcript(submitted_transcript, answer_audio?) -> Transcript
+      - when answer audio is present, the provider produces the authoritative transcript
+      - otherwise the client-submitted transcript is accepted as-is
+      - returns optional prosody metadata; callers must treat it as optional
+```
+
+Where it plugs into completion: `complete_task` (or the `VoicePromptTaskEngine.complete` path) calls `TranscriptionService.resolve_final_transcript` to obtain the authoritative transcript, then evaluates it. Both the STT call and the LLM evaluation are **external network calls and must run before/outside the database transaction** — never hold the `complete_task` transaction open across them (see Transaction Guidance).
+
+Swappability notes:
+- Deepgram→Whisper is an `infrastructure/integrations` swap plus the composition wiring; `TranscriptionProvider`, `TranscriptionService`, and `complete_task` are unchanged.
+- A non-streaming provider can return an empty/no-op ephemeral credential; the client falls back to its text input and loses only the live transcript, not correctness.
+- Evaluation must not depend on provider-specific signals (e.g. pause counts). Keep prosody fields optional in both the `Transcript` model and the evaluator, consistent with the optional `metadata` in the client `TranscriptionGateway`.
 
 ## Transaction Guidance
 
@@ -353,6 +410,8 @@ user_progress_summaries
 daily_usage_counters
 onboarding_states, if onboarding task
 ```
+
+External network calls in `complete_task` — resolving the authoritative transcript (`TranscriptionService`) and LLM evaluation (`VoicePromptTaskEngine.complete`) — must complete **before** this transaction opens. Do not hold a database transaction open across an STT or model call; compute the transcript and evaluation first, then perform the atomic multi-table write.
 
 Implementation options:
 - Use a transaction helper if the Supabase runtime supports it cleanly.
@@ -402,6 +461,10 @@ def create_container() -> Container:
     usage_repository = SupabaseUsageRepository(db)
     entitlement_repository = SupabaseEntitlementRepository(db)
 
+    # STT provider swap (Deepgram -> Whisper-style) is a one-line change here.
+    transcription_provider = DeepgramTranscriptionClient()
+    transcription_service = TranscriptionService(transcription_provider)
+
     return Container(
         task_attempt_service=TaskAttemptService(
             attempts=attempt_repository,
@@ -410,7 +473,8 @@ def create_container() -> Container:
             progress=progress_repository,
             usage=usage_repository,
             entitlements=entitlement_repository,
-        )
+        ),
+        transcription_service=transcription_service,
     )
 ```
 

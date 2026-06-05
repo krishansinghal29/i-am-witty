@@ -75,13 +75,44 @@ these mockups use 12–16px to match.
 | inline `<svg>` / emoji | `@mui/icons-material` · `lucide-react` |
 
 ## Mockups
+HTML sources live in [`mockups/html/`](mockups/html/); rendered PNGs in [`mockups/images/`](mockups/images/).
+
 | Screen | Files |
 |--------|-------|
-| Onboarding *(flow)* | [`mockups/onboarding.html`](mockups/onboarding.html) · [`mockups/onboarding.png`](mockups/onboarding.png) |
-| Home | [`mockups/home.html`](mockups/home.html) · [`mockups/home.png`](mockups/home.png) |
-| Practice | [`mockups/practice.html`](mockups/practice.html) · [`mockups/practice.png`](mockups/practice.png) |
-| Profile | [`mockups/profile.html`](mockups/profile.html) · [`mockups/profile.png`](mockups/profile.png) |
-| Witty+ paywall | [`mockups/paywall.html`](mockups/paywall.html) · [`mockups/paywall.png`](mockups/paywall.png) |
+| Onboarding *(flow)* | [`mockups/html/onboarding.html`](mockups/html/onboarding.html) · [`mockups/images/onboarding.png`](mockups/images/onboarding.png) |
+| Home | [`mockups/html/home.html`](mockups/html/home.html) · [`mockups/images/home.png`](mockups/images/home.png) |
+| Practice | [`mockups/html/practice.html`](mockups/html/practice.html) · [`mockups/images/practice.png`](mockups/images/practice.png) |
+| Profile | [`mockups/html/profile.html`](mockups/html/profile.html) · [`mockups/images/profile.png`](mockups/images/profile.png) |
+| Witty+ paywall | [`mockups/html/paywall.html`](mockups/html/paywall.html) · [`mockups/images/paywall.png`](mockups/images/paywall.png) |
+
+### Task runtime *(the three task types)*
+A new, focused **in-exercise** design (a calm full-screen runtime — not a tab). Each
+file is one interactive flow with three phases — **Brief · Respond · Reflect**
+(*Rehearse* for the scaffolded type) — walkable by tapping the segmented bar under the
+header (default frame = *Respond*). The shared shell (exit · title · `?` help · phase bar
+· big record ring · gentle 4-part feedback + *Better Way*) is identical across all three;
+only the **prompt shape** and **response guidance** change per type. These map 1:1 to the
+runtime task types in [`../../tasks_trimmed.md`](../../tasks_trimmed.md).
+
+**Timing model (why there's a Brief).** The user only controls timing on the **Brief** —
+the up-front explainer of what the exercise is and how it works. Once they tap *Start*,
+the prompt is **spoken automatically** (no optional "hear it") and the **mic opens on its
+own** — there is **no "I'm ready" gate** after the prompt appears, so there's no window to
+over-rehearse. The Brief sets that expectation ("react, don't rehearse"); the Respond
+screen marks the prompt as auto-voiced (speaker + equalizer) and shows a live *Recording*
+state. Chrome and the `🔒 private` label were dropped from this focused mode to cut
+clutter.
+
+| Task type | Representative | What's different | Files |
+|-----------|----------------|------------------|-------|
+| `voice_single_prompt` | *Misinterpretation: Techniques* | one `She` line **+ a runtime-assigned technique card** | [`mockups/html/task-single-prompt.html`](mockups/html/task-single-prompt.html) · [`mockups/images/task-single-prompt.png`](mockups/images/task-single-prompt.png) |
+| `voice_dialogue_prompt` | *Question Answer Tease* | a generated **`You → She` exchange** (chat bubbles) sets the scene | [`mockups/html/task-dialogue-prompt.html`](mockups/html/task-dialogue-prompt.html) · [`mockups/images/task-dialogue-prompt.png`](mockups/images/task-dialogue-prompt.png) |
+| `voice_scaffolded_prompt` | *Push / Pull* | one `She` scenario rehearsed through a **3-step stepper** (Push → Pull → Combine); only the final combine is scored | [`mockups/html/task-scaffolded-prompt.html`](mockups/html/task-scaffolded-prompt.html) · [`mockups/images/task-scaffolded-prompt.png`](mockups/images/task-scaffolded-prompt.png) |
+
+Roles render as **speaker chips** (`She` = rosy/coral avatar, `You` = blue) per the
+runtime's role table. Actions are **blue** (primary), with **orange** reserved for the
+"submit / get feedback" warmth and celebration — a deliberately calmer, more playful take
+than the current orange-heavy `../../frontend/` sprint UI.
 
 Bottom tabs (left→right): **Home · Practice · Role play** *(soon)* **· Profile.** A
 Telegram-community button sits just left of the persistent "Chat with us" bubble
@@ -89,14 +120,21 @@ Telegram-community button sits just left of the persistent "Chat with us" bubble
 
 **Onboarding** is the same interactive *flow* in one file — tap an option / "Done" to walk
 through all six steps (one trigger question → tiny practice → variable reward → login →
-reminder → today's plan). Preview a stage with a hash, e.g. `onboarding.html#3` or
-`onboarding.html#5perm`.
+reminder → today's plan). Preview a stage with a hash, e.g. `html/onboarding.html#3` or
+`html/onboarding.html#5perm`.
 
-Open any `.html` in a browser (static preview). Regenerate the PNGs (one per screen):
+Open any file in [`mockups/html/`](mockups/html/) in a browser (static preview). Regenerate
+the PNGs into [`mockups/images/`](mockups/images/) (one per screen):
 ```bash
-for p in onboarding home practice profile paywall; do
+for p in onboarding home practice profile paywall \
+         task-single-prompt task-dialogue-prompt task-scaffolded-prompt; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
-    --force-device-scale-factor=2 --window-size=440,940 --virtual-time-budget=3500 \
-    --screenshot="mockups/$p.png" "file://$PWD/mockups/$p.html"
+    --force-device-scale-factor=2 --window-size=560,940 --virtual-time-budget=3500 \
+    --screenshot="mockups/images/$p.png" "file://$PWD/mockups/html/$p.html"
 done
 ```
+> **Window width must stay wider than the phone.** The mockups center a 392px `.phone`
+> (plus a ~12px `box-shadow` bezel and a soft drop shadow) inside the page, so headless
+> Chrome lays it out in a viewport ~485px wide. A capture window narrower than that (the
+> old `440`) crops the bitmap before the right bezel, shearing the device frame on the
+> right. `560` leaves balanced margins on both sides — don't drop it back below ~500.

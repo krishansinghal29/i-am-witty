@@ -1,10 +1,10 @@
 # i-am-witty Backend Functional Requirements
 
-Source: `ux_existing` mockups and README only.
+Source: `ux_existing` mockups and README, with task runtime behavior from `design/tasks_trimmed.md`.
 
 ## Scope
 
-These requirements describe the backend capabilities needed to support the app experience shown in `ux_existing`. They are written to guide later database schema, API, entitlement, and service design. Task-specific interaction behavior is intentionally out of scope; tasks are treated as typed units that can be defined in later deep dives.
+These requirements describe the backend capabilities needed to support the app experience shown in `ux_existing`. They are written to guide later database schema, API, entitlement, and service design. Task-specific interaction behavior and prompt-generation/evaluation contracts are summarized in `design/tasks_trimmed.md`.
 
 ## Backend-Relevant Tech Stack
 
@@ -54,10 +54,13 @@ The backend shall maintain a catalog of available tasks that can appear in onboa
 Key backend needs:
 - Store task metadata: title, duration, type/category, thumbnail/icon, image, task text/content, availability, and ordering where needed.
 - Ensure tasks of the same type can share the same client UI structure while varying their content and assets.
-- Support task types such as sprint, improv, calm, story, and future types.
-- Support tasks shown in the mockups, including Warm-up riff, Yes And, Box breathing, Peak-End hook, One-word story, Punch it up, 60-second story, and Power pose.
+- Support the current voice task types defined in `design/tasks_trimmed.md`: `voice_single_prompt`, `voice_dialogue_prompt`, and `voice_scaffolded_prompt`.
+- Keep product groupings such as sprint, improv, calm, and story as metadata/categories rather than conflating them with frontend/runtime task types.
+- Support the current exercise catalog using the task type/runtime patterns in `design/tasks_trimmed.md`, including Yes And, Misinterpretation, Misinterpretation Techniques, Love/Hate, If by X you mean Y, Question Answer Tease, Vibing, Push/Pull, Heightening, and First Unusual Thing.
+- Continue to support broader Practice-screen items shown in the mockups, including Warm-up riff, Box breathing, Peak-End hook, One-word story, Punch it up, 60-second story, and Power pose, as future catalog entries with their own task types where needed.
 - Allow task definitions to be active, inactive, free, premium, or future-gated.
 - Avoid hard-coding task-specific behavior into the general task catalog.
+- Store client-renderable task copy/config in `tasks.content` and backend runtime pointers in `tasks.runtime_config`, following `design/tasks_trimmed.md`.
 
 ### 4. Daily Plan And Task Assignment
 
@@ -92,7 +95,7 @@ Key backend needs:
 - Return paywall eligibility/reason when the user reaches the free daily limit.
 - Support annual and monthly plan identifiers from the subscription provider.
 - Support restore-purchase and entitlement refresh flows.
-- Expose entitlement-dependent access decisions, such as unlimited tasks, full library access, Role play availability, extra streak freezes, and no-ads status where applicable.
+- Expose entitlement-dependent access decisions, such as unlimited tasks, full library access, Role play availability, and no-ads status where applicable.
 - Use RevenueCat as the subscription entitlement source.
 
 ### 7. Reminders And Notification Preferences
@@ -139,8 +142,9 @@ Key backend needs:
 
 ## Out Of Scope For This Pass
 
-- Detailed behavior for each task type.
-- AI feedback or response-generation logic.
+- Exact AI prompt text, model selection, and prompt tuning.
 - Exact database schema.
 - Exact API route names and payloads.
 - Exact subscription provider implementation details.
+
+Detailed current task type behavior is in scope for `design/tasks_trimmed.md`; exact model prompt text and prompt tuning remain implementation details.

@@ -1,6 +1,6 @@
 # i-am-witty Database Schema
 
-Source: `functional_requirements.md`
+Source: `backend_functional_requirements.md` and `tasks_trimmed.md`
 
 Target backend: Supabase + Postgres, with RevenueCat for subscriptions and PostHog for analytics/feature flags.
 
@@ -8,8 +8,8 @@ Target backend: Supabase + Postgres, with RevenueCat for subscriptions and PostH
 
 - Use one durable app identity table, `app_users`, for both guest and authenticated users.
 - Reference Supabase `auth.users` only after a user signs in.
-- Keep tasks generic. A task has metadata and a type, but task-specific interaction behavior is not modeled here.
-- Let `task_types` define the shared UI/runtime structure for a family of tasks.
+- Keep tasks generic. A task has metadata and a type; task-specific interaction behavior is configured through `tasks.content` and `tasks.runtime_config` as defined in `design/tasks_trimmed.md`.
+- Let `task_types` define the shared UI/runtime structure for a family of tasks, not the product category shown in the UI.
 - Let `tasks` define per-task content and assets, such as text, image, and thumbnail.
 - Store user-specific daily plans as plan instances, not only derived views, so progress can resume reliably.
 - Treat RevenueCat as the source of subscription truth, while keeping a local entitlement mirror for access checks.
@@ -151,7 +151,6 @@ create table user_progress_summaries (
   longest_streak_count integer not null default 0 check (longest_streak_count >= 0),
   last_activity_date date,
   last_qualified_streak_date date,
-  streak_freezes_available integer not null default 0 check (streak_freezes_available >= 0),
   updated_at timestamptz not null default now()
 );
 ```
@@ -212,16 +211,16 @@ create table task_types (
 );
 ```
 
-Seed examples:
-- `sprint`
-- `improv`
-- `calm`
-- `story`
+Seed examples for the current voice exercise catalog:
+- `voice_single_prompt`
+- `voice_dialogue_prompt`
+- `voice_scaffolded_prompt`
 
 Notes:
 - `ui_schema_key` tells the client which shared UI structure to render for tasks of this type.
 - `runtime_engine_key` tells the backend which task engine, if any, handles generation/completion for this type.
 - `metadata` is type-level config shared by all tasks of this type.
+- Product categories such as sprint, improv, calm, and story should live in task metadata or a future category table, not in `task_types`, unless they also define distinct frontend/runtime behavior.
 
 ### tasks
 
@@ -235,7 +234,7 @@ create table tasks (
   description text,
   task_type_id text not null references task_types(id),
   duration_seconds integer check (duration_seconds > 0),
-  thumbnail_key text,
+  thumbnail_key text not null,
   image_key text,
   content jsonb not null default '{}'::jsonb,
   runtime_config jsonb not null default '{}'::jsonb,
@@ -249,20 +248,26 @@ create table tasks (
 ```
 
 Seed examples:
-- `warm-up-riff`
 - `yes-and`
-- `box-breathing`
-- `peak-end-hook`
-- `one-word-story`
-- `punch-it-up`
-- `sixty-second-story`
-- `power-pose`
+- `misinterpretation`
+- `misinterpretation-techniques`
+- `love-hate`
+- `if-by-x-you-mean-y`
+- `question-answer-tease`
+- `vibing`
+- `push-pull`
+- `heightening`
+- `first-unusual-thing`
+- future/non-voice catalog items such as `warm-up-riff`, `box-breathing`, `peak-end-hook`, `one-word-story`, `punch-it-up`, `sixty-second-story`, and `power-pose`
+
+Representative current voice exercise seed config, including `content` and `runtime_config` shapes, is defined in `design/tasks_trimmed.md`. Apply those shapes to the full catalog.
 
 Notes:
 - Tasks of the same `task_type_id` share the same `ui_schema_key` through `task_types`.
 - Task-specific text, image, thumbnail, and prompt/runtime parameters live on `tasks`.
 - `content` should hold client-renderable text/data for the shared UI structure.
 - `runtime_config` should hold backend runtime pointers, such as existing exercise keys, without changing the shared task type.
+- `thumbnail_key` is required (every catalog tile needs art); `image_key` is optional. If `duration_seconds` is null, the runtime resolves it from `task_types.default_duration_seconds`.
 
 ### onboarding_trigger_task_mappings
 
@@ -391,6 +396,8 @@ create table daily_usage_counters (
   primary key (app_user_id, usage_date)
 );
 ```
+
+Note: `app_config.free_task_limit` is the authoritative free-task limit. The `free_task_limit` column here is a per-day snapshot seeded from that config value, so historical counters stay accurate if the global limit changes later.
 
 ### revenuecat_customers
 

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>i-am-witty — Task · Dialogue Prompt (mockup · production theme)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   i-am-witty — Task runtime · TYPE 2  voice_dialogue_prompt
+   Representative task: "Question Answer Tease"
+   Flow: BRIEF (user-paced explainer) → RESPOND → REFLECT.
+   The generated You→She exchange is spoken automatically, then
+   the mic opens straight away — no prep gate, no optional play.
+   Theme: "Light & Warm" (production). Default frame = Respond.
+   ============================================================ */
+:root{
+  --bg:#F7F8FA; --surface:#FFFFFF;
+  --line:#E5EAF1; --line-2:#D8E0EA;
+  --text:#2B2F3A; --muted:#6B7589; --faint:#9AA3B2;
+  --primary:#3B82F6; --primary-2:#0A8FF2; --accent:#F97316; --accent-2:#F7C13B;
+  --green:#16A34A; --amber:#F5A30A; --sky:#0EA5E9; --red:#EF4444; --rose:#FB7185;
+  --r:16px; --r-sm:12px; --r-xs:9px;
+  --display:'Inter',sans-serif; --body:'Inter',system-ui,sans-serif;
+  --warm:linear-gradient(135deg,#F97316,#F7C13B);
+  --cool:linear-gradient(135deg,#3B82F6,#0A8FF2);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--body);background:radial-gradient(80% 50% at 50% 0%, #ffffff, #eaeef3 72%),#eaeef3;color:var(--text);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;min-height:100vh;padding:40px 16px;-webkit-font-smoothing:antialiased}
+.phone{position:relative;width:392px;height:850px;border-radius:54px;background:#1b2230;box-shadow:0 50px 130px rgba(17,24,39,.30), 0 0 0 11px #20283a, 0 0 0 12px #36405a, inset 0 0 0 1px rgba(0,0,0,.5);overflow:hidden;flex:none}
+.screen{position:absolute;inset:0;border-radius:54px;overflow:hidden;display:flex;flex-direction:column;background:var(--bg)}
+.screen::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;background:radial-gradient(120% 60% at 88% -6%, rgba(249,115,22,.10), transparent 56%),radial-gradient(95% 50% at -4% 1%, rgba(59,130,246,.08), transparent 52%),radial-gradient(120% 55% at 50% 112%, rgba(247,193,59,.10), transparent 60%)}
+.screen>*{position:relative;z-index:1}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:108px;height:30px;background:#000;border-radius:18px;z-index:5}
+.status{display:flex;justify-content:space-between;align-items:center;padding:15px 30px 4px;font-family:var(--display);font-weight:600;font-size:14px;letter-spacing:.2px;color:var(--text)}
+.status .ico{display:flex;gap:6px;align-items:center;opacity:.92}
+.status .ico svg{display:block}
+
+.exhead{display:flex;align-items:center;gap:12px;padding:8px 18px 10px}
+.iconbtn{width:40px;height:40px;border-radius:13px;border:1px solid var(--line);background:#fff;display:grid;place-items:center;color:var(--muted);cursor:pointer;flex:none;transition:.15s;font-family:var(--display);font-weight:700}
+.iconbtn:hover{color:var(--text);border-color:var(--line-2)}
+.extitle{flex:1;min-width:0;text-align:center}
+.extitle h1{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.3px;line-height:1.12;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.phases{display:flex;gap:8px;padding:4px 18px 12px}
+.phase{flex:1;display:flex;flex-direction:column;gap:6px;cursor:pointer;text-align:left}
+.phase .bar{height:5px;border-radius:4px;background:var(--line);transition:.25s}
+.phase .nm{font-size:10.5px;font-weight:700;color:var(--faint);letter-spacing:.2px;transition:.2s}
+.phase.done .bar{background:var(--green)}.phase.done .nm{color:var(--green)}
+.phase.active .bar{background:var(--cool);box-shadow:0 3px 10px rgba(59,130,246,.35)}.phase.active .nm{color:var(--primary-2)}
+.divide{height:1px;background:var(--line);margin:0 18px}
+
+.content{flex:1;overflow-y:auto;padding:16px 18px 8px;scrollbar-width:none;display:flex;flex-direction:column}
+.content::-webkit-scrollbar{display:none}
+.stage{display:none;flex-direction:column;flex:1;animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
+body[data-stage="brief"] .stage.brief{display:flex}
+body[data-stage="respond"] .stage.respond{display:flex}
+body[data-stage="reflect"] .stage.reflect{display:flex}
+
+/* BRIEF */
+.brief{align-items:stretch}
+.briefhero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;margin-top:4px}
+.bicon{width:72px;height:72px;border-radius:22px;display:grid;place-items:center;font-size:36px;background:linear-gradient(150deg,#fff,#F3F6FB);border:1px solid var(--line);box-shadow:0 12px 28px rgba(17,24,39,.08)}
+.briefhero h2{font-family:var(--display);font-weight:800;font-size:23px;letter-spacing:-.4px;margin-top:8px}
+.briefhero .what{font-size:14.5px;color:var(--muted);line-height:1.5;max-width:32ch}
+.briefhero .what b{color:var(--text);font-weight:700}
+.steps{margin-top:22px;display:flex;flex-direction:column;gap:11px}
+.step{display:flex;align-items:flex-start;gap:13px;background:#fff;border:1px solid var(--line);border-radius:15px;padding:13px 15px;box-shadow:0 6px 16px rgba(17,24,39,.05)}
+.step .si{width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:19px}
+.step.a .si{background:rgba(10,143,242,.10);border:1px solid rgba(10,143,242,.22)}
+.step.b .si{background:rgba(249,115,22,.10);border:1px solid rgba(249,115,22,.24)}
+.step.c .si{background:rgba(22,163,74,.10);border:1px solid rgba(22,163,74,.24)}
+.step .sc b{font-family:var(--display);font-weight:700;font-size:14.5px;color:var(--text);display:block}
+.step .sc p{font-size:12.5px;color:var(--muted);line-height:1.42;margin-top:2px}
+.step .sc em{font-style:normal;color:var(--accent);font-weight:700}
+.headsup{margin-top:16px;background:linear-gradient(150deg,rgba(249,115,22,.09),#fff 72%);border:1px dashed rgba(249,115,22,.45);border-radius:14px;padding:12px 14px;font-size:12.5px;color:#7a5a3a;line-height:1.5;text-align:center}
+.headsup b{color:var(--text);font-weight:700}
+
+/* RESPOND */
+.respond{align-items:stretch}
+.minithread{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px 13px;box-shadow:0 5px 14px rgba(17,24,39,.05);position:relative}
+.minithread .voiced{position:absolute;top:11px;right:12px;display:flex;align-items:center;gap:4px;color:var(--accent)}
+.minithread .voiced .eq{display:flex;align-items:flex-end;gap:2px;height:13px}
+.minithread .voiced .eq i{width:2.5px;border-radius:2px;background:var(--accent);animation:bob 1s ease-in-out infinite}
+.minithread .voiced .eq i:nth-child(1){height:5px;animation-delay:0s}.minithread .voiced .eq i:nth-child(2){height:11px;animation-delay:.15s}.minithread .voiced .eq i:nth-child(3){height:7px;animation-delay:.3s}
+.mini{display:flex;align-items:center;gap:9px}
+.mini.me{flex-direction:row-reverse;text-align:right}
+.mini .ma{width:24px;height:24px;border-radius:8px;flex:none;display:grid;place-items:center;color:#fff;font-family:var(--display);font-weight:800;font-size:10px}
+.mini .ma.she{background:linear-gradient(140deg,#FB7185,#F97316)}.mini .ma.you{background:linear-gradient(140deg,#3B82F6,#0A8FF2)}
+.mini .mt{flex:1;min-width:0}
+.mini .mt .r{font-size:9px;font-weight:800;letter-spacing:.7px;text-transform:uppercase}
+.mini.she .r{color:var(--rose)}.mini.you .r{color:var(--primary-2)}
+.mini .mt q{display:block;font-size:13px;font-weight:600;color:var(--text);line-height:1.3;quotes:none;margin-top:1px}
+
+.cuechip{align-self:center;margin-top:16px;display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:rgba(10,143,242,.10);border:1px solid rgba(10,143,242,.3);color:var(--primary-2);font-size:11.5px;font-weight:800;letter-spacing:.3px}
+.cuesub{text-align:center;font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45;max-width:30ch;align-self:center}
+.cuesub b{color:var(--text);font-weight:700}
+
+.recwrap{display:flex;flex-direction:column;align-items:center;gap:10px;margin-top:18px}
+.reclive{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:800;letter-spacing:.5px;color:var(--red);text-transform:uppercase}
+.reclive .d{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1s steps(1) infinite}
+.ring{position:relative;width:140px;height:140px;border-radius:50%;display:grid;place-items:center;cursor:pointer;background:conic-gradient(from -90deg, var(--accent) calc(var(--p,55)*1%), #E8EDF3 0)}
+.ring::after{content:"";position:absolute;inset:9px;border-radius:50%;background:#fff}
+.recbtn{position:relative;z-index:1;width:92px;height:92px;border-radius:50%;display:grid;place-items:center;background:var(--red);box-shadow:0 12px 26px rgba(239,68,68,.38);animation:pulse 1.5s ease-out infinite}
+.recbtn .sq{width:26px;height:26px;border-radius:7px;background:#fff}
+.timer{font-family:var(--display);font-weight:800;font-size:18px;color:var(--accent);letter-spacing:.3px}
+.timer span{color:var(--faint);font-weight:600;font-size:13px}
+@keyframes pulse{0%{box-shadow:0 12px 26px rgba(239,68,68,.38),0 0 0 0 rgba(239,68,68,.30)}70%{box-shadow:0 12px 26px rgba(239,68,68,.38),0 0 0 18px rgba(239,68,68,0)}100%{box-shadow:0 12px 26px rgba(239,68,68,.38),0 0 0 0 rgba(239,68,68,0)}}
+@keyframes bob{0%,100%{height:5px}50%{height:13px}}
+.transcript{margin-top:16px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px 15px;min-height:78px;font-size:14.5px;line-height:1.55;box-shadow:0 6px 16px rgba(17,24,39,.05)}
+.transcript .said{color:var(--text);font-weight:500}
+.transcript .cursor{display:inline-block;width:2px;height:15px;background:var(--primary-2);vertical-align:-2px;margin-left:1px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* REFLECT */
+.scorehead{display:flex;align-items:center;gap:13px;background:linear-gradient(150deg,rgba(22,163,74,.12),#fff 60%);border:1px solid rgba(22,163,74,.3);border-radius:18px;padding:14px 16px;box-shadow:0 8px 22px rgba(22,163,74,.10)}
+.scorehead .em{width:46px;height:46px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:25px;background:#fff;border:1px solid rgba(22,163,74,.25)}
+.scorehead .t .k{font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--green)}
+.scorehead .t h2{font-family:var(--display);font-weight:800;font-size:19px;letter-spacing:-.3px;margin-top:2px}
+.scorehead .t p{font-size:12.5px;color:var(--muted);margin-top:2px}
+.fbtabs{display:flex;gap:8px;margin-top:16px}
+.fbtab{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:13px;border:1.5px solid var(--line);background:#fff;color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;transition:.18s}
+.fbtab.on{color:#fff;border-color:transparent;background:var(--cool);box-shadow:0 8px 18px rgba(59,130,246,.3)}
+.fbpane{display:none;margin-top:14px;flex-direction:column;gap:11px}
+body[data-tab="feedback"] .fbpane.feedback{display:flex}
+body[data-tab="better"] .fbpane.better{display:flex}
+.fsec{background:#fff;border:1px solid var(--line);border-left:4px solid var(--c,var(--line-2));border-radius:14px;padding:12px 14px;box-shadow:0 5px 14px rgba(17,24,39,.04)}
+.fsec .h{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:13.5px;color:var(--c2,var(--text))}
+.fsec p{font-size:13px;color:var(--muted);line-height:1.55;margin-top:6px}.fsec p b{color:var(--text);font-weight:700}
+.fsec.landed{--c:var(--green);--c2:#15803d}.fsec.trap{--c:var(--red);--c2:#dc2626}.fsec.level{--c:var(--primary);--c2:#2563eb}.fsec.mind{--c:var(--accent);--c2:#ea580c}
+.better-intro{font-size:12.5px;color:var(--muted);margin-bottom:2px;display:flex;align-items:center;gap:7px}
+.sample{background:linear-gradient(150deg,rgba(249,115,22,.08),#fff 70%);border:1px solid rgba(249,115,22,.22);border-radius:14px;padding:12px 14px;display:flex;gap:11px;align-items:flex-start}
+.sample .num{width:24px;height:24px;border-radius:8px;flex:none;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:12px;color:#fff;background:var(--warm)}
+.sample q{font-size:14px;font-weight:600;color:var(--text);line-height:1.42;quotes:none}
+
+.actionbar{display:flex;gap:10px;padding:13px 18px calc(18px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid var(--line);box-shadow:0 -2px 20px rgba(17,24,39,.05)}
+.actionbar .show{display:none;width:100%;gap:10px}
+body[data-stage="brief"] .actionbar .show.brief{display:flex}
+body[data-stage="respond"] .actionbar .show.respond{display:flex}
+body[data-stage="reflect"] .actionbar .show.reflect{display:flex}
+.cta,.ghost{flex:1;padding:15px;border:none;border-radius:14px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:8px}
+.cta{color:#fff;background:var(--cool);box-shadow:0 12px 24px rgba(59,130,246,.32)}
+.cta.warm{background:var(--warm);box-shadow:0 12px 24px rgba(249,115,22,.3)}
+.cta:hover{filter:brightness(1.03)}
+.ghost{flex:0 0 auto;padding:15px 20px;background:#fff;border:1.5px solid var(--line-2);color:var(--muted)}
+.ghost:hover{border-color:var(--primary);color:var(--primary)}
+
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.caption{font-family:var(--display);color:#9aa3b2;font-size:13px;font-weight:500;text-align:center;max-width:44ch}
+.caption b{color:#6b7589;font-weight:700}
+</style>
+</head>
+<body data-stage="respond" data-tab="feedback">
+
+<div class="phone">
+  <div class="screen">
+    <div class="island"></div>
+
+    <div class="status">
+      <span>9:41</span>
+      <span class="ico">
+        <svg width="17" height="11" viewBox="0 0 17 11" fill="currentColor"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="4.5" y="5" width="3" height="6" rx="1"/><rect x="9" y="2.5" width="3" height="8.5" rx="1"/><rect x="13.5" y="0" width="3" height="11" rx="1"/></svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor"><path d="M8 2.5c2.2 0 4.2.8 5.7 2.2l1.3-1.4A10 10 0 0 0 8 .5 10 10 0 0 0 1 3.3l1.3 1.4A8 8 0 0 1 8 2.5Zm0 3.3c1.3 0 2.5.5 3.4 1.3l1.3-1.4A7.5 7.5 0 0 0 8 3.8a7.5 7.5 0 0 0-4.7 1.9l1.3 1.4A5.5 5.5 0 0 1 8 5.8Zm0 3.2c.6 0 1.2.2 1.6.7L8 11.5 6.4 9.7c.4-.5 1-.7 1.6-.7Z"/></svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/><rect x="22.5" y="4" width="1.6" height="4" rx="1" fill="currentColor" opacity=".6"/></svg>
+      </span>
+    </div>
+
+    <header class="exhead">
+      <button class="iconbtn" aria-label="Exit" onclick="alert('Exit to Practice')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+      <div class="extitle"><h1>Question Answer Tease</h1></div>
+      <button class="iconbtn" aria-label="How it works" onclick="go('brief')">?</button>
+    </header>
+
+    <nav class="phases">
+      <div class="phase" onclick="go('brief')"><span class="bar"></span><span class="nm">Brief</span></div>
+      <div class="phase" onclick="go('respond')"><span class="bar"></span><span class="nm">Respond</span></div>
+      <div class="phase" onclick="go('reflect')"><span class="bar"></span><span class="nm">Reflect</span></div>
+    </nav>
+    <div class="divide"></div>
+
+    <main class="content">
+
+      <!-- ============ STAGE: BRIEF ============ -->
+      <section class="stage brief">
+        <div class="briefhero">
+          <div class="bicon">💬</div>
+          <h2>Question Answer Tease</h2>
+          <p class="what">You ask, she answers. Your job: <b>tease her answer</b> playfully — never mean, never an interview.</p>
+        </div>
+        <div class="steps">
+          <div class="step a"><span class="si">🔊</span><div class="sc"><b>Hear the exchange</b><p>The two lines <em>play out loud automatically</em>.</p></div></div>
+          <div class="step b"><span class="si">🎤</span><div class="sc"><b>Your turn, instantly</b><p>The mic opens on its own — react in the moment (~30s).</p></div></div>
+          <div class="step c"><span class="si">✨</span><div class="sc"><b>Get gentle feedback</b><p>Plus a few sharper teases to borrow.</p></div></div>
+        </div>
+        <div class="headsup">Lead the vibe. Don't validate, don't ask another question, don't insult. 😏</div>
+      </section>
+
+      <!-- ============ STAGE: RESPOND ============ -->
+      <section class="stage respond">
+        <div class="minithread">
+          <span class="voiced" title="Played aloud automatically"><span class="eq"><i></i><i></i><i></i></span></span>
+          <div class="mini you"><div class="ma you">Y</div><div class="mt"><span class="r">You</span><q>So what do you do for fun?</q></div></div>
+          <div class="mini she"><div class="ma she">S</div><div class="mt"><span class="r">She</span><q>Honestly? I collect vintage spoons.</q></div></div>
+        </div>
+
+        <span class="cuechip">🎤 YOUR TURN — TEASE IT</span>
+        <p class="cuesub">Make the <b>spoons</b> the bit, not her.</p>
+
+        <div class="recwrap">
+          <span class="reclive"><span class="d"></span>Recording · your turn</span>
+          <button class="ring" style="--p:55" onclick="go('reflect')" title="Tap to stop">
+            <span class="recbtn"><span class="sq"></span></span>
+          </button>
+          <div class="timer">0:21 <span>left · tap to stop</span></div>
+        </div>
+
+        <div class="transcript">
+          <span class="said">Vintage spoons — so you're the reason estate sales have security now</span><span class="cursor"></span>
+        </div>
+      </section>
+
+      <!-- ============ STAGE: REFLECT ============ -->
+      <section class="stage reflect">
+        <div class="scorehead">
+          <div class="em">😏</div>
+          <div class="t">
+            <div class="k">Playful, not mean</div>
+            <h2>You led the vibe</h2>
+            <p>Specific · stayed out of interview mode</p>
+          </div>
+        </div>
+
+        <div class="fbtabs">
+          <div class="fbtab on" onclick="tab('feedback')">💬 Feedback</div>
+          <div class="fbtab" onclick="tab('better')">✨ Better Way</div>
+        </div>
+
+        <div class="fbpane feedback">
+          <div class="fsec landed"><div class="h">✅ What Landed</div><p>You teased the <b>spoons</b>, not her — playful, not mean. That's the whole game.</p></div>
+          <div class="fsec trap"><div class="h">⚠️ The Trap</div><p>You almost slid into interview mode (“oh, how many?”). A question hands the frame straight back to her.</p></div>
+          <div class="fsec level"><div class="h">📈 Level Up</div><p>Raise the stakes a touch — treat the hobby as <b>scandalous</b>, not just quirky.</p></div>
+          <div class="fsec mind"><div class="h">🧠 Mindset Shift</div><p>A tease says <b>“I noticed you and I'm not intimidated.”</b> Lead the vibe; don't audit it.</p></div>
+        </div>
+
+        <div class="fbpane better">
+          <div class="better-intro">✨ Three ways to tease the spoons:</div>
+          <div class="sample"><span class="num">1</span><q>Vintage spoons. So you're the reason estate sales have security now.</q></div>
+          <div class="sample"><span class="num">2</span><q>A spoon collector — bold of you to lead with that. I respect the confidence.</q></div>
+          <div class="sample"><span class="num">3</span><q>Okay, but which spoon are you most emotionally attached to? Don't lie to me.</q></div>
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="actionbar">
+      <div class="show brief">
+        <button class="cta" onclick="go('respond')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Start — exchange plays now
+        </button>
+      </div>
+      <div class="show respond">
+        <button class="cta warm" onclick="go('reflect')">Done — get feedback ✨</button>
+      </div>
+      <div class="show reflect">
+        <button class="ghost" onclick="go('respond')">Retry</button>
+        <button class="cta" onclick="alert('Next exercise')">Next exercise →</button>
+      </div>
+    </footer>
+
+  </div>
+</div>
+
+<p class="caption"><b>Task type 2 · voice_dialogue_prompt</b> — explainer first, then the <i>You → She</i> exchange plays + mic opens automatically. Tap <b>Brief · Respond · Reflect</b>.</p>
+
+<script>
+  function go(stage){
+    document.body.dataset.stage = stage;
+    const order = ['brief','respond','reflect']; const i = order.indexOf(stage);
+    document.querySelectorAll('.phase').forEach((el,idx)=>{el.classList.toggle('active', idx===i);el.classList.toggle('done', idx<i);});
+    document.querySelector('.content').scrollTop = 0;
+  }
+  function tab(name){ document.body.dataset.tab = name;
+    document.querySelectorAll('.fbtab').forEach((el,idx)=>el.classList.toggle('on', (name==='feedback')===(idx===0)));
+  }
+  go('respond');
+</script>
+</body>
+</html>
