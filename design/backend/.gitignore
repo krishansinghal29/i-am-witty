@@ -10,6 +10,12 @@ __pycache__/
 # Environment variables (never commit real credentials)
 .env
 
+# Service-account / credential files (e.g. Firebase Admin SDK JSON)
+secrets/
+
+# Generated Cloud Run env-vars file (contains secrets pulled from .env)
+run-env.yaml
+
 # IDE / editor cruft
 .idea/
 .vscode/
@@ -20,5 +26,8 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+
+# firebase cred file
+i-am-witty-firebase-adminsdk-fbsvc-4149f02630.json
 
 # Note: .python-version is intentionally kept tracked.

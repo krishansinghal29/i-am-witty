@@ -1,0 +1,20 @@
+# Controls what `gcloud run deploy --source .` uploads to Cloud Build.
+# Keep secrets and local cruft out of the build context.
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.env.*
+!.env.example
+run-env.yaml
+.git/
+.gitignore
+.DS_Store
+.idea/
+.vscode/
+secrets/
+*.egg-info/
+build/
+dist/

@@ -16,6 +16,26 @@ class Settings(BaseSettings):
 
     app_env: str = "development"
 
+    # --- Integrations (real vendor adapters; see app/infrastructure/integrations) ---
+    # Firebase: verifies client ID tokens via the Admin SDK.
+    firebase_credentials_file: str | None = None  # path to service-account JSON
+    firebase_project_id: str | None = None
+
+    # Deepgram: speech-to-text. The main key transcribes; project id is needed to
+    # mint short-lived scoped client keys for the live path.
+    deepgram_api_key: str | None = None
+    deepgram_project_id: str | None = None
+
+    # RevenueCat: subscription source of truth. The secret REST key reads
+    # subscribers; the webhook auth value is the Authorization header configured
+    # in the RevenueCat dashboard and compared on inbound webhooks.
+    revenuecat_api_key: str | None = None
+    revenuecat_webhook_auth: str | None = None
+
+    # PostHog: product analytics + experimentation flags.
+    posthog_api_key: str | None = None
+    posthog_host: str = "https://us.i.posthog.com"
+
 
 @lru_cache
 def get_settings() -> Settings:

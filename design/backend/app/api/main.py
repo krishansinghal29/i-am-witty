@@ -8,6 +8,9 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.routes import comms as comms_routes
+from app.api.routes import identity as identity_routes
+from app.api.routes import tasks as tasks_routes
 from app.application.exceptions import (
     AccessDeniedError,
     ApplicationError,
@@ -75,3 +78,8 @@ async def health(session: AsyncSession = Depends(get_session)) -> dict[str, str]
         return {"status": "ok", "db": "ok"}
     except Exception as exc:  # noqa: BLE001 - surface any DB error as a body field
         return {"status": "ok", "db": "error", "detail": str(exc)}
+
+
+app.include_router(identity_routes.router)
+app.include_router(tasks_routes.router)
+app.include_router(comms_routes.router)

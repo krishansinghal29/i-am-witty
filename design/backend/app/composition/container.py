@@ -18,16 +18,18 @@ from app.application.task_catalog_service import TaskCatalogService
 from app.application.task_runtime_service import TaskRuntimeService
 from app.application.transcription_service import TranscriptionService
 from app.infrastructure.db.unit_of_work import SqlAlchemyUnitOfWork
-from app.infrastructure.integrations.fake_analytics import FakeAnalytics
-from app.infrastructure.integrations.fake_auth_verifier import FakeAuthTokenVerifier
-from app.infrastructure.integrations.fake_subscription_provider import (
-    FakeSubscriptionProvider,
+from app.infrastructure.integrations.deepgram_transcription_client import (
+    DeepgramTranscriptionProvider,
 )
 from app.infrastructure.integrations.fake_task_runtime_engine import (
     FakeTaskRuntimeEngine,
 )
-from app.infrastructure.integrations.fake_transcription_provider import (
-    FakeTranscriptionProvider,
+from app.infrastructure.integrations.firebase_auth_verifier import (
+    FirebaseAuthTokenVerifier,
+)
+from app.infrastructure.integrations.posthog_client import PostHogAnalytics
+from app.infrastructure.integrations.revenue_cat_client import (
+    RevenueCatSubscriptionProvider,
 )
 from app.infrastructure.repositories.pg_config_repository import PgConfigRepository
 from app.infrastructure.repositories.pg_daily_plan_repository import (
@@ -75,12 +77,18 @@ class Integrations:
 
 
 def build_integrations(settings: Settings) -> Integrations:
-    """Build the integration clients (fakes today; real adapters key off settings)."""
+    """Build the integration clients from settings.
+
+    Real vendor adapters for auth (Firebase), subscriptions (RevenueCat),
+    analytics (PostHog), and transcription (Deepgram); each lazily initializes
+    so this never touches credentials/network at startup. The task runtime
+    engine remains a deterministic fake until an LLM provider is wired.
+    """
     return Integrations(
-        auth_verifier=FakeAuthTokenVerifier(),
-        subscription_provider=FakeSubscriptionProvider(),
-        analytics=FakeAnalytics(),
-        transcription_provider=FakeTranscriptionProvider(),
+        auth_verifier=FirebaseAuthTokenVerifier(settings),
+        subscription_provider=RevenueCatSubscriptionProvider(settings),
+        analytics=PostHogAnalytics(settings),
+        transcription_provider=DeepgramTranscriptionProvider(settings),
         runtime_engine=FakeTaskRuntimeEngine(),
     )
 
