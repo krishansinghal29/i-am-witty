@@ -25,10 +25,12 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@/theme/variables.css';
 
+import { Capacitor } from '@capacitor/core';
 import { CapacitorSecureStore } from '@/integrations/capacitor/capacitor_secure_store';
 import { CapacitorDeviceServices } from '@/integrations/capacitor/capacitor_device_services';
 import { FirebaseAuthGateway } from '@/integrations/firebase/firebase_auth_gateway';
 import { RevenueCatSubscriptionGateway } from '@/integrations/revenuecat/revenuecat_subscription_gateway';
+import { RevenueCatWebSubscriptionGateway } from '@/integrations/revenuecat/revenuecat_web_subscription_gateway';
 import { PostHogAnalyticsGateway } from '@/integrations/posthog/posthog_analytics_gateway';
 import { DeepgramTranscriptionGateway } from '@/integrations/transcription/deepgram_transcription_gateway';
 import { CapgoUpdater } from '@/integrations/capgo/capgo_updater';
@@ -77,7 +79,11 @@ export interface Integrations {
 function buildIntegrations(): Integrations {
   const secureStore: SecureStore = new CapacitorSecureStore();
   const auth: AuthGateway = new FirebaseAuthGateway();
-  const subscriptions: SubscriptionGateway = new RevenueCatSubscriptionGateway();
+  // Native (iOS/Android) uses StoreKit/Play Billing via purchases-capacitor;
+  // the web target uses RevenueCat Web Billing (purchases-js). Same port.
+  const subscriptions: SubscriptionGateway = Capacitor.isNativePlatform()
+    ? new RevenueCatSubscriptionGateway()
+    : new RevenueCatWebSubscriptionGateway();
   const analytics: AnalyticsGateway = new PostHogAnalyticsGateway();
   const device: DeviceServices = new CapacitorDeviceServices();
   const updater: AppUpdater = new CapgoUpdater();

@@ -1,0 +1,111 @@
+/* =============================================================
+   Shared animation + interaction styles for design-system
+   primitives. Colours come from the Light & Warm theme vars
+   (see theme/ionic_variables.css); this file owns only motion
+   and a couple of interaction affordances.
+   ============================================================= */
+
+.witty-pressable {
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.witty-pressable:active {
+  transform: scale(0.97);
+}
+
+.witty-rise {
+  animation: witty-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.witty-card-glow {
+  animation: witty-glow 3.6s ease-in-out infinite;
+}
+
+.witty-ring-pulse {
+  animation: witty-ring-pulse 1.8s ease-in-out infinite;
+}
+
+.witty-celebration-glow {
+  animation: witty-fade-in 0.4s ease-out both;
+}
+
+.witty-confetti-piece {
+  position: absolute;
+  will-change: transform, opacity;
+  animation-name: witty-confetti-fall;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+}
+
+@keyframes witty-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes witty-glow {
+  0%,
+  100% {
+    box-shadow: 0 14px 30px rgba(59, 130, 246, 0.14);
+  }
+  50% {
+    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.28);
+  }
+}
+
+@keyframes witty-ring-pulse {
+  0% {
+    transform: scale(0.92);
+    opacity: 0.55;
+  }
+  70% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.12);
+    opacity: 0;
+  }
+}
+
+@keyframes witty-confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(110vh) rotate(720deg);
+    opacity: 0.9;
+  }
+}
+
+@keyframes witty-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Honour the OS reduced-motion preference as a backstop. Components
+   also gate motion in JS via lib/reduced_motion, but this guarantees
+   no residual animation slips through. */
+@media (prefers-reduced-motion: reduce) {
+  .witty-pressable {
+    transition: none;
+  }
+  .witty-rise,
+  .witty-card-glow,
+  .witty-ring-pulse,
+  .witty-celebration-glow,
+  .witty-confetti-piece {
+    animation: none !important;
+  }
+}

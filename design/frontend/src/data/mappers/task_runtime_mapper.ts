@@ -4,12 +4,14 @@ import {
   AssignedTechnique,
   Prompt,
   PromptMessage,
+  RuntimeContent,
   RuntimePayload,
   ScaffoldStage,
   TaskRuntime,
   TaskType,
 } from '@/types/models';
 import {
+  ContentDto,
   GeneratedPayloadDto,
   MessageDto,
   PromptDto,
@@ -71,6 +73,26 @@ function mapScaffoldStage(raw: Record<string, unknown>): ScaffoldStage {
   };
 }
 
+/**
+ * Map the optional `content` block with defaults so older/partial responses
+ * still render. `recordingLimitSeconds` falls back to the task duration.
+ */
+function mapContent(
+  dto: Partial<ContentDto> | null | undefined,
+  fallbackRecordingSeconds: number,
+): RuntimeContent {
+  const tabs = dto?.feedback_tabs;
+  return {
+    promptLabel: dto?.prompt_label ?? '',
+    responseInstruction: dto?.response_instruction ?? '',
+    recordingLimitSeconds: dto?.recording_limit_seconds ?? fallbackRecordingSeconds,
+    feedbackTabs: {
+      feedbackLabel: tabs?.feedback_label ?? 'Feedback',
+      sampleAnswerLabel: tabs?.sample_answer_label ?? 'Better Way',
+    },
+  };
+}
+
 function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
   return {
     prompt: mapPrompt(dto.prompt),
@@ -87,10 +109,12 @@ function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
 }
 
 export function mapTaskRuntime(dto: TaskRuntimeDto): TaskRuntime {
+  const task = mapTask(dto.task);
   return {
     attemptId: dto.attempt_id,
-    task: mapTask(dto.task),
+    task,
     taskType: mapTaskType(dto.task_type),
+    content: mapContent(dto.content, task.durationSeconds ?? 30),
     payload: mapPayload(dto.payload),
   };
 }

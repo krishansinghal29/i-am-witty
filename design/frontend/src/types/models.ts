@@ -242,11 +242,30 @@ export interface RuntimePayload {
   avatarImageUrl: string | null;
 }
 
+/** Labels for the two feedback tabs shown on the Reflect phase. */
+export interface FeedbackTabs {
+  feedbackLabel: string;
+  sampleAnswerLabel: string;
+}
+
+/**
+ * Client-renderable labels/limits sourced from the backend `tasks.content`.
+ * Drives the runtime shell's prompt label, response instruction, recording
+ * limit, and feedback tab copy.
+ */
+export interface RuntimeContent {
+  promptLabel: string;
+  responseInstruction: string;
+  recordingLimitSeconds: number;
+  feedbackTabs: FeedbackTabs;
+}
+
 /** Top-level response from the `/v1/tasks/:id/runtime` endpoint. */
 export interface TaskRuntime {
   attemptId: string;
   task: Task;
   taskType: TaskType;
+  content: RuntimeContent;
   payload: RuntimePayload;
 }
 

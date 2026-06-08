@@ -34,10 +34,24 @@ export interface GeneratedPayloadDto {
   avatar_image_url: string | null;
 }
 
+export interface FeedbackTabsDto {
+  feedback_label: string;
+  sample_answer_label: string;
+}
+
+export interface ContentDto {
+  prompt_label: string;
+  response_instruction: string;
+  recording_limit_seconds: number;
+  feedback_tabs: FeedbackTabsDto;
+}
+
 export interface TaskRuntimeDto {
   attempt_id: string;
   task: TaskDto;
   task_type: TaskTypeDto;
+  /** Optional for backward compatibility with older/partial responses. */
+  content?: Partial<ContentDto> | null;
   payload: GeneratedPayloadDto;
 }
 

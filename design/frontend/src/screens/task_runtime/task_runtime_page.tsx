@@ -1,15 +1,12 @@
-import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent } from '@ionic/react';
+import { IonPage, IonContent } from '@ionic/react';
+import { TaskRuntimeHost } from '@/components/task_runtime/host';
 
+/** Full-screen task runtime. Thin wrapper: the host owns all runtime logic. */
 export function TaskRuntimePage() {
   return (
     <IonPage>
-      <IonHeader>
-        <IonToolbar>
-          <IonTitle>Practice session</IonTitle>
-        </IonToolbar>
-      </IonHeader>
-      <IonContent className="ion-padding">
-        <p>Practice session — coming soon.</p>
+      <IonContent scrollY={false}>
+        <TaskRuntimeHost />
       </IonContent>
     </IonPage>
   );

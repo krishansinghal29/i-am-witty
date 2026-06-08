@@ -1,24 +1,29 @@
 import { create } from 'zustand';
+import type { UxStep } from '@/features/onboarding/onboarding_machine';
 
-interface OnboardingState {
+/**
+ * Transient onboarding UI state: the trigger the user tapped (held before it is
+ * persisted server-side) and the furthest UX step reached this session. The
+ * view-model reconciles this forward against the authoritative backend step.
+ */
+interface OnboardingUiStore {
   selectedTrigger: string | null;
-  stepIndex: number;
+  uxStep: UxStep;
 
   setSelectedTrigger: (trigger: string | null) => void;
-  setStepIndex: (i: number) => void;
+  setUxStep: (step: UxStep) => void;
   reset: () => void;
 }
 
-const initialState = {
+const initialState: Pick<OnboardingUiStore, 'selectedTrigger' | 'uxStep'> = {
   selectedTrigger: null,
-  stepIndex: 0,
+  uxStep: 'trigger',
 };
 
-export const useOnboardingStore = create<OnboardingState>()((set) => ({
+export const useOnboardingStore = create<OnboardingUiStore>()((set) => ({
   ...initialState,
 
-  setSelectedTrigger: (trigger: string | null) =>
-    set({ selectedTrigger: trigger }),
-  setStepIndex: (i: number) => set({ stepIndex: i }),
+  setSelectedTrigger: (trigger) => set({ selectedTrigger: trigger }),
+  setUxStep: (step) => set({ uxStep: step }),
   reset: () => set(initialState),
 }));
