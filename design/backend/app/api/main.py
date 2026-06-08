@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from typing import AsyncIterator
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -55,6 +56,22 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 app = FastAPI(title="i-am-witty backend", lifespan=lifespan)
+
+# Dev CORS: allow the Vite dev server and Capacitor app origins to call the API
+# from a browser. Native Capacitor requests are not subject to CORS; this is for
+# web/dev. Tighten allow_origins for production.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "capacitor://localhost",
+        "http://localhost",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(ApplicationError)
