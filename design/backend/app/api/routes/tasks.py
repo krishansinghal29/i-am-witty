@@ -134,10 +134,52 @@ class CatalogItemResponse(BaseModel):
     is_locked: bool
 
 
+class FeedbackTabsResponse(BaseModel):
+    """Labels for the two feedback tabs shown on the Reflect phase."""
+
+    feedback_label: str
+    sample_answer_label: str
+
+
+class ContentResponse(BaseModel):
+    """Client-renderable labels/limits sourced from ``tasks.content``."""
+
+    prompt_label: str
+    response_instruction: str
+    recording_limit_seconds: int
+    feedback_tabs: FeedbackTabsResponse
+
+    @classmethod
+    def from_content(
+        cls, content: dict, default_recording_seconds: int
+    ) -> ContentResponse:
+        """Build from the (possibly partial) ``tasks.content`` dict.
+
+        Every field uses a safe default so a missing key never 500s.
+        """
+        raw_tabs = content.get("feedback_tabs") or {}
+        tabs = raw_tabs if isinstance(raw_tabs, dict) else {}
+        recording_limit = content.get("recording_limit_seconds")
+        return cls(
+            prompt_label=content.get("prompt_label") or "",
+            response_instruction=content.get("response_instruction") or "",
+            recording_limit_seconds=(
+                recording_limit
+                if isinstance(recording_limit, int)
+                else default_recording_seconds
+            ),
+            feedback_tabs=FeedbackTabsResponse(
+                feedback_label=tabs.get("feedback_label") or "Feedback",
+                sample_answer_label=tabs.get("sample_answer_label") or "Better Way",
+            ),
+        )
+
+
 class TaskRuntimeResponse(BaseModel):
     attempt_id: UUID
     task: TaskResponse
     task_type: TaskTypeResponse
+    content: ContentResponse
     payload: GeneratedPayloadResponse
 
 
@@ -237,6 +279,10 @@ async def get_task_runtime(
             display_name=view.task_type.display_name,
             ui_schema_key=view.task_type.ui_schema_key,
             runtime_engine_key=view.task_type.runtime_engine_key,
+        ),
+        content=ContentResponse.from_content(
+            view.task.content or {},
+            view.task.duration_seconds or 30,
         ),
         payload=GeneratedPayloadResponse.from_payload(view.payload),
     )
