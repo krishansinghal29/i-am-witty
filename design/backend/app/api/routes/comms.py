@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime, time
 from uuid import UUID
 
-from fastapi import APIRouter, Request, status
+from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel
 
 from app.api.deps import ContainerDep, CurrentUser
@@ -84,9 +84,12 @@ async def revenuecat_webhook(
     failed DB/provider call surfaces as a non-2xx and RevenueCat retries.
     """
     body = await request.body()
-    event = container.integrations.subscription_provider.parse_webhook(
-        dict(request.headers), body
-    )
+    try:
+        event = container.integrations.subscription_provider.parse_webhook(
+            dict(request.headers), body
+        )
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail="invalid_webhook_auth") from exc
     await container.entitlement_service.process_webhook(event)
     return WebhookAck(status="accepted", event_id=event.event_id)
 
