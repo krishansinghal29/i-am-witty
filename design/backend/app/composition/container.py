@@ -148,7 +148,7 @@ class RequestContainer:
         )
         self.progress_service = ProgressService(users, progress)
         self.entitlement_service = EntitlementService(
-            entitlements, integrations.subscription_provider, uow
+            entitlements, users, integrations.subscription_provider, uow
         )
         self.reminder_service = ReminderService(reminders, uow)
         self.notification_service = NotificationService(devices, uow)

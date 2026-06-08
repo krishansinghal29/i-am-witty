@@ -77,11 +77,17 @@ class AccessResponse(BaseModel):
 async def revenuecat_webhook(
     request: Request, container: ContainerDep
 ) -> WebhookAck:
-    """Verify and acknowledge a RevenueCat webhook; processing is deferred."""
+    """Verify a RevenueCat webhook and mirror the subscriber's entitlements.
+
+    `parse_webhook` enforces the shared-secret Authorization header. Processing
+    re-fetches the subscriber from RevenueCat (authoritative + idempotent), so a
+    failed DB/provider call surfaces as a non-2xx and RevenueCat retries.
+    """
     body = await request.body()
     event = container.integrations.subscription_provider.parse_webhook(
         dict(request.headers), body
     )
+    await container.entitlement_service.process_webhook(event)
     return WebhookAck(status="accepted", event_id=event.event_id)
 
 
