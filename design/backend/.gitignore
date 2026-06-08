@@ -9,6 +9,8 @@ __pycache__/
 
 # Environment variables (never commit real credentials)
 .env
+.env.development
+.env.production
 
 # Service-account / credential files (e.g. Firebase Admin SDK JSON)
 secrets/

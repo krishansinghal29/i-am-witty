@@ -8,7 +8,7 @@ from sqlalchemy.pool import NullPool
 from alembic import context
 
 from app.settings import get_settings
-from app.infrastructure.db.engine import normalize_async_dsn, build_connect_args
+from app.infrastructure.db.dsn import build_connect_args, normalize_async_dsn
 from app.infrastructure.db.orm.base import Base
 
 # Import ORM modules so their tables register on Base.metadata before
