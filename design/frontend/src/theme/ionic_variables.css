@@ -1,0 +1,88 @@
+/* =============================================================
+   Light & Warm theme — Ionic CSS variable overrides
+   Light-mode only; no dark palette.
+   ============================================================= */
+
+:root {
+  /* ── Font ──────────────────────────────────────────────── */
+  --ion-font-family: Inter, system-ui, sans-serif;
+
+  /* ── Base Ionic surface / text ─────────────────────────── */
+  --ion-background-color: #F7F8FA;
+  --ion-background-color-rgb: 247, 248, 250;
+  --ion-text-color: #2B2F3A;
+  --ion-text-color-rgb: 43, 47, 58;
+
+  /* ── Ionic primary → blue #3B82F6 ──────────────────────── */
+  --ion-color-primary: #3B82F6;
+  --ion-color-primary-rgb: 59, 130, 246;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  /* shade ≈ -12% lightness → #2563EB */
+  --ion-color-primary-shade: #2563EB;
+  /* tint ≈ +12% lightness → #60A5FA */
+  --ion-color-primary-tint: #60A5FA;
+
+  /* ── Ionic success → green #16A34A ─────────────────────── */
+  --ion-color-success: #16A34A;
+  --ion-color-success-rgb: 22, 163, 74;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #15803D;
+  --ion-color-success-tint: #22C55E;
+
+  /* ── Ionic warning → amber #F5A30A ─────────────────────── */
+  --ion-color-warning: #F5A30A;
+  --ion-color-warning-rgb: 245, 163, 10;
+  --ion-color-warning-contrast: #ffffff;
+  --ion-color-warning-contrast-rgb: 255, 255, 255;
+  --ion-color-warning-shade: #D97706;
+  --ion-color-warning-tint: #FBBF24;
+
+  /* ── Ionic danger → red #EF4444 ────────────────────────── */
+  --ion-color-danger: #EF4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #DC2626;
+  --ion-color-danger-tint: #F87171;
+
+  /* ── Custom Ionic color: accent (orange #F97316) ────────── */
+  --ion-color-accent: #F97316;
+  --ion-color-accent-rgb: 249, 115, 22;
+  --ion-color-accent-contrast: #ffffff;
+  --ion-color-accent-contrast-rgb: 255, 255, 255;
+  --ion-color-accent-shade: #EA6C10;
+  --ion-color-accent-tint: #FB923C;
+
+  /* ── App-level custom properties ───────────────────────── */
+  --app-bg: #F7F8FA;
+  --app-surface: #FFFFFF;
+  --app-text: #2B2F3A;
+  --app-muted: #6B7589;
+  --app-faint: #9AA3B2;
+  --app-line: #E5EAF1;
+  --app-tint: #F8FAFC;
+  --app-accent: #F97316;
+  --app-primary: #3B82F6;
+  --app-active: #0A8FF2;
+  --app-amber: #F5A30A;
+  --app-green: #16A34A;
+  --app-sky: #0EA5E9;
+  --app-red: #EF4444;
+  --app-radius: 12px;
+  --app-gradient-warm: linear-gradient(135deg, #F97316, #F7C13B);
+  --app-gradient-active-tab: linear-gradient(135deg, #0A8FF2, #F97316);
+  --app-shadow-soft: 0 4px 20px -2px rgba(249, 115, 22, 0.10);
+  --app-shadow-warm: 0 8px 30px -4px rgba(249, 115, 22, 0.20);
+}
+
+/* ── .ion-color-accent class so color="accent" works ──────── */
+.ion-color-accent {
+  --ion-color-base: var(--ion-color-accent);
+  --ion-color-base-rgb: var(--ion-color-accent-rgb);
+  --ion-color-contrast: var(--ion-color-accent-contrast);
+  --ion-color-contrast-rgb: var(--ion-color-accent-contrast-rgb);
+  --ion-color-shade: var(--ion-color-accent-shade);
+  --ion-color-tint: var(--ion-color-accent-tint);
+}
