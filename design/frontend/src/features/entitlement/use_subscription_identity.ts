@@ -10,10 +10,20 @@
  * The backend preserves the UUID across guest→auth linking, so the id never
  * changes underfoot: a single `configure()` is enough and no logIn/alias is
  * needed. The ref guard keeps it to one call per id.
+ *
+ * We only configure for a backend-UUID-shaped id. In the rare case where the
+ * session falls back to a non-UUID (e.g. the Firebase uid, when secure storage
+ * was wiped but the Firebase session survived), we skip rather than configure
+ * RevenueCat under an id the backend can never match — turning a stranded
+ * purchase into a clean "not available" failure instead.
  */
 
 import { useEffect, useRef } from 'react';
 import { useIntegrations } from '@/app/providers';
+
+/** Canonical 8-4-4-4-12 UUID, matching what the backend `uuid.UUID()` accepts. */
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export function useSubscriptionIdentity(
   appUserId: string | null | undefined,
@@ -22,7 +32,7 @@ export function useSubscriptionIdentity(
   const configuredFor = useRef<string | null>(null);
 
   useEffect(() => {
-    if (!appUserId) return;
+    if (!appUserId || !UUID_RE.test(appUserId)) return;
     if (configuredFor.current === appUserId) return;
     configuredFor.current = appUserId;
     // configure() never throws (it degrades gracefully when unavailable, e.g.

@@ -15,7 +15,6 @@ import {
   Button,
   ErrorView,
   LoadingView,
-  RiffyWordmark,
   StreakChip,
 } from '@/components/ui';
 import { colors, radius } from '@/theme/tokens';
@@ -233,13 +232,6 @@ const SIGNOUT: CSSProperties = {
   cursor: 'pointer',
 };
 
-const BRAND_FOOTER: CSSProperties = {
-  display: 'flex',
-  justifyContent: 'center',
-  marginTop: 22,
-  paddingBottom: 6,
-};
-
 function asUrl(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
@@ -425,10 +417,6 @@ export function ProfilePage() {
             {isSigningOut ? 'Signing out…' : 'Sign out'}
           </button>
         )}
-
-        <div style={BRAND_FOOTER} aria-hidden>
-          <RiffyWordmark height={18} tone="solid" style={{ opacity: 0.55 }} />
-        </div>
       </div>
     );
   }
