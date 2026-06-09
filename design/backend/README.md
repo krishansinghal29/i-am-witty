@@ -47,3 +47,39 @@ Useful options:
 --use-env-database-url           # required with --skip-neon-reset for empty-config
 --yes                            # skip interactive confirmation
 ```
+
+## Deploy
+
+```bash
+./deploy.sh
+```
+
+Deploys to Cloud Run (`iamwitty-backend`, region `us-east1`, project `i-am-witty`).
+`.env` is the single source of truth: `scripts/make_run_env.py` translates its
+allowlisted keys (`RUNTIME_KEYS`) into an ephemeral Cloud Run env file at deploy
+time. To ship a new runtime env var, add it to both `.env` and `RUNTIME_KEYS`.
+
+## Over-the-air updates (self-hosted Capgo)
+
+The native app's `@capgo/capacitor-updater` polls `POST /v1/ota/check`
+(`app/api/routes/ota.py`) for new web-layer bundles, so we run OTA off our own
+backend + a public GCS bucket — no Capgo cloud, no subscription. Bundles are
+published from `frontend/deploy_ota.sh`; the device downloads the zip directly
+from GCS and this endpoint only answers "is there a newer bundle?".
+
+Env (`.env` → Cloud Run):
+
+```
+OTA_ENABLED=true                                                  # false = instant kill switch
+OTA_POINTER_URL=https://storage.googleapis.com/riffy-ota/ota/production.json
+```
+
+- **Kill switch (all live devices, no rebuild):** set `OTA_ENABLED=false` and
+  `./deploy.sh`. The endpoint then always returns "no update".
+- The endpoint also gates on native-binary compatibility: a bundle whose
+  `min_version_build` exceeds the device's `version_build` is withheld, so an old
+  binary never receives a bundle it can't run.
+- Everything fails safe to "no update": a missing pointer, a fetch error, or a
+  disabled flag never serves a bad bundle and never raises.
+
+Publishing bundles and the one-time GCS setup live in `frontend/README.md`.

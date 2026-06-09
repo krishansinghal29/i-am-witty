@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.routes import comms as comms_routes
 from app.api.routes import identity as identity_routes
+from app.api.routes import ota as ota_routes
 from app.api.routes import tasks as tasks_routes
 from app.application.exceptions import (
     AccessDeniedError,
@@ -100,3 +101,4 @@ async def health(session: AsyncSession = Depends(get_session)) -> dict[str, str]
 app.include_router(identity_routes.router)
 app.include_router(tasks_routes.router)
 app.include_router(comms_routes.router)
+app.include_router(ota_routes.router)

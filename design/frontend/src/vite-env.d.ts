@@ -16,6 +16,8 @@ interface ImportMetaEnv {
   readonly VITE_POSTHOG_KEY: string;
   readonly VITE_POSTHOG_HOST: string;
 
+  readonly VITE_CAPGO_ENABLED: string;
+
   readonly VITE_REVENUECAT_IOS_KEY: string;
   readonly VITE_REVENUECAT_ANDROID_KEY: string;
   readonly VITE_REVENUECAT_WEB_KEY: string;

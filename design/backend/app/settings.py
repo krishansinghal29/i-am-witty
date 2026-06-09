@@ -48,6 +48,15 @@ class Settings(BaseSettings):
     # key is present; absent key disables TTS gracefully.
     tts_voice: str = "nova"
 
+    # Capgo OTA (self-hosted): the app's @capgo/capacitor-updater checks this
+    # backend (POST /v1/ota/check) for new web-layer bundles, so we never use
+    # (or pay for) Capgo's cloud. `ota_enabled=False` is the instant kill switch
+    # for every installed device — no rebuild, no store release. `ota_pointer_url`
+    # is the public URL of the `production.json` written by frontend/deploy_ota.sh;
+    # when unset the endpoint always reports "no update".
+    ota_enabled: bool = True
+    ota_pointer_url: str | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

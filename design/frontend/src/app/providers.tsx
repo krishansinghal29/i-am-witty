@@ -32,6 +32,7 @@ import { RevenueCatSubscriptionGateway } from '@/integrations/revenuecat/revenue
 import { PostHogAnalyticsGateway } from '@/integrations/posthog/posthog_analytics_gateway';
 import { DeepgramTranscriptionGateway } from '@/integrations/transcription/deepgram_transcription_gateway';
 import { CapgoUpdater } from '@/integrations/capgo/capgo_updater';
+import { NoOpUpdater } from '@/integrations/capgo/no_op_updater';
 import type { AppUpdater } from '@/integrations/capgo/capgo_updater';
 
 import type {
@@ -84,7 +85,12 @@ function buildIntegrations(): Integrations {
   const subscriptions: SubscriptionGateway = new RevenueCatSubscriptionGateway();
   const analytics: AnalyticsGateway = new PostHogAnalyticsGateway();
   const device: DeviceServices = new CapacitorDeviceServices();
-  const updater: AppUpdater = new CapgoUpdater();
+  // CapgoUpdater already self-no-ops on web; the env flag lets dev/CI builds opt
+  // out entirely and keeps full Capgo removal to a one-line swap here.
+  const updater: AppUpdater =
+    import.meta.env.VITE_CAPGO_ENABLED === 'false'
+      ? new NoOpUpdater()
+      : new CapgoUpdater();
 
   const tokens: TokenProvider = {
     getIdToken: () => auth.getIdToken(),
