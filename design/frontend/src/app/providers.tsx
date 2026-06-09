@@ -25,12 +25,10 @@ import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 import '@/theme/variables.css';
 
-import { Capacitor } from '@capacitor/core';
 import { CapacitorSecureStore } from '@/integrations/capacitor/capacitor_secure_store';
 import { CapacitorDeviceServices } from '@/integrations/capacitor/capacitor_device_services';
 import { FirebaseAuthGateway } from '@/integrations/firebase/firebase_auth_gateway';
 import { RevenueCatSubscriptionGateway } from '@/integrations/revenuecat/revenuecat_subscription_gateway';
-import { RevenueCatWebSubscriptionGateway } from '@/integrations/revenuecat/revenuecat_web_subscription_gateway';
 import { PostHogAnalyticsGateway } from '@/integrations/posthog/posthog_analytics_gateway';
 import { DeepgramTranscriptionGateway } from '@/integrations/transcription/deepgram_transcription_gateway';
 import { CapgoUpdater } from '@/integrations/capgo/capgo_updater';
@@ -79,11 +77,11 @@ export interface Integrations {
 function buildIntegrations(): Integrations {
   const secureStore: SecureStore = new CapacitorSecureStore();
   const auth: AuthGateway = new FirebaseAuthGateway();
-  // Native (iOS/Android) uses StoreKit/Play Billing via purchases-capacitor;
-  // the web target uses RevenueCat Web Billing (purchases-js). Same port.
-  const subscriptions: SubscriptionGateway = Capacitor.isNativePlatform()
-    ? new RevenueCatSubscriptionGateway()
-    : new RevenueCatWebSubscriptionGateway();
+  // iOS/Android purchase via StoreKit/Play Billing through purchases-capacitor.
+  // The web build has no in-app purchase path — the paywall points users to
+  // download the app — and this gateway degrades gracefully there: configure()
+  // no-ops, offerings come back empty, and purchase throws a friendly AppError.
+  const subscriptions: SubscriptionGateway = new RevenueCatSubscriptionGateway();
   const analytics: AnalyticsGateway = new PostHogAnalyticsGateway();
   const device: DeviceServices = new CapacitorDeviceServices();
   const updater: AppUpdater = new CapgoUpdater();

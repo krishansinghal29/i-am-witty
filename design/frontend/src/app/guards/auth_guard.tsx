@@ -9,9 +9,13 @@
 import type { ReactNode } from 'react';
 import { IonPage, IonContent, IonSpinner } from '@ionic/react';
 import { useSession } from '@/features/identity/use_session';
+import { useSubscriptionIdentity } from '@/features/entitlement/use_subscription_identity';
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const { session, isLoading } = useSession();
+
+  // Identify the subscription SDK with the backend app_user_id once it's known.
+  useSubscriptionIdentity(session?.appUserId ?? null);
 
   // Block the app until the first session resolves (no token yet).
   if (isLoading && !session) {

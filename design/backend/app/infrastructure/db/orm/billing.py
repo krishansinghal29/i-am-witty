@@ -65,28 +65,6 @@ class DailyUsageCounter(Base):
     )
 
 
-class RevenueCatCustomer(Base):
-    __tablename__ = "revenuecat_customers"
-
-    app_user_id: Mapped[uuid.UUID] = mapped_column(
-        postgresql.UUID(as_uuid=True),
-        ForeignKey("app_users.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    revenuecat_app_user_id: Mapped[str] = mapped_column(
-        Text, nullable=False, unique=True
-    )
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("now()")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=text("now()"),
-        onupdate=text("now()"),
-    )
-
-
 class SubscriptionEntitlement(Base):
     __tablename__ = "subscription_entitlements"
 

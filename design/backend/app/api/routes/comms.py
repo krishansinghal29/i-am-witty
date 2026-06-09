@@ -187,12 +187,7 @@ async def submit_support(
     )
 
 
-@router.get("/me/access", response_model=AccessResponse)
-async def get_access(
-    user: CurrentUser, container: ContainerDep
-) -> AccessResponse:
-    """Return the caller's derived access state and mirrored entitlements."""
-    access = await container.entitlement_service.get_access_state(user.id)
+def _to_access_response(access) -> AccessResponse:
     return AccessResponse(
         is_riffy_plus=access.is_riffy_plus,
         entitlements=[
@@ -206,3 +201,26 @@ async def get_access(
             for e in access.entitlements
         ],
     )
+
+
+@router.get("/me/access", response_model=AccessResponse)
+async def get_access(
+    user: CurrentUser, container: ContainerDep
+) -> AccessResponse:
+    """Return the caller's derived access state and mirrored entitlements."""
+    access = await container.entitlement_service.get_access_state(user.id)
+    return _to_access_response(access)
+
+
+@router.post("/me/access/sync", response_model=AccessResponse)
+async def sync_access(
+    user: CurrentUser, container: ContainerDep
+) -> AccessResponse:
+    """Pull the caller's subscription from RevenueCat now and return fresh access.
+
+    Lets the client reconcile immediately after a purchase/restore instead of
+    waiting on the (eventually-consistent) webhook. Option A: the RevenueCat app
+    user id is the caller's ``app_user_id``, so this needs no extra linking.
+    """
+    access = await container.entitlement_service.sync_from_provider(user.id)
+    return _to_access_response(access)

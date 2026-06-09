@@ -17,10 +17,14 @@ export function useSession() {
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.session,
     queryFn: async (): Promise<Session> => {
-      // 1. Authenticated Firebase session takes precedence.
+      // 1. Authenticated Firebase session takes precedence. Firebase reports the
+      // Firebase uid as appUserId (a placeholder); the backend app_user_id is a
+      // stable UUID — preserved across guest→auth linking — and is what both the
+      // backend and RevenueCat match on. Prefer the persisted UUID when present.
       const fb = await auth.getSession();
       if (fb !== null) {
-        return fb;
+        const backendId = await secureStore.get(STORAGE_KEYS.appUserId);
+        return backendId ? { ...fb, appUserId: backendId } : fb;
       }
 
       // 2. Reconstruct a guest session from a persisted token, if present.

@@ -143,6 +143,13 @@ export interface RiffyApi {
 
   /** Fetch the user's current access / entitlement state. */
   getAccess(): Promise<AccessState>;
+
+  /**
+   * Force the backend to pull the latest subscription from RevenueCat now and
+   * return the fresh access state. Used to reconcile immediately after a
+   * purchase/restore instead of waiting on the webhook.
+   */
+  syncAccess(): Promise<AccessState>;
 }
 
 // ---------------------------------------------------------------------------
@@ -308,6 +315,11 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
 
     async getAccess() {
       const dto = await http.get<AccessDto>(endpoints.access);
+      return mapAccess(dto);
+    },
+
+    async syncAccess() {
+      const dto = await http.post<AccessDto>(endpoints.accessSync);
       return mapAccess(dto);
     },
   };

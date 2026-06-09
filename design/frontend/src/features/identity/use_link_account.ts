@@ -12,7 +12,7 @@
 
 import { useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useIntegrations } from '@/app/providers';
+import { useIntegrations, STORAGE_KEYS } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import { AppError } from '@/data/errors/app_error';
 import type { Session } from '@/types/models';
@@ -28,7 +28,7 @@ export interface UseLinkAccount {
 }
 
 export function useLinkAccount(): UseLinkAccount {
-  const { auth, api } = useIntegrations();
+  const { auth, api, secureStore } = useIntegrations();
   const queryClient = useQueryClient();
 
   const mutation = useMutation<Session, unknown, AuthProvider>({
@@ -48,7 +48,13 @@ export function useLinkAccount(): UseLinkAccount {
       }
       return api.linkAccount(idToken);
     },
-    onSuccess: async () => {
+    onSuccess: async (session) => {
+      // The backend preserves app_user_id across the guest→auth merge. Persist
+      // it so the authenticated session resolves to the backend UUID (which
+      // RevenueCat and the backend match on) rather than the Firebase uid.
+      if (session.appUserId) {
+        await secureStore.set(STORAGE_KEYS.appUserId, session.appUserId);
+      }
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.session }),
         queryClient.invalidateQueries({ queryKey: queryKeys.home }),

@@ -36,4 +36,5 @@ export const endpoints = {
 
   // Access / entitlements
   access: '/v1/me/access',
+  accessSync: '/v1/me/access/sync',
 } as const;

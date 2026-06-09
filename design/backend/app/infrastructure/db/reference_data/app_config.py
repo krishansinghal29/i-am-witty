@@ -25,6 +25,18 @@ APP_CONFIG: list[dict] = [
         "is_public": True,
         "description": "Privacy Policy URL (placeholder).",
     },
+    {
+        "key": "ios_app_store_url",
+        "value": "https://apps.apple.com/app/id000000000",
+        "is_public": True,
+        "description": "App Store listing URL (placeholder); web paywall 'download the app' CTA.",
+    },
+    {
+        "key": "android_play_store_url",
+        "value": "https://play.google.com/store/apps/details?id=com.iamwitty.app",
+        "is_public": True,
+        "description": "Play Store listing URL (placeholder); web paywall 'download the app' CTA.",
+    },
 ]
 
 FEATURE_GATES: list[dict] = [

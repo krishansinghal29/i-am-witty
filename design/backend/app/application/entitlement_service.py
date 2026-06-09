@@ -31,19 +31,16 @@ class EntitlementService:
     async def get_access_state(self, app_user_id: uuid.UUID) -> AccessState:
         return await self._entitlements.get_access_state(app_user_id)
 
-    async def link_customer(
-        self, app_user_id: uuid.UUID, revenuecat_app_user_id: str
-    ) -> None:
-        async with self._uow.transaction():
-            await self._entitlements.link_revenuecat_customer(
-                app_user_id, revenuecat_app_user_id
-            )
-
     async def sync_from_provider(self, app_user_id: uuid.UUID) -> AccessState:
-        rc_id = await self._entitlements.get_revenuecat_app_user_id(app_user_id)
-        if rc_id is None:
-            return await self._entitlements.get_access_state(app_user_id)
-        provider_ents = await self._provider.get_entitlements(rc_id)
+        """Pull the subscriber from RevenueCat now and mirror it.
+
+        Option A: the RevenueCat app user id IS our ``app_user_id`` (a UUID) --
+        the same identity the webhook path matches on. This lets the client
+        reconcile immediately after a purchase instead of waiting on the
+        (eventually-consistent) webhook. The upsert is idempotent, so calling
+        this repeatedly is safe.
+        """
+        provider_ents = await self._provider.get_entitlements(str(app_user_id))
         await self._apply(app_user_id, provider_ents)
         return await self._entitlements.get_access_state(app_user_id)
 

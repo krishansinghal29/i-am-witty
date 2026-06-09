@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { IonIcon } from '@ionic/react';
 import {
   closeOutline,
@@ -116,6 +117,13 @@ const PLANS: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '1fr 1fr',
   gap: 11,
+};
+
+const DOWNLOAD: CSSProperties = {
+  marginTop: 22,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
 };
 
 const TRIAL: CSSProperties = {
@@ -263,6 +271,10 @@ export function PaywallSheet() {
   const closePaywall = useUiStore((state) => state.closePaywall);
 
   const { values } = useAppConfig();
+  // In-app purchases run natively (StoreKit/Play Billing). On the web there is
+  // no checkout — we point users to download the app — so the paywall renders a
+  // store-download CTA there and skips loading offerings.
+  const isNative = Capacitor.isNativePlatform();
   const {
     packages,
     isLoading,
@@ -272,7 +284,7 @@ export function PaywallSheet() {
     isPurchasing,
     isRestoring,
     purchaseError,
-  } = usePaywall({ enabled: paywallOpen });
+  } = usePaywall({ enabled: paywallOpen && isNative });
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -315,12 +327,18 @@ export function PaywallSheet() {
     }
   };
 
-  const openUrl = (key: string) => {
-    const url = values[key];
-    if (typeof url === 'string' && url.length > 0) {
-      window.open(url, '_blank', 'noopener');
-    }
+  const configUrl = (key: string): string | null => {
+    const v = values[key];
+    return typeof v === 'string' && v.length > 0 ? v : null;
   };
+
+  const openUrl = (key: string) => {
+    const url = configUrl(key);
+    if (url) window.open(url, '_blank', 'noopener');
+  };
+
+  const iosUrl = configUrl('ios_app_store_url');
+  const androidUrl = configUrl('android_play_store_url');
 
   const busy = isPurchasing || isRestoring;
 
@@ -359,7 +377,37 @@ export function PaywallSheet() {
           ))}
         </ul>
 
-        {isLoading ? (
+        {!isNative ? (
+          <div style={DOWNLOAD}>
+            <p style={{ ...HERO_SUB, margin: '22px auto 6px' }}>
+              Riffy+ is purchased in the app. Download Riffy to subscribe, then
+              sign in here to unlock it everywhere.
+            </p>
+            {iosUrl && (
+              <Button
+                variant="accent"
+                block
+                onClick={() => openUrl('ios_app_store_url')}
+              >
+                Download on the App Store
+              </Button>
+            )}
+            {androidUrl && (
+              <Button
+                variant={iosUrl ? 'ghost' : 'accent'}
+                block
+                onClick={() => openUrl('android_play_store_url')}
+              >
+                Get it on Google Play
+              </Button>
+            )}
+            {!iosUrl && !androidUrl && (
+              <p style={{ ...HERO_SUB, marginTop: 4 }}>
+                The app is coming soon — hang tight.
+              </p>
+            )}
+          </div>
+        ) : isLoading ? (
           <LoadingView message="Loading plans…" />
         ) : isEmpty ? (
           <p style={{ ...HERO_SUB, marginTop: 22 }}>
@@ -382,7 +430,7 @@ export function PaywallSheet() {
 
             <p style={TRIAL}>
               {selected
-                ? `Free trial available · then ${selected.priceString}${periodSuffix(selected)} · cancel anytime`
+                ? `${selected.priceString}${periodSuffix(selected)} · cancel anytime`
                 : 'Cancel anytime'}
             </p>
 
@@ -393,7 +441,7 @@ export function PaywallSheet() {
               loading={isPurchasing}
               disabled={busy || !selected}
             >
-              Start my free trial
+              Subscribe
             </Button>
 
             {purchaseError != null && (
@@ -403,15 +451,19 @@ export function PaywallSheet() {
         )}
 
         <div style={FINE}>
-          <span
-            style={FINE_LINK}
-            role="button"
-            tabIndex={0}
-            onClick={handleRestore}
-          >
-            {isRestoring ? 'Restoring…' : 'Restore'}
-          </span>
-          <span aria-hidden>·</span>
+          {isNative && (
+            <>
+              <span
+                style={FINE_LINK}
+                role="button"
+                tabIndex={0}
+                onClick={handleRestore}
+              >
+                {isRestoring ? 'Restoring…' : 'Restore'}
+              </span>
+              <span aria-hidden>·</span>
+            </>
+          )}
           <span style={FINE_LINK} role="button" tabIndex={0} onClick={() => openUrl('terms_url')}>
             Terms
           </span>

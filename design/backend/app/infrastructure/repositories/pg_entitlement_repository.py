@@ -11,10 +11,7 @@ from app.domain.models.entitlement import (
     Entitlement,
     SubscriptionStatus,
 )
-from app.infrastructure.db.orm.billing import (
-    RevenueCatCustomer,
-    SubscriptionEntitlement,
-)
+from app.infrastructure.db.orm.billing import SubscriptionEntitlement
 from app.infrastructure.db.orm.billing import (
     SubscriptionStatus as OrmSubscriptionStatus,
 )
@@ -59,23 +56,6 @@ class PgEntitlementRepository:
         row.trial_ends_at = entitlement.trial_ends_at
         row.last_synced_at = datetime.now(timezone.utc)
         row.raw_snapshot = raw_snapshot
-        await self._session.flush()
-
-    async def get_revenuecat_app_user_id(
-        self, app_user_id: uuid.UUID
-    ) -> str | None:
-        row = await self._session.get(RevenueCatCustomer, app_user_id)
-        return row.revenuecat_app_user_id if row is not None else None
-
-    async def link_revenuecat_customer(
-        self, app_user_id: uuid.UUID, revenuecat_app_user_id: str
-    ) -> None:
-        row = await self._session.get(RevenueCatCustomer, app_user_id)
-        if row is None:
-            row = RevenueCatCustomer(app_user_id=app_user_id)
-            self._session.add(row)
-        row.revenuecat_app_user_id = revenuecat_app_user_id
-        row.updated_at = datetime.now(timezone.utc)
         await self._session.flush()
 
     @staticmethod

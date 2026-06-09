@@ -2,10 +2,11 @@
  * Paywall view-model.
  *
  * Loads live offerings through the {@link SubscriptionGateway} port (RevenueCat
- * native on device, Web Billing on the browser — keyed by `queryKeys.offerings`)
- * and exposes `purchase(pkg)` / `restore()`. On success both invalidate the
- * backend access state (`queryKeys.access`) — the authoritative entitlement —
- * plus the offerings cache, then the UI re-reads the truth.
+ * native on device — keyed by `queryKeys.offerings`) and exposes `purchase(pkg)`
+ * / `restore()`. On success it asks the backend to pull the purchase from
+ * RevenueCat immediately (`syncAccess`) rather than waiting on the webhook, then
+ * primes the access cache (`queryKeys.access`) — the authoritative entitlement —
+ * so the UI reflects the new state at once.
  */
 
 import { useCallback } from 'react';
@@ -24,7 +25,7 @@ export interface UsePaywallOptions {
 
 export function usePaywall(options: UsePaywallOptions = {}) {
   const { enabled = true } = options;
-  const { subscriptions } = useIntegrations();
+  const { subscriptions, api } = useIntegrations();
   const queryClient = useQueryClient();
 
   const offeringsQuery = useQuery({
@@ -34,21 +35,27 @@ export function usePaywall(options: UsePaywallOptions = {}) {
     staleTime: 5 * 60 * 1000,
   });
 
-  const invalidate = useCallback(async () => {
-    await Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.access }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.offerings }),
-    ]);
-  }, [queryClient]);
+  const reconcile = useCallback(async () => {
+    // Force the backend to pull the just-made purchase from RevenueCat now, then
+    // prime the access cache with the fresh truth. Falls back to invalidation if
+    // the sync call fails — the webhook will reconcile shortly after.
+    try {
+      const access = await api.syncAccess();
+      queryClient.setQueryData(queryKeys.access, access);
+    } catch {
+      await queryClient.invalidateQueries({ queryKey: queryKeys.access });
+    }
+    await queryClient.invalidateQueries({ queryKey: queryKeys.offerings });
+  }, [api, queryClient]);
 
   const purchaseMutation = useMutation<EntitlementSnapshot, unknown, SubscriptionPackage>({
     mutationFn: (pkg) => subscriptions.purchasePackage(pkg),
-    onSuccess: invalidate,
+    onSuccess: reconcile,
   });
 
   const restoreMutation = useMutation<EntitlementSnapshot, unknown, void>({
     mutationFn: () => subscriptions.restorePurchases(),
-    onSuccess: invalidate,
+    onSuccess: reconcile,
   });
 
   // The catalog/paywall typically exposes a single (current) offering.
