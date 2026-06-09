@@ -1,11 +1,4 @@
-/** Wire shapes for reminders, notification devices, and support (snake_case). */
-
-export interface ReminderDto {
-  status: string;
-  timing_key: string | null;
-  local_time: string | null;
-  timezone: string;
-}
+/** Wire shapes for notification devices and support (snake_case). */
 
 export interface DeviceDto {
   id: string;
@@ -25,13 +18,6 @@ export interface SupportDto {
 // ---------------------------------------------------------------------------
 // Request bodies
 // ---------------------------------------------------------------------------
-
-export interface SaveReminderRequestDto {
-  status: string;
-  timing_key?: string | null;
-  local_time?: string | null;
-  timezone: string;
-}
 
 export interface RegisterDeviceRequestDto {
   device_key: string;

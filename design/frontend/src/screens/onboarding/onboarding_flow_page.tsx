@@ -1,20 +1,12 @@
 import type { CSSProperties } from 'react';
-import {
-  IonContent,
-  IonIcon,
-  IonPage,
-  useIonViewWillEnter,
-} from '@ionic/react';
+import { IonContent, IonIcon, IonPage } from '@ionic/react';
+import { Redirect } from 'react-router-dom';
 import { chevronBack } from 'ionicons/icons';
 import { colors, gradients } from '@/theme/tokens';
-import { ErrorView, LoadingView } from '@/components/ui';
 import { useOnboarding } from '@/features/onboarding/use_onboarding';
+import { useSession } from '@/features/identity/use_session';
 import { TriggerStep } from './steps/trigger_step';
-import { TinyPracticeStep } from './steps/tiny_practice_step';
-import { VariableRewardStep } from './steps/variable_reward_step';
 import { LoginStep } from './steps/login_step';
-import { ReminderStep } from './steps/reminder_step';
-import { PlanLandingStep } from './steps/plan_landing_step';
 
 const SHELL: CSSProperties = {
   display: 'flex',
@@ -50,6 +42,8 @@ const PROGRESS: CSSProperties = {
   padding: '0 2px',
 };
 
+const STEPS = ['trigger', 'login'] as const;
+
 function segmentStyle(on: boolean): CSSProperties {
   return {
     flex: 1,
@@ -61,107 +55,60 @@ function segmentStyle(on: boolean): CSSProperties {
 }
 
 export function OnboardingFlowPage() {
+  const { session, isLoading } = useSession();
   const onboarding = useOnboarding();
-  const {
-    step,
-    selectedTrigger,
-    firstTaskId,
-    isLoading,
-    isError,
-    isSavingTrigger,
-    triggerError,
-    progress,
-    canGoBack,
-  } = onboarding;
+  const { step, selectedTrigger, isCompleting, error } = onboarding;
 
-  // Re-read onboarding + home each time the page becomes active — this is how the
-  // flow resumes at the "first win" after the user returns from the task runtime.
-  useIonViewWillEnter(() => {
-    onboarding.refresh();
-  });
+  // A returning (already-onboarded) user has no business re-onboarding.
+  if (!isLoading && session !== null) {
+    return <Redirect to="/app/home" />;
+  }
 
-  const showChrome = step !== 'plan_landing';
+  const filled = STEPS.indexOf(step) + 1;
+  const canGoBack = step === 'login' && !isCompleting;
 
-  let body;
-  if (isLoading) {
-    body = <LoadingView message="Setting things up…" />;
-  } else if (isError && step === 'trigger') {
-    body = (
-      <ErrorView
-        message="We couldn’t get started just now. Give it another try."
-        onRetry={onboarding.refresh}
+  const body =
+    step === 'login' ? (
+      <LoginStep
+        onApple={() => void onboarding.signInWithApple().catch(() => {})}
+        onGoogle={() => void onboarding.signInWithGoogle().catch(() => {})}
+        isLoading={isCompleting}
+        error={error}
+      />
+    ) : (
+      <TriggerStep
+        selectedTrigger={selectedTrigger}
+        isSaving={false}
+        error={null}
+        onSelect={onboarding.selectTrigger}
       />
     );
-  } else {
-    switch (step) {
-      case 'trigger':
-        body = (
-          <TriggerStep
-            selectedTrigger={selectedTrigger}
-            isSaving={isSavingTrigger}
-            error={triggerError}
-            onSelect={(value) => void onboarding.selectTrigger(value)}
-          />
-        );
-        break;
-      case 'tiny_practice':
-        body = (
-          <TinyPracticeStep
-            trigger={selectedTrigger ?? onboarding.onboarding?.selectedTrigger ?? null}
-            ready={!!firstTaskId}
-            onStart={onboarding.startFirstTask}
-          />
-        );
-        break;
-      case 'variable_reward':
-        body = <VariableRewardStep onContinue={onboarding.advance} />;
-        break;
-      case 'login':
-        body = <LoginStep onContinue={onboarding.advance} />;
-        break;
-      case 'reminder':
-        body = <ReminderStep onContinue={onboarding.advance} />;
-        break;
-      case 'plan_landing':
-        body = <PlanLandingStep onEnter={onboarding.completeAndEnter} />;
-        break;
-      default:
-        body = <TriggerStep
-          selectedTrigger={selectedTrigger}
-          isSaving={isSavingTrigger}
-          error={triggerError}
-          onSelect={(value) => void onboarding.selectTrigger(value)}
-        />;
-    }
-  }
 
   return (
     <IonPage>
       <IonContent>
         <div style={SHELL}>
-          {showChrome && (
-            <div style={TOP_BAR}>
-              {canGoBack ? (
-                <button
-                  type="button"
-                  className="riffy-pressable"
-                  style={BACK_BTN}
-                  onClick={onboarding.back}
-                  aria-label="Back"
-                >
-                  <IonIcon icon={chevronBack} style={{ fontSize: 20 }} aria-hidden />
-                </button>
-              ) : (
-                <span style={{ width: 40, height: 40, flex: 'none' }} aria-hidden />
-              )}
-              <div style={PROGRESS} aria-hidden>
-                {Array.from({ length: progress.total }, (_, i) => (
-                  <span key={i} style={segmentStyle(i < progress.filled)} />
-                ))}
-              </div>
+          <div style={TOP_BAR}>
+            {canGoBack ? (
+              <button
+                type="button"
+                className="riffy-pressable"
+                style={BACK_BTN}
+                onClick={onboarding.back}
+                aria-label="Back"
+              >
+                <IonIcon icon={chevronBack} style={{ fontSize: 20 }} aria-hidden />
+              </button>
+            ) : (
               <span style={{ width: 40, height: 40, flex: 'none' }} aria-hidden />
+            )}
+            <div style={PROGRESS} aria-hidden>
+              {STEPS.map((s, i) => (
+                <span key={s} style={segmentStyle(i < filled)} />
+              ))}
             </div>
-          )}
+            <span style={{ width: 40, height: 40, flex: 'none' }} aria-hidden />
+          </div>
           {body}
         </div>
       </IonContent>

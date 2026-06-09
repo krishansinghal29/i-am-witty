@@ -36,16 +36,15 @@ export class FirebaseAuthGateway implements AuthGateway {
     return {
       appUserId: user.uid,
       status: 'authenticated',
-      sessionToken: null,
       firebaseUid: user.uid,
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     };
   }
 
   /** Current Firebase ID token, used by the HTTP client on every call. */
-  async getIdToken(): Promise<string | null> {
+  async getIdToken(forceRefresh = false): Promise<string | null> {
     const u = getFirebaseAuth().currentUser;
-    return u ? await u.getIdToken() : null;
+    return u ? await u.getIdToken(forceRefresh) : null;
   }
 
   async signInWithGoogle(): Promise<Session> {

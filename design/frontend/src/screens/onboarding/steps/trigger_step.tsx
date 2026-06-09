@@ -95,8 +95,7 @@ export function TriggerStep({ selectedTrigger, isSaving, error, onSelect }: Trig
       <span style={KICKER}>Let’s make this yours</span>
       <h1 style={QUESTION}>Where do you want to feel quicker?</h1>
       <p style={SUBTITLE}>
-        Pick one — we’ll start you with a tiny win for exactly that. You can change
-        it any time.
+        Pick one — we’ll tune your practice around it. You can change it any time.
       </p>
 
       <div style={LIST}>

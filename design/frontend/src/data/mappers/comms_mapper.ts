@@ -1,16 +1,7 @@
-/** Maps comms DTOs → Reminder / NotificationDevice / SupportMessage view-models. */
+/** Maps comms DTOs → NotificationDevice / SupportMessage view-models. */
 
-import { NotificationDevice, Reminder, SupportMessage } from '@/types/models';
-import { DeviceDto, ReminderDto, SupportDto } from '@/data/dto/comms_dto';
-
-export function mapReminder(dto: ReminderDto): Reminder {
-  return {
-    status: dto.status,
-    timingKey: dto.timing_key,
-    localTime: dto.local_time,
-    timezone: dto.timezone,
-  };
-}
+import { NotificationDevice, SupportMessage } from '@/types/models';
+import { DeviceDto, SupportDto } from '@/data/dto/comms_dto';
 
 export function mapNotificationDevice(dto: DeviceDto): NotificationDevice {
   return {

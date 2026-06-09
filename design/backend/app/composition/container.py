@@ -9,9 +9,7 @@ from app.application.daily_plan_service import DailyPlanService
 from app.application.entitlement_service import EntitlementService
 from app.application.identity_service import IdentityService
 from app.application.notification_service import NotificationService
-from app.application.onboarding_service import OnboardingService
 from app.application.progress_service import ProgressService
-from app.application.reminder_service import ReminderService
 from app.application.support_service import SupportService
 from app.application.task_attempt_service import TaskAttemptService
 from app.application.task_catalog_service import TaskCatalogService
@@ -37,9 +35,6 @@ from app.infrastructure.repositories.pg_daily_plan_repository import (
 from app.infrastructure.repositories.pg_entitlement_repository import (
     PgEntitlementRepository,
 )
-from app.infrastructure.repositories.pg_guest_session_repository import (
-    PgGuestSessionRepository,
-)
 from app.infrastructure.repositories.pg_notification_device_repository import (
     PgNotificationDeviceRepository,
 )
@@ -48,7 +43,6 @@ from app.infrastructure.repositories.pg_onboarding_repository import (
 )
 from app.infrastructure.repositories.pg_profile_repository import PgProfileRepository
 from app.infrastructure.repositories.pg_progress_repository import PgProgressRepository
-from app.infrastructure.repositories.pg_reminder_repository import PgReminderRepository
 from app.infrastructure.repositories.pg_support_repository import PgSupportRepository
 from app.infrastructure.repositories.pg_task_attempt_repository import (
     PgTaskAttemptRepository,
@@ -115,7 +109,6 @@ class RequestContainer:
         uow = SqlAlchemyUnitOfWork(session)
 
         users = PgUserRepository(session)
-        sessions = PgGuestSessionRepository(session)
         profiles = PgProfileRepository(session)
         onboarding = PgOnboardingRepository(session)
         tasks = PgTaskRepository(session)
@@ -124,7 +117,6 @@ class RequestContainer:
         progress = PgProgressRepository(session)
         usage = PgUsageRepository(session)
         entitlements = PgEntitlementRepository(session)
-        reminders = PgReminderRepository(session)
         devices = PgNotificationDeviceRepository(session)
         support = PgSupportRepository(session)
         config = PgConfigRepository(session)
@@ -133,9 +125,8 @@ class RequestContainer:
             integrations.transcription_provider
         )
         self.identity_service = IdentityService(
-            users, sessions, onboarding, integrations.auth_verifier, uow
+            users, onboarding, integrations.auth_verifier, uow
         )
-        self.onboarding_service = OnboardingService(users, onboarding, tasks, uow)
         self.task_catalog_service = TaskCatalogService(tasks, entitlements)
         self.daily_plan_service = DailyPlanService(users, plans, tasks, uow)
         self.task_attempt_service = TaskAttemptService(
@@ -147,7 +138,6 @@ class RequestContainer:
             usage,
             entitlements,
             config,
-            onboarding,
             self.transcription_service,
             integrations.runtime_engine,
             uow,
@@ -159,7 +149,6 @@ class RequestContainer:
         self.entitlement_service = EntitlementService(
             entitlements, users, integrations.subscription_provider, uow
         )
-        self.reminder_service = ReminderService(reminders, uow)
         self.notification_service = NotificationService(devices, uow)
         self.support_service = SupportService(support, uow)
         self.app_config_service = AppConfigService(config)

@@ -1,29 +1,30 @@
 import { create } from 'zustand';
-import type { UxStep } from '@/features/onboarding/onboarding_machine';
+
+/** The revamped onboarding is two client-side steps: pick a trigger, then sign in. */
+export type OnboardingStep = 'trigger' | 'login';
 
 /**
- * Transient onboarding UI state: the trigger the user tapped (held before it is
- * persisted server-side) and the furthest UX step reached this session. The
- * view-model reconciles this forward against the authoritative backend step.
+ * Transient onboarding UI state held entirely client-side until completion:
+ * the trigger the user tapped and which of the two steps is showing.
  */
 interface OnboardingUiStore {
   selectedTrigger: string | null;
-  uxStep: UxStep;
+  step: OnboardingStep;
 
   setSelectedTrigger: (trigger: string | null) => void;
-  setUxStep: (step: UxStep) => void;
+  setStep: (step: OnboardingStep) => void;
   reset: () => void;
 }
 
-const initialState: Pick<OnboardingUiStore, 'selectedTrigger' | 'uxStep'> = {
+const initialState: Pick<OnboardingUiStore, 'selectedTrigger' | 'step'> = {
   selectedTrigger: null,
-  uxStep: 'trigger',
+  step: 'trigger',
 };
 
 export const useOnboardingStore = create<OnboardingUiStore>()((set) => ({
   ...initialState,
 
-  setSelectedTrigger: (trigger) => set({ selectedTrigger: trigger }),
-  setUxStep: (step) => set({ uxStep: step }),
+  setSelectedTrigger: (selectedTrigger) => set({ selectedTrigger }),
+  setStep: (step) => set({ step }),
   reset: () => set(initialState),
 }));

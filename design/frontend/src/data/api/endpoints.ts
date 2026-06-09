@@ -4,13 +4,8 @@
  */
 
 export const endpoints = {
-  // Identity
-  guestSessions: '/v1/guest-sessions',
-  authLink: '/v1/auth/link',
-
-  // Onboarding
-  onboarding: '/v1/onboarding',
-  onboardingAdvance: '/v1/onboarding/advance',
+  // Onboarding (single write at completion; creates the authenticated user)
+  onboardingComplete: '/v1/onboarding/complete',
 
   // Config
   config: '/v1/config',
@@ -30,7 +25,6 @@ export const endpoints = {
   transcriptionTokens: '/v1/transcription-tokens',
 
   // Comms
-  reminders: '/v1/reminders',
   notificationDevices: '/v1/notification-devices',
   supportMessages: '/v1/support-messages',
 

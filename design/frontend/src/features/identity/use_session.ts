@@ -1,9 +1,15 @@
 /**
- * Session bootstrap hook (guest-first).
+ * Session hook (login-only).
  *
- * Ensures a durable session exists before any authed query fires: it prefers an
- * authenticated Firebase session, falls back to a persisted guest token, and
- * otherwise mints a fresh guest session and persists its credentials.
+ * A session exists only for a user who signed in AND finished onboarding. We
+ * treat the persisted backend `app_user_id` as that "onboarded" marker: it is
+ * written exactly once, by onboarding completion. So:
+ *   - Firebase session + persisted app_user_id → authenticated session
+ *   - otherwise (no Firebase user, or signed in but not yet completed) → null,
+ *     which routes the app to onboarding.
+ *
+ * There are no guests and no auto-minting; onboarding is the only path that
+ * creates a user.
  */
 
 import { useQuery } from '@tanstack/react-query';
@@ -12,41 +18,18 @@ import { queryKeys } from '@/state/query_keys';
 import type { Session } from '@/types/models';
 
 export function useSession() {
-  const { auth, secureStore, api } = useIntegrations();
+  const { auth, secureStore } = useIntegrations();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.session,
-    queryFn: async (): Promise<Session> => {
-      // 1. Authenticated Firebase session takes precedence. Firebase reports the
-      // Firebase uid as appUserId (a placeholder); the backend app_user_id is a
-      // stable UUID — preserved across guest→auth linking — and is what both the
-      // backend and RevenueCat match on. Prefer the persisted UUID when present.
+    queryFn: async (): Promise<Session | null> => {
       const fb = await auth.getSession();
-      if (fb !== null) {
-        const backendId = await secureStore.get(STORAGE_KEYS.appUserId);
-        return backendId ? { ...fb, appUserId: backendId } : fb;
-      }
-
-      // 2. Reconstruct a guest session from a persisted token, if present.
-      const token = await secureStore.get(STORAGE_KEYS.guestToken);
-      if (token) {
-        return {
-          appUserId: (await secureStore.get(STORAGE_KEYS.appUserId)) ?? '',
-          status: 'guest',
-          sessionToken: token,
-          firebaseUid: null,
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        };
-      }
-
-      // 3. No session yet — mint a fresh guest session and persist it.
-      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const s = await api.createGuestSession({ timezone: tz });
-      if (s.sessionToken) {
-        await secureStore.set(STORAGE_KEYS.guestToken, s.sessionToken);
-      }
-      await secureStore.set(STORAGE_KEYS.appUserId, s.appUserId);
-      return s;
+      if (fb === null) return null;
+      const backendId = await secureStore.get(STORAGE_KEYS.appUserId);
+      if (!backendId) return null;
+      // Firebase reports its uid as appUserId; the backend app_user_id is the
+      // stable UUID both the backend and RevenueCat match on — prefer it.
+      return { ...fb, appUserId: backendId };
     },
     // The session is durable; don't refetch or retry-storm.
     staleTime: Infinity,
@@ -57,7 +40,6 @@ export function useSession() {
     session: data ?? null,
     isLoading,
     isError,
-    isGuest: data?.status === 'guest',
-    isAuthenticated: data?.status === 'authenticated',
+    isAuthenticated: data != null,
   };
 }

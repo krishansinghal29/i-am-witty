@@ -2,7 +2,6 @@
 
 import { DailyPlan, HomeView, PlanItem, Progress } from '@/types/models';
 import { DailyPlanDto, HomeDto, PlanItemDto, ProgressDto } from '@/data/dto/home_dto';
-import { mapOnboardingState } from './onboarding_mapper';
 
 export function mapPlanItem(dto: PlanItemDto): PlanItem {
   return {
@@ -37,6 +36,5 @@ export function mapHome(dto: HomeDto): HomeView {
     plan: mapDailyPlan(dto.plan),
     progress: mapProgress(dto.progress),
     access: { isRiffyPlus: dto.access.is_riffy_plus },
-    onboarding: mapOnboardingState(dto.onboarding),
   };
 }

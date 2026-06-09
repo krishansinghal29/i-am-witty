@@ -1,12 +1,6 @@
-/** Wire shapes for identity / session endpoints (snake_case). */
+/** Wire shapes for identity endpoints (snake_case). */
 
-export interface GuestSessionDto {
-  app_user_id: string;
-  status: string;
-  session_token: string;
-  timezone: string;
-}
-
+/** The authenticated user returned by `POST /v1/onboarding/complete`. */
 export interface LinkedUserDto {
   app_user_id: string;
   status: string;

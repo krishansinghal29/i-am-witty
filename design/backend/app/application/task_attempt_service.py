@@ -33,7 +33,6 @@ from app.ports.repositories.daily_plan_repository import (
     MarkPlanItemCurrentInput,
 )
 from app.ports.repositories.entitlement_repository import EntitlementRepository
-from app.ports.repositories.onboarding_repository import OnboardingRepository
 from app.ports.repositories.progress_repository import (
     DayActivity,
     ProgressRepository,
@@ -55,12 +54,6 @@ from app.ports.task_runtime_engine import (
     TaskRuntimeEngine,
     TaskRuntimeResult,
 )
-
-# Post-first-task onboarding milestone. Matches `OnboardingStep.first_win`
-# in `app/infrastructure/db/orm/onboarding.py`: completing the very first
-# attempt is the user's "first win", which advances onboarding past `first_task`.
-_FIRST_WIN_STEP = "first_win"
-
 
 def _runtime_context_from_state(
     runtime_state: dict,
@@ -131,7 +124,6 @@ class TaskAttemptService:
         usage: UsageRepository,
         entitlements: EntitlementRepository,
         config: ConfigRepository,
-        onboarding: OnboardingRepository,
         transcription: TranscriptionService,
         engine: TaskRuntimeEngine,
         uow: UnitOfWork,
@@ -144,7 +136,6 @@ class TaskAttemptService:
         self._usage = usage
         self._entitlements = entitlements
         self._config = config
-        self._onboarding = onboarding
         self._transcription = transcription
         self._engine = engine
         self._uow = uow
@@ -201,20 +192,6 @@ class TaskAttemptService:
                         plan_item_id=daily_plan_item_id,
                         current_attempt_id=attempt.id,
                     )
-                )
-
-            # Bind the onboarding first-task attempt the first time the user
-            # starts their designated first task, so completing it advances
-            # onboarding to `first_win` (see `complete_task`).
-            ob = await self._onboarding.get_state(app_user_id)
-            if (
-                ob is not None
-                and ob.first_task_id == task_id
-                and ob.first_task_attempt_id is None
-                and ob.completed_at is None
-            ):
-                await self._onboarding.set_first_task(
-                    app_user_id, task_id, attempt.id
                 )
 
         return StartTaskResult(task, task_type, attempt, fl)
@@ -348,14 +325,6 @@ class TaskAttemptService:
                     ),
                 ),
             )
-
-            ob = await self._onboarding.get_state(app_user_id)
-            if (
-                ob
-                and ob.first_task_attempt_id == attempt_id
-                and ob.completed_at is None
-            ):
-                await self._onboarding.advance_step(app_user_id, _FIRST_WIN_STEP)
 
         state2 = FreeLimitState(
             du.free_tasks_completed if du else 0,

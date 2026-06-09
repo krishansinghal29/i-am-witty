@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date
 from uuid import UUID
 
 from fastapi import APIRouter, status
@@ -11,22 +11,6 @@ from app.api.deps import ContainerDep, CurrentUser
 router = APIRouter(prefix="/v1", tags=["identity"])
 
 
-class CreateGuestRequest(BaseModel):
-    timezone: str
-    locale: str | None = None
-
-
-class GuestSessionResponse(BaseModel):
-    app_user_id: UUID
-    status: str
-    session_token: str
-    timezone: str
-
-
-class LinkAuthRequest(BaseModel):
-    id_token: str
-
-
 class UserResponse(BaseModel):
     app_user_id: UUID
     status: str
@@ -34,20 +18,11 @@ class UserResponse(BaseModel):
     timezone: str
 
 
-class UpdateOnboardingRequest(BaseModel):
+class CompleteOnboardingRequest(BaseModel):
+    timezone: str
     trigger: str
-
-
-class AdvanceOnboardingRequest(BaseModel):
-    step: str
-
-
-class OnboardingStateResponse(BaseModel):
-    current_step: str
-    selected_trigger: str | None
-    first_task_id: UUID | None
-    first_task_attempt_id: UUID | None
-    completed_at: datetime | None
+    id_token: str
+    locale: str | None = None
 
 
 class FeatureGateResponse(BaseModel):
@@ -93,85 +68,30 @@ class HomeResponse(BaseModel):
     plan: DailyPlanResponse
     progress: ProgressResponse
     access: AccessSummary
-    onboarding: OnboardingStateResponse
 
 
 @router.post(
-    "/guest-sessions",
-    response_model=GuestSessionResponse,
+    "/onboarding/complete",
+    response_model=UserResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_guest_session(
-    body: CreateGuestRequest, container: ContainerDep
-) -> GuestSessionResponse:
-    """Create an anonymous guest user and return its session token."""
-    gi = await container.identity_service.create_guest(body.timezone, body.locale)
-    return GuestSessionResponse(
-        app_user_id=gi.user.id,
-        status=gi.user.status.value,
-        session_token=gi.session_token,
-        timezone=gi.user.timezone,
-    )
-
-
-@router.post("/auth/link", response_model=UserResponse)
-async def link_account(
-    body: LinkAuthRequest, container: ContainerDep, user: CurrentUser
+async def complete_onboarding(
+    body: CompleteOnboardingRequest, container: ContainerDep
 ) -> UserResponse:
-    """Link the current guest to a verified Firebase identity."""
-    linked = await container.identity_service.link_account(user.id, body.id_token)
+    """Finalize onboarding: verify the Firebase token, then create the user +
+    onboarding row in one transaction. This is the first and only write of the
+    flow (everything before it runs client-side)."""
+    user = await container.identity_service.complete_onboarding(
+        timezone=body.timezone,
+        trigger=body.trigger,
+        id_token=body.id_token,
+        locale=body.locale,
+    )
     return UserResponse(
-        app_user_id=linked.id,
-        status=linked.status.value,
-        firebase_uid=linked.firebase_uid,
-        timezone=linked.timezone,
-    )
-
-
-@router.get("/onboarding", response_model=OnboardingStateResponse)
-async def get_onboarding(
-    container: ContainerDep, user: CurrentUser
-) -> OnboardingStateResponse:
-    """Return the caller's onboarding state, starting it if absent."""
-    state = await container.onboarding_service.get_or_start(user.id)
-    return OnboardingStateResponse(
-        current_step=state.current_step,
-        selected_trigger=state.selected_trigger,
-        first_task_id=state.first_task_id,
-        first_task_attempt_id=state.first_task_attempt_id,
-        completed_at=state.completed_at,
-    )
-
-
-@router.patch("/onboarding", response_model=OnboardingStateResponse)
-async def update_onboarding(
-    body: UpdateOnboardingRequest, container: ContainerDep, user: CurrentUser
-) -> OnboardingStateResponse:
-    """Save the chosen trigger and assign the user's first task."""
-    view = await container.onboarding_service.save_trigger_and_assign_first_task(
-        user.id, body.trigger
-    )
-    return OnboardingStateResponse(
-        current_step=view.state.current_step,
-        selected_trigger=view.state.selected_trigger,
-        first_task_id=view.first_task_id,
-        first_task_attempt_id=view.state.first_task_attempt_id,
-        completed_at=view.state.completed_at,
-    )
-
-
-@router.post("/onboarding/advance", response_model=OnboardingStateResponse)
-async def advance_onboarding(
-    body: AdvanceOnboardingRequest, container: ContainerDep, user: CurrentUser
-) -> OnboardingStateResponse:
-    """Advance onboarding forward to the given step (idempotent, forward-only)."""
-    state = await container.onboarding_service.advance_to(user.id, body.step)
-    return OnboardingStateResponse(
-        current_step=state.current_step,
-        selected_trigger=state.selected_trigger,
-        first_task_id=state.first_task_id,
-        first_task_attempt_id=state.first_task_attempt_id,
-        completed_at=state.completed_at,
+        app_user_id=user.id,
+        status=user.status.value,
+        firebase_uid=user.firebase_uid,
+        timezone=user.timezone,
     )
 
 
@@ -196,11 +116,10 @@ async def get_config(container: ContainerDep) -> PublicConfigResponse:
 
 @router.get("/home", response_model=HomeResponse)
 async def get_home(container: ContainerDep, user: CurrentUser) -> HomeResponse:
-    """Compose today's plan, progress, access, and onboarding for the caller."""
+    """Compose today's plan, progress, and access for the caller."""
     plan = await container.daily_plan_service.get_or_create_today_plan(user.id)
     progress = await container.progress_service.get_progress(user.id)
     access = await container.entitlement_service.get_access_state(user.id)
-    onboarding = await container.onboarding_service.get_or_start(user.id)
     return HomeResponse(
         plan=DailyPlanResponse(
             id=plan.id,
@@ -224,11 +143,4 @@ async def get_home(container: ContainerDep, user: CurrentUser) -> HomeResponse:
             last_activity_date=progress.last_activity_date,
         ),
         access=AccessSummary(is_riffy_plus=access.is_riffy_plus),
-        onboarding=OnboardingStateResponse(
-            current_step=onboarding.current_step,
-            selected_trigger=onboarding.selected_trigger,
-            first_task_id=onboarding.first_task_id,
-            first_task_attempt_id=onboarding.first_task_attempt_id,
-            completed_at=onboarding.completed_at,
-        ),
     )

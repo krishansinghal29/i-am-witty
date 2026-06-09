@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, time
+from datetime import datetime
 from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request, status
@@ -15,20 +15,6 @@ router = APIRouter(prefix="/v1", tags=["comms"])
 class WebhookAck(BaseModel):
     status: str
     event_id: str
-
-
-class ReminderResponse(BaseModel):
-    status: str
-    timing_key: str | None
-    local_time: time | None
-    timezone: str
-
-
-class SaveReminderRequest(BaseModel):
-    status: str
-    timing_key: str | None = None
-    local_time: time | None = None
-    timezone: str
 
 
 class RegisterDeviceRequest(BaseModel):
@@ -92,48 +78,6 @@ async def revenuecat_webhook(
         raise HTTPException(status_code=403, detail="invalid_webhook_auth") from exc
     await container.entitlement_service.process_webhook(event)
     return WebhookAck(status="accepted", event_id=event.event_id)
-
-
-@router.get("/reminders", response_model=ReminderResponse | None)
-async def get_reminder(
-    user: CurrentUser, container: ContainerDep
-) -> ReminderResponse | None:
-    """Return the caller's reminder preference, or null when unset."""
-    pref = await container.reminder_service.get_reminder(user.id)
-    if pref is None:
-        return None
-    return ReminderResponse(
-        status=pref.status,
-        timing_key=pref.timing_key,
-        local_time=pref.local_time,
-        timezone=pref.timezone,
-    )
-
-
-@router.put("/reminders", response_model=ReminderResponse)
-async def save_reminder(
-    body: SaveReminderRequest, user: CurrentUser, container: ContainerDep
-) -> ReminderResponse:
-    """Create or update the caller's reminder preference."""
-    pref = await container.reminder_service.save_reminder(
-        user.id,
-        body.status,
-        body.timing_key,
-        body.local_time,
-        body.timezone,
-    )
-    return ReminderResponse(
-        status=pref.status,
-        timing_key=pref.timing_key,
-        local_time=pref.local_time,
-        timezone=pref.timezone,
-    )
-
-
-@router.delete("/reminders", status_code=status.HTTP_204_NO_CONTENT)
-async def clear_reminder(user: CurrentUser, container: ContainerDep) -> None:
-    """Delete the caller's reminder preference."""
-    await container.reminder_service.clear_reminder(user.id)
 
 
 @router.post(

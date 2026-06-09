@@ -20,42 +20,12 @@
 // Session & Auth
 // ---------------------------------------------------------------------------
 
-/** Represents the current app user session (guest or authenticated). */
+/** The current authenticated app-user session. */
 export interface Session {
   appUserId: string;
   status: string;
-  /** Present only after authentication via Firebase. */
-  sessionToken: string | null;
-  /** Present only after Firebase link. */
   firebaseUid: string | null;
   timezone: string;
-}
-
-// ---------------------------------------------------------------------------
-// Onboarding
-// ---------------------------------------------------------------------------
-
-/**
- * Known onboarding step keys. The trailing `| string` keeps it open for
- * future backend additions without breaking exhaustiveness checks.
- */
-export type OnboardingStep =
-  | 'trigger'
-  | 'tiny_practice'
-  | 'variable_reward'
-  | 'login'
-  | 'reminder'
-  | 'plan_landing'
-  | 'completed'
-  | string;
-
-/** Persisted onboarding progress for the current user. */
-export interface OnboardingState {
-  currentStep: OnboardingStep;
-  selectedTrigger: string | null;
-  firstTaskId: string | null;
-  firstTaskAttemptId: string | null;
-  completedAt: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -140,7 +110,6 @@ export interface HomeView {
   plan: DailyPlan;
   progress: Progress;
   access: AccessState;
-  onboarding: OnboardingState;
 }
 
 // ---------------------------------------------------------------------------
@@ -310,19 +279,8 @@ export interface StartTaskResult {
 }
 
 // ---------------------------------------------------------------------------
-// Reminders & Notifications
+// Notifications
 // ---------------------------------------------------------------------------
-
-/** Whether the user has enabled push reminders. */
-export type ReminderStatus = 'enabled' | 'disabled' | 'skipped' | string;
-
-/** The user's reminder preference. */
-export interface Reminder {
-  status: ReminderStatus;
-  timingKey: string | null;
-  localTime: string | null;
-  timezone: string;
-}
 
 /** A registered device for push notifications. */
 export interface NotificationDevice {

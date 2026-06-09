@@ -67,38 +67,6 @@ class AppUser(Base):
     __table_args__ = (Index("app_users_firebase_uid_idx", "firebase_uid"),)
 
 
-class GuestSession(Base):
-    __tablename__ = "guest_sessions"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        postgresql.UUID(as_uuid=True),
-        primary_key=True,
-        server_default=text("gen_random_uuid()"),
-    )
-    app_user_id: Mapped[uuid.UUID] = mapped_column(
-        postgresql.UUID(as_uuid=True),
-        ForeignKey("app_users.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-    session_token_hash: Mapped[str] = mapped_column(Text, nullable=False, unique=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("now()")
-    )
-    last_seen_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    converted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    # "metadata" is reserved on the declarative class (Base.metadata), so map a
-    # differently-named attribute to the real "metadata" column.
-    session_metadata: Mapped[dict] = mapped_column(
-        "metadata",
-        postgresql.JSONB,
-        nullable=False,
-        server_default=text("'{}'::jsonb"),
-    )
-
-    __table_args__ = (Index("guest_sessions_app_user_id_idx", "app_user_id"),)
-
-
 class UserProfile(Base):
     __tablename__ = "user_profiles"
 

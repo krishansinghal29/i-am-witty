@@ -1,9 +1,10 @@
 /**
- * Guest-first bootstrap gate.
+ * Session bootstrap gate.
  *
- * Ensures a session (guest or authenticated) exists before the app's queries
- * fire, guaranteeing a token is available. Fails open on error so the user is
- * never locked out of the app.
+ * Resolves the current session once on boot (Firebase + persisted backend id)
+ * and configures the subscription SDK with the backend id when known. It does
+ * NOT redirect — gating lives in {@link OnboardingGuard} (around `/app`) so the
+ * public `/onboarding` and web pages stay reachable when there's no session.
  */
 
 import type { ReactNode } from 'react';
@@ -20,8 +21,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
   // Identify the subscription SDK with the backend app_user_id once it's known.
   useSubscriptionIdentity(session?.appUserId ?? null);
 
-  // Public web pages need no session -- render them immediately while the
-  // guest session keeps warming up in the background.
+  // Public web pages need no session -- render them immediately.
   const isPublicWebPage =
     !Capacitor.isNativePlatform() &&
     (location.pathname === '/' || location.pathname === '/legal');
@@ -29,8 +29,8 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     return <>{children}</>;
   }
 
-  // Block the app until the first session resolves (no token yet).
-  if (isLoading && !session) {
+  // Block briefly until the first session resolve settles.
+  if (isLoading) {
     return (
       <IonPage>
         <IonContent class="ion-padding">
@@ -40,6 +40,5 @@ export function AuthGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  // On error we FAIL-OPEN: render children so the user is never locked out.
   return <>{children}</>;
 }

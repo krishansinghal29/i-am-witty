@@ -1,15 +1,8 @@
-import { useCallback } from 'react';
 import type { CSSProperties } from 'react';
 import { IonIcon, IonSpinner } from '@ionic/react';
-import {
-  flame,
-  lockClosedOutline,
-  logoApple,
-  logoGoogle,
-} from 'ionicons/icons';
+import { lockClosedOutline, logoApple, logoGoogle, sparkles } from 'ionicons/icons';
 import { colors, radius } from '@/theme/tokens';
 import { AppError } from '@/data/errors/app_error';
-import { useLinkAccount } from '@/features/identity/use_link_account';
 import {
   CENTER_HERO,
   ERROR_LINE,
@@ -19,12 +12,13 @@ import {
 } from '@/screens/onboarding/onboarding_styles';
 
 export interface LoginStepProps {
-  /** Called after a successful link OR when the user chooses "Not now". */
-  onContinue: () => void;
+  onApple: () => void;
+  onGoogle: () => void;
+  isLoading: boolean;
+  error: unknown;
 }
 
-const FLAME: CSSProperties = {
-  position: 'relative',
+const SPARK: CSSProperties = {
   width: 92,
   height: 92,
   margin: '10px auto 0',
@@ -34,18 +28,7 @@ const FLAME: CSSProperties = {
   background: 'rgba(249, 115, 22, 0.12)',
   border: '1px solid rgba(249, 115, 22, 0.34)',
   boxShadow: '0 14px 34px rgba(249, 115, 22, 0.22)',
-};
-
-const DAY_PILL: CSSProperties = {
-  position: 'absolute',
-  bottom: -10,
-  fontWeight: 800,
-  fontSize: 14,
-  color: '#FFFFFF',
-  background: colors.amber,
-  padding: '3px 12px',
-  borderRadius: 999,
-  boxShadow: '0 6px 14px rgba(245, 163, 10, 0.4)',
+  color: colors.accent,
 };
 
 const HEADING: CSSProperties = {
@@ -98,46 +81,17 @@ const GOOGLE_BTN: CSSProperties = {
   boxShadow: '0 2px 8px rgba(17, 24, 39, 0.06)',
 };
 
-const NOT_NOW: CSSProperties = {
-  ...AUTH_BTN_BASE,
-  background: 'transparent',
-  color: colors.muted,
-  border: `1px solid ${colors.line}`,
-  fontWeight: 600,
-};
-
-export function LoginStep({ onContinue }: LoginStepProps) {
-  const { linkWithApple, linkWithGoogle, isLinking, error } = useLinkAccount();
-
-  const handleApple = useCallback(async () => {
-    try {
-      await linkWithApple();
-      onContinue();
-    } catch {
-      // Surfaced inline via `error`; "Not now" stays available.
-    }
-  }, [linkWithApple, onContinue]);
-
-  const handleGoogle = useCallback(async () => {
-    try {
-      await linkWithGoogle();
-      onContinue();
-    } catch {
-      // Surfaced inline via `error`.
-    }
-  }, [linkWithGoogle, onContinue]);
-
+export function LoginStep({ onApple, onGoogle, isLoading, error }: LoginStepProps) {
   return (
     <div style={STEP_BODY}>
       <div style={CENTER_HERO}>
-        <div style={FLAME} aria-hidden>
-          <IonIcon icon={flame} style={{ fontSize: 42, color: colors.accent }} />
-          <span style={DAY_PILL}>Day 1</span>
+        <div style={SPARK} aria-hidden>
+          <IonIcon icon={sparkles} style={{ fontSize: 40 }} />
         </div>
-        <h2 style={HEADING}>Save your Day 1 streak?</h2>
+        <h2 style={HEADING}>Create your account</h2>
         <p style={SUB}>
-          Lock in today’s win so it’s still here tomorrow. Takes one tap — and your
-          progress so far comes with you.
+          One tap to save your progress and pick up right where you left off on
+          any device.
         </p>
       </div>
 
@@ -146,10 +100,10 @@ export function LoginStep({ onContinue }: LoginStepProps) {
           type="button"
           className="riffy-pressable"
           style={APPLE_BTN}
-          onClick={() => void handleApple()}
-          disabled={isLinking}
+          onClick={onApple}
+          disabled={isLoading}
         >
-          {isLinking ? (
+          {isLoading ? (
             <IonSpinner name="crescent" />
           ) : (
             <>
@@ -163,21 +117,11 @@ export function LoginStep({ onContinue }: LoginStepProps) {
           type="button"
           className="riffy-pressable"
           style={GOOGLE_BTN}
-          onClick={() => void handleGoogle()}
-          disabled={isLinking}
+          onClick={onGoogle}
+          disabled={isLoading}
         >
           <IonIcon icon={logoGoogle} style={{ fontSize: 20 }} aria-hidden />
           Continue with Google
-        </button>
-
-        <button
-          type="button"
-          className="riffy-pressable"
-          style={NOT_NOW}
-          onClick={onContinue}
-          disabled={isLinking}
-        >
-          Not now
         </button>
 
         {error != null && (

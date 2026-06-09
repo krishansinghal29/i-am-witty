@@ -24,23 +24,16 @@ class PgUserRepository:
         orm = (await self._session.execute(stmt)).scalar_one_or_none()
         return self._to_domain(orm) if orm is not None else None
 
-    async def create_guest_user(
-        self, timezone: str, locale: str | None = None
+    async def create_authenticated_user(
+        self, firebase_uid: str, timezone: str, locale: str | None = None
     ) -> AppUser:
-        orm = OrmAppUser(timezone=timezone, locale=locale)
+        orm = OrmAppUser(
+            firebase_uid=firebase_uid,
+            status=OrmUserStatus(UserStatus.active.value),
+            timezone=timezone,
+            locale=locale,
+        )
         self._session.add(orm)
-        await self._session.flush()
-        await self._session.refresh(orm)
-        return self._to_domain(orm)
-
-    async def link_firebase_uid(
-        self, app_user_id: uuid.UUID, firebase_uid: str
-    ) -> AppUser:
-        orm = await self._session.get(OrmAppUser, app_user_id)
-        if orm is None:
-            raise ValueError(f"AppUser {app_user_id} not found")
-        orm.firebase_uid = firebase_uid
-        orm.status = OrmUserStatus(UserStatus.active.value)
         await self._session.flush()
         await self._session.refresh(orm)
         return self._to_domain(orm)

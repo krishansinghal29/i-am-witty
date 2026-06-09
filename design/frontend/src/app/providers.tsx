@@ -10,6 +10,7 @@
 import { createContext, useContext, useMemo, useState } from 'react';
 import type { JSX, ReactNode } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
+import type { QueryClient } from '@tanstack/react-query';
 import { setupIonicReact } from '@ionic/react';
 
 /* Ionic core + theming (light-first: NO dark palette import). */
@@ -49,12 +50,12 @@ import type { HttpClient, TokenProvider } from '@/data/api/http_client';
 import { createRiffyApi } from '@/data/api/riffy_api';
 import type { RiffyApi } from '@/data/api/riffy_api';
 import { createQueryClient } from '@/state/query_client';
+import { queryKeys } from '@/state/query_keys';
 
 setupIonicReact();
 
-/** Keys used for persisted client-side secrets/identifiers. */
+/** Keys used for persisted client-side identifiers. */
 export const STORAGE_KEYS = {
-  guestToken: 'riffy.guest_session_token',
   appUserId: 'riffy.app_user_id',
 } as const;
 
@@ -75,7 +76,7 @@ export interface Integrations {
  * Construct every adapter and wire the data layer. Pure factory with no React
  * dependencies so it can be memoised for the provider's lifetime.
  */
-function buildIntegrations(): Integrations {
+function buildIntegrations(queryClient: QueryClient): Integrations {
   const secureStore: SecureStore = new CapacitorSecureStore();
   const auth: AuthGateway = new FirebaseAuthGateway();
   // iOS/Android purchase via StoreKit/Play Billing through purchases-capacitor.
@@ -92,15 +93,34 @@ function buildIntegrations(): Integrations {
       ? new NoOpUpdater()
       : new CapgoUpdater();
 
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
   const tokens: TokenProvider = {
     getIdToken: () => auth.getIdToken(),
-    getGuestToken: () => secureStore.get(STORAGE_KEYS.guestToken),
   };
 
-  const http = createHttpClient({
-    baseUrl: import.meta.env.VITE_API_BASE_URL,
-    tokens,
-  });
+  // 401-recovery (Bearer-only). A 401 means the Firebase id token was rejected.
+  // Force-refresh it once and let the http client replay the request; if no
+  // fresh token is available, sign out and drop the persisted backend id so the
+  // app falls back to onboarding (re-login). Single-flight so the parallel boot
+  // queries all 401-ing share ONE recovery instead of each refreshing.
+  let reauthInFlight: Promise<boolean> | null = null;
+  const reauth = (): Promise<boolean> =>
+    (reauthInFlight ??= (async () => {
+      try {
+        if ((await auth.getIdToken(true)) != null) return true;
+      } catch {
+        // fall through to sign-out
+      }
+      await auth.signOut().catch(() => {});
+      await secureStore.remove(STORAGE_KEYS.appUserId);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.session });
+      return false;
+    })().finally(() => {
+      reauthInFlight = null;
+    }));
+
+  const http = createHttpClient({ baseUrl, tokens, reauth });
   const api = createRiffyApi(http);
 
   const transcription: TranscriptionGateway = new DeepgramTranscriptionGateway({
@@ -128,7 +148,7 @@ export function AppProviders({
   children: ReactNode;
 }): JSX.Element {
   const [queryClient] = useState(() => createQueryClient());
-  const integrations = useMemo(() => buildIntegrations(), []);
+  const integrations = useMemo(() => buildIntegrations(queryClient), [queryClient]);
 
   return (
     <QueryClientProvider client={queryClient}>

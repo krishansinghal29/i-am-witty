@@ -1,17 +1,17 @@
 /**
  * Onboarding route gate for the main `/app` area.
  *
- * Redirects to `/onboarding` until onboarding is complete. Fails open on error
- * so a transient fetch failure never blocks access.
+ * A user only exists once they signed in and finished onboarding, so "has a
+ * session" IS "onboarded". With no session we send them to `/onboarding`.
  */
 
 import type { ReactNode } from 'react';
 import { Redirect } from 'react-router-dom';
 import { IonPage, IonContent, IonSpinner } from '@ionic/react';
-import { useOnboardingState } from '@/features/onboarding/use_onboarding_state';
+import { useSession } from '@/features/identity/use_session';
 
 export function OnboardingGuard({ children }: { children: ReactNode }) {
-  const { isLoading, isError, isComplete } = useOnboardingState();
+  const { session, isLoading } = useSession();
 
   if (isLoading) {
     return (
@@ -23,8 +23,7 @@ export function OnboardingGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  // FAIL-OPEN: on error, render children rather than blocking the user.
-  if (!isError && !isComplete) {
+  if (session === null) {
     return <Redirect to="/onboarding" />;
   }
 

@@ -7,10 +7,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.task import Task, TaskAccessTier, TaskStatus
 from app.domain.models.task_type import TaskType
-from app.infrastructure.db.orm.onboarding import (
-    OnboardingTrigger as OrmTrigger,
-)
-from app.infrastructure.db.orm.onboarding import OnboardingTriggerTaskMapping
 from app.infrastructure.db.orm.tasks import Task as OrmTask
 from app.infrastructure.db.orm.tasks import TaskStatus as OrmTaskStatus
 from app.infrastructure.db.orm.tasks import TaskType as OrmTaskType
@@ -51,22 +47,6 @@ class PgTaskRepository:
     async def get_task_type(self, task_type_id: str) -> TaskType | None:
         row = await self._session.get(OrmTaskType, task_type_id)
         return self._task_type_to_domain(row) if row is not None else None
-
-    async def list_trigger_task_candidates(self, trigger: str) -> list[Task]:
-        stmt = (
-            select(OrmTask)
-            .join(
-                OnboardingTriggerTaskMapping,
-                OnboardingTriggerTaskMapping.task_id == OrmTask.id,
-            )
-            .where(
-                OnboardingTriggerTaskMapping.trigger == OrmTrigger(trigger),
-                OnboardingTriggerTaskMapping.is_active.is_(True),
-            )
-            .order_by(OnboardingTriggerTaskMapping.priority.asc())
-        )
-        rows = (await self._session.execute(stmt)).scalars().all()
-        return [self._to_domain(row) for row in rows]
 
     @staticmethod
     def _to_domain(row: OrmTask) -> Task:

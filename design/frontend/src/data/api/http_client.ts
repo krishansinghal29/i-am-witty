@@ -1,10 +1,8 @@
 /**
  * Minimal typed HTTP client used by RiffyApi.
  *
- * Auth strategy (in priority order):
- *   1. Firebase id-token  → Authorization: Bearer <token>
- *   2. Guest token        → X-Guest-Token: <token>
- *   3. No header
+ * Auth strategy: a Firebase id-token → `Authorization: Bearer <token>`, or no
+ * header when signed out. (There are no guests; every user is authenticated.)
  *
  * All non-2xx responses are normalised to AppError via AppError.fromHttp().
  * Network/throw errors are normalised via AppError.from().
@@ -18,7 +16,6 @@ import { AppError } from '@/data/errors/app_error';
 
 export interface TokenProvider {
   getIdToken(): Promise<string | null>;
-  getGuestToken(): Promise<string | null>;
 }
 
 export interface HttpClient {
@@ -36,8 +33,15 @@ export interface HttpClient {
 export function createHttpClient(opts: {
   baseUrl: string;
   tokens: TokenProvider;
+  /**
+   * Invoked once when a request comes back 401. Should repair auth (e.g. mint a
+   * fresh guest session) and resolve `true` if the caller should replay the
+   * request, or `false` to surface the 401. Implementations must be
+   * single-flight so concurrent 401s don't trigger multiple recoveries.
+   */
+  reauth?: () => Promise<boolean>;
 }): HttpClient {
-  const { baseUrl, tokens } = opts;
+  const { baseUrl, tokens, reauth } = opts;
 
   async function buildHeaders(hasBody: boolean): Promise<HeadersInit> {
     const headers: Record<string, string> = {};
@@ -49,11 +53,6 @@ export function createHttpClient(opts: {
     const idToken = await tokens.getIdToken();
     if (idToken != null) {
       headers['Authorization'] = `Bearer ${idToken}`;
-    } else {
-      const guestToken = await tokens.getGuestToken();
-      if (guestToken != null) {
-        headers['X-Guest-Token'] = guestToken;
-      }
     }
 
     return headers;
@@ -63,6 +62,7 @@ export function createHttpClient(opts: {
     method: string,
     path: string,
     body?: unknown,
+    isRetry = false,
   ): Promise<T> {
     const url = baseUrl + path;
     const hasBody = body !== undefined;
@@ -76,6 +76,16 @@ export function createHttpClient(opts: {
       });
     } catch (e) {
       throw AppError.from(e);
+    }
+
+    // A 401 means our token is stale or absent. Give the injected reauth hook
+    // one chance to repair auth (mint a fresh guest session), then replay the
+    // request exactly once. The isRetry guard prevents an infinite loop if the
+    // replayed request 401s again (e.g. the backend is genuinely unreachable).
+    if (response.status === 401 && !isRetry && reauth) {
+      if (await reauth()) {
+        return request<T>(method, path, body, true);
+      }
     }
 
     if (!response.ok) {

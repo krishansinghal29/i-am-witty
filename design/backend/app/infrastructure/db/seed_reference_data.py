@@ -23,10 +23,6 @@ from app.infrastructure.db.orm.config import (
     AppReleaseChannel,
     FeatureGateDefault,
 )
-from app.infrastructure.db.orm.onboarding import (
-    OnboardingTrigger,
-    OnboardingTriggerTaskMapping,
-)
 from app.infrastructure.db.orm.tasks import (
     Task,
     TaskAccessTier,
@@ -37,9 +33,6 @@ from app.infrastructure.db.reference_data.app_config import (
     APP_CONFIG,
     APP_RELEASE_CHANNELS,
     FEATURE_GATES,
-)
-from app.infrastructure.db.reference_data.onboarding import (
-    ONBOARDING_TRIGGER_TASKS,
 )
 from app.infrastructure.db.reference_data.task_catalog import TASK_TYPES, TASKS
 
@@ -151,46 +144,6 @@ async def seed_app_release_channels(session: AsyncSession) -> int:
     return len(APP_RELEASE_CHANNELS)
 
 
-async def seed_onboarding_trigger_task_mappings(session: AsyncSession) -> int:
-    """Upsert trigger-to-first-task mappings after resolving task slugs."""
-    task_slugs = sorted({row["task_slug"] for row in ONBOARDING_TRIGGER_TASKS})
-    task_rows = (
-        await session.execute(
-            select(Task.slug, Task.id).where(Task.slug.in_(task_slugs))
-        )
-    ).all()
-    task_ids_by_slug = {slug: task_id for slug, task_id in task_rows}
-    missing = [slug for slug in task_slugs if slug not in task_ids_by_slug]
-    if missing:
-        raise RuntimeError(
-            "Cannot seed onboarding trigger mappings; missing tasks: "
-            + ", ".join(missing)
-        )
-
-    values = [
-        {
-            "trigger": OnboardingTrigger(row["trigger"]),
-            "task_id": task_ids_by_slug[row["task_slug"]],
-            "priority": row["priority"],
-            "is_active": row["is_active"],
-        }
-        for row in ONBOARDING_TRIGGER_TASKS
-    ]
-    stmt = pg_insert(OnboardingTriggerTaskMapping).values(values)
-    stmt = stmt.on_conflict_do_update(
-        index_elements=[
-            OnboardingTriggerTaskMapping.trigger,
-            OnboardingTriggerTaskMapping.task_id,
-        ],
-        set_={
-            "priority": stmt.excluded.priority,
-            "is_active": stmt.excluded.is_active,
-        },
-    )
-    await session.execute(stmt)
-    return len(values)
-
-
 async def seed_all(session: AsyncSession) -> dict[str, int]:
     return {
         "task_types": await seed_task_types(session),
@@ -198,7 +151,6 @@ async def seed_all(session: AsyncSession) -> dict[str, int]:
         "app_config": await seed_app_config(session),
         "feature_gate_defaults": await seed_feature_gates(session),
         "app_release_channels": await seed_app_release_channels(session),
-        "onboarding_mappings": await seed_onboarding_trigger_task_mappings(session),
     }
 
 
@@ -216,9 +168,6 @@ async def verify(session: AsyncSession) -> None:
     app_release_channel_count = await session.scalar(
         select(func.count()).select_from(AppReleaseChannel)
     )
-    onboarding_mapping_count = await session.scalar(
-        select(func.count()).select_from(OnboardingTriggerTaskMapping)
-    )
 
     print("--- verification ---")
     print(f"task_types rows           : {task_type_count} (expected {len(TASK_TYPES)})")
@@ -231,10 +180,6 @@ async def verify(session: AsyncSession) -> None:
     print(
         "app_release_channels rows : "
         f"{app_release_channel_count} (expected {len(APP_RELEASE_CHANNELS)})"
-    )
-    print(
-        "onboarding mappings rows  : "
-        f"{onboarding_mapping_count} (expected {len(ONBOARDING_TRIGGER_TASKS)})"
     )
 
     print("tasks (slug -> task_type_id | content/runtime_config non-empty):")

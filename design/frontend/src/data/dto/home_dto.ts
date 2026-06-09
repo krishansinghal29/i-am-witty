@@ -1,7 +1,5 @@
 /** Wire shapes for home / daily-plan endpoints (snake_case). */
 
-import { OnboardingStateDto } from './onboarding_dto';
-
 export interface PlanItemDto {
   id: string;
   task_id: string;
@@ -28,5 +26,4 @@ export interface HomeDto {
   plan: DailyPlanDto;
   progress: ProgressDto;
   access: { is_riffy_plus: boolean };
-  onboarding: OnboardingStateDto;
 }

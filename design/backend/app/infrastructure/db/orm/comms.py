@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 import uuid
-from datetime import datetime, time
+from datetime import datetime
 
 import sqlalchemy as sa
 from sqlalchemy import (
@@ -10,7 +10,6 @@ from sqlalchemy import (
     ForeignKey,
     Index,
     Text,
-    Time,
     UniqueConstraint,
     text,
 )
@@ -18,12 +17,6 @@ from sqlalchemy.dialects import postgresql
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.infrastructure.db.orm.base import Base
-
-
-class ReminderStatus(str, enum.Enum):
-    enabled = "enabled"
-    skipped = "skipped"
-    disabled = "disabled"
 
 
 class NotificationPermissionStatus(str, enum.Enum):
@@ -38,42 +31,6 @@ class SupportMessageStatus(str, enum.Enum):
     delivered = "delivered"
     failed = "failed"
     closed = "closed"
-
-
-class ReminderPreference(Base):
-    __tablename__ = "reminder_preferences"
-
-    app_user_id: Mapped[uuid.UUID] = mapped_column(
-        postgresql.UUID(as_uuid=True),
-        ForeignKey("app_users.id", ondelete="CASCADE"),
-        primary_key=True,
-    )
-    status: Mapped[ReminderStatus] = mapped_column(
-        sa.Enum(
-            ReminderStatus,
-            name="reminder_status",
-            native_enum=True,
-            create_type=False,
-            values_callable=lambda e: [m.value for m in e],
-        ),
-        nullable=False,
-        server_default=text("'skipped'"),
-    )
-    timing_key: Mapped[str | None] = mapped_column(Text)
-    local_time: Mapped[time | None] = mapped_column(Time)
-    timezone: Mapped[str] = mapped_column(
-        Text, nullable=False, server_default=text("'UTC'")
-    )
-    last_scheduled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=text("now()")
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=text("now()"),
-        onupdate=text("now()"),
-    )
 
 
 class NotificationDevice(Base):
@@ -134,10 +91,6 @@ class SupportMessage(Base):
     app_user_id: Mapped[uuid.UUID | None] = mapped_column(
         postgresql.UUID(as_uuid=True),
         ForeignKey("app_users.id", ondelete="SET NULL"),
-    )
-    guest_session_id: Mapped[uuid.UUID | None] = mapped_column(
-        postgresql.UUID(as_uuid=True),
-        ForeignKey("guest_sessions.id", ondelete="SET NULL"),
     )
     source_screen: Mapped[str | None] = mapped_column(Text)
     message_text: Mapped[str] = mapped_column(Text, nullable=False)

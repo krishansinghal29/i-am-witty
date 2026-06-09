@@ -12,17 +12,21 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useIntegrations } from '@/app/providers';
+import { useIntegrations, STORAGE_KEYS } from '@/app/providers';
 import { useSession } from '@/features/identity/use_session';
 import { queryKeys } from '@/state/query_keys';
 
 export function useProfile() {
-  const { auth } = useIntegrations();
+  const { auth, secureStore } = useIntegrations();
   const queryClient = useQueryClient();
-  const { session, isAuthenticated, isGuest, isLoading } = useSession();
+  const { session, isAuthenticated, isLoading } = useSession();
 
   const signOutMutation = useMutation<void, unknown, void>({
-    mutationFn: () => auth.signOut(),
+    mutationFn: async () => {
+      await auth.signOut();
+      // Drop the "onboarded" marker so the app routes back to onboarding.
+      await secureStore.remove(STORAGE_KEYS.appUserId);
+    },
     onSuccess: async () => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: queryKeys.session }),
@@ -35,7 +39,6 @@ export function useProfile() {
   return {
     session,
     isAuthenticated,
-    isGuest,
     isLoadingSession: isLoading,
     signOut: () => signOutMutation.mutateAsync(),
     isSigningOut: signOutMutation.isPending,
