@@ -10,6 +10,7 @@ import {
   IonContent,
 } from '@ionic/react';
 import { Route, Redirect } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 import {
   homeOutline,
   flameOutline,
@@ -24,6 +25,8 @@ import { HomePage } from '@/screens/home/home_page';
 import { PracticePage } from '@/screens/practice/practice_page';
 import { ProfilePage } from '@/screens/profile/profile_page';
 import { OnboardingFlowPage } from '@/screens/onboarding/onboarding_flow_page';
+import { LandingPage } from '@/screens/landing/landing_page';
+import { LegalPage } from '@/screens/legal/legal_page';
 import { TaskRuntimePage } from '@/screens/task_runtime/task_runtime_page';
 import { PaywallSheet } from '@/screens/paywall/paywall_sheet';
 import { SupportSheet } from '@/screens/support/support_sheet';
@@ -125,6 +128,15 @@ export function AppRoutes() {
   return (
     <IonRouterOutlet>
       <Route
+        exact
+        path="/legal"
+        render={() => (
+          <ErrorBoundary>
+            <LegalPage />
+          </ErrorBoundary>
+        )}
+      />
+      <Route
         path="/onboarding"
         render={() => (
           <ErrorBoundary>
@@ -148,9 +160,21 @@ export function AppRoutes() {
           </OnboardingGuard>
         )}
       />
-      <Route exact path="/">
-        <Redirect to="/app/home" />
-      </Route>
+      <Route
+        exact
+        path="/"
+        render={() =>
+          // Web visitors get the marketing landing page; native apps skip
+          // straight into the product.
+          Capacitor.isNativePlatform() ? (
+            <Redirect to="/app/home" />
+          ) : (
+            <ErrorBoundary>
+              <LandingPage />
+            </ErrorBoundary>
+          )
+        }
+      />
     </IonRouterOutlet>
   );
 }

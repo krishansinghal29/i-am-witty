@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.iamwitty.app',
-  appName: 'riffy',
+  appName: 'Riffy',
   webDir: 'dist',
 };
 

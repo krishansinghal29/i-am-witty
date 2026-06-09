@@ -174,6 +174,11 @@ const FEATURES: { icon: string; label: string }[] = [
   { icon: libraryOutline, label: 'The full library + Role play (soon)' },
 ];
 
+const LEGAL_FALLBACKS: Record<string, string> = {
+  terms_url: 'https://riffy.pro/legal#terms',
+  privacy_url: 'https://riffy.pro/legal#privacy',
+};
+
 function bannerText(reason: string | null): string {
   switch (reason) {
     case 'catalog_locked':
@@ -329,7 +334,9 @@ export function PaywallSheet() {
 
   const configUrl = (key: string): string | null => {
     const v = values[key];
-    return typeof v === 'string' && v.length > 0 ? v : null;
+    return typeof v === 'string' && v.length > 0
+      ? v
+      : LEGAL_FALLBACKS[key] ?? null;
   };
 
   const openUrl = (key: string) => {

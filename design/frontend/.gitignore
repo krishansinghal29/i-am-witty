@@ -30,3 +30,8 @@ yarn-error.log*
 
 # Optional eslint cache
 .eslintcache
+
+# Firebase (keep firebase.json + .firebaserc tracked; ignore deploy cache + logs)
+.firebase/
+firebase-debug.log*
+firebase-debug.*.log

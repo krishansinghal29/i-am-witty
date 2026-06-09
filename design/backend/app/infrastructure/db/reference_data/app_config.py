@@ -15,15 +15,21 @@ APP_CONFIG: list[dict] = [
     },
     {
         "key": "terms_url",
-        "value": "https://i-am-witty.app/terms",
+        "value": "https://riffy.pro/legal#terms",
         "is_public": True,
-        "description": "Terms of Service URL (placeholder).",
+        "description": "Canonical Terms of Service URL.",
     },
     {
         "key": "privacy_url",
-        "value": "https://i-am-witty.app/privacy",
+        "value": "https://riffy.pro/legal#privacy",
         "is_public": True,
-        "description": "Privacy Policy URL (placeholder).",
+        "description": "Canonical Privacy Policy URL.",
+    },
+    {
+        "key": "account_deletion_url",
+        "value": "https://riffy.pro/legal#account-deletion",
+        "is_public": True,
+        "description": "Canonical account deletion request instructions URL.",
     },
     {
         "key": "ios_app_store_url",
@@ -76,4 +82,3 @@ APP_RELEASE_CHANNELS: list[dict] = [
         "channel_metadata": {},
     },
 ]
-
