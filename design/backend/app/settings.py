@@ -36,6 +36,18 @@ class Settings(BaseSettings):
     posthog_api_key: str | None = None
     posthog_host: str = "https://us.i.posthog.com"
 
+    # LLM (litellm): prompt generation + transcript evaluation. Keys are pushed
+    # into the environment for litellm; model strings may target any litellm
+    # provider (OpenAI today; `gemini/...`, `anthropic/...`, etc. supported).
+    openai_api_key: str | None = None
+    gemini_api_key: str | None = None
+    llm_generator_model: str = "gpt-5.3-chat-latest"
+    llm_evaluator_model: str = "gpt-5.3-chat-latest"
+
+    # TTS (OpenAI): spoken prompts. Synthesized eagerly at generate time when a
+    # key is present; absent key disables TTS gracefully.
+    tts_voice: str = "nova"
+
 
 @lru_cache
 def get_settings() -> Settings:

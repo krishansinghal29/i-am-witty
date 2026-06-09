@@ -226,6 +226,14 @@ class TaskAttempt(Base):
         nullable=False,
         server_default=text("'{}'::jsonb"),
     )
+    # Generated runtime context (prompt messages + assigned technique) persisted
+    # at generate time so the evaluator can see what the user actually responded
+    # to at complete time, without trusting the client to echo it back.
+    runtime_state: Mapped[dict] = mapped_column(
+        postgresql.JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=text("now()")
     )

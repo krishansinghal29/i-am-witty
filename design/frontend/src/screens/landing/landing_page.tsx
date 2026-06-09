@@ -85,13 +85,13 @@ export function LandingPage() {
         {/* ====================== NAV ====================== */}
         <header className="nav" ref={navRef}>
           <div className="wrap nav-in">
-            <a className="brand" href="#top" onClick={toTop} aria-label="riffy home">
+            <a className="brand" href="#top" onClick={toTop} aria-label="Riffy home">
               <span className="tile"><MarkWhite size={22} /></span>
               <Wordmark />
             </a>
             <nav className="nav-links">
               <a className="lk" href="#how" onClick={scrollTo('how')}>How it works</a>
-              <a className="lk" href="#why" onClick={scrollTo('why')}>Why riffy</a>
+              <a className="lk" href="#why" onClick={scrollTo('why')}>Why Riffy</a>
               <a className="lk" href="#reps" onClick={scrollTo('reps')}>Reps</a>
               <a className="btn btn-primary btn-sm" href="/app" onClick={goApp}>Open app <span className="arr">→</span></a>
             </nav>
@@ -107,7 +107,7 @@ export function LandingPage() {
                 Get wittier —<br /><span className="grad">without the audience.</span>
               </h1>
               <p className="sub reveal" style={{ animationDelay: '.2s' }}>
-                riffy is a calm little gym for your social spark. Short, playful voice reps that build
+                Riffy is a calm little gym for your social spark. Short, playful voice reps that build
                 real-time humour, storytelling, and confidence — no stage, no stakes.
               </p>
               <div className="cta-row reveal" style={{ animationDelay: '.28s' }}>
@@ -189,7 +189,7 @@ export function LandingPage() {
         {/* ====================== EMPATHY ====================== */}
         <section className="wrap empathy">
           <span className="lead">For the quietly funny ones</span>
-          <p>Most "be funnier" advice means <em>perform, right now.</em> riffy is the opposite — a safe room to fumble, retry, and actually get the reps in.</p>
+          <p>Most "be funnier" advice means <em>perform, right now.</em> Riffy is the opposite — a safe room to fumble, retry, and actually get the reps in.</p>
         </section>
 
         {/* ====================== HOW IT WORKS ====================== */}
@@ -229,7 +229,7 @@ export function LandingPage() {
         <section className="sec" id="why" style={{ paddingTop: 24 }}>
           <div className="wrap">
             <div className="sec-head">
-              <span className="kicker">Why riffy</span>
+              <span className="kicker">Why Riffy</span>
               <h2>Built for the anxious introvert</h2>
               <p>No cringe, no crowd. Just tiny wins that stack into a quicker, more confident you.</p>
             </div>
@@ -301,7 +301,7 @@ export function LandingPage() {
               <span className="spark">✨</span>
               <h2>Ready to find your spark?</h2>
               <p>Two minutes today. A quicker, funnier you — quietly.</p>
-              <a className="btn" href="/app" onClick={goApp}>Open riffy <span className="arr">→</span></a>
+              <a className="btn" href="/app" onClick={goApp}>Open Riffy <span className="arr">→</span></a>
               <p className="fine">Free to start · No audience required</p>
             </div>
           </div>
@@ -311,13 +311,13 @@ export function LandingPage() {
         <footer>
           <div className="wrap">
             <div className="foot">
-              <a className="brand" href="#top" onClick={toTop} aria-label="riffy home">
+              <a className="brand" href="#top" onClick={toTop} aria-label="Riffy home">
                 <span className="tile"><MarkWhite size={20} /></span>
                 <Wordmark />
               </a>
               <div className="foot-links">
                 <a href="#how" onClick={scrollTo('how')}>How it works</a>
-                <a href="#why" onClick={scrollTo('why')}>Why riffy</a>
+                <a href="#why" onClick={scrollTo('why')}>Why Riffy</a>
                 <a href="#reps" onClick={scrollTo('reps')}>Reps</a>
                 <a href="/app" onClick={goApp}>Open app</a>
                 <a href="/legal#privacy">Privacy</a>
@@ -325,7 +325,7 @@ export function LandingPage() {
                 <a href="/legal#account-deletion">Account deletion</a>
               </div>
             </div>
-            <p className="copy">© 2026 <b>riffy</b> · Lower the stakes. Find your spark.</p>
+            <p className="copy">© 2026 <b>Riffy</b> · Lower the stakes. Find your spark.</p>
           </div>
         </footer>
       </div>

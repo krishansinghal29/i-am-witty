@@ -62,6 +62,40 @@ from app.ports.task_runtime_engine import (
 _FIRST_WIN_STEP = "first_win"
 
 
+def _runtime_context_from_state(
+    runtime_state: dict,
+    fallback_messages: tuple[PromptMessage, ...],
+    fallback_technique: AssignedTechnique | None,
+) -> tuple[tuple[PromptMessage, ...], AssignedTechnique | None]:
+    """Rebuild the evaluator's prompt context from the attempt's persisted state.
+
+    The generated prompt + assigned technique are stored on the attempt at
+    generate time (see ``TaskRuntimeService``). Explicit caller-supplied values
+    win when present (used in tests); otherwise we read the persisted state.
+    """
+    state = runtime_state or {}
+    prompt = state.get("prompt") or {}
+    raw_messages = prompt.get("messages") or []
+    messages = (
+        tuple(
+            PromptMessage(role=m.get("role", ""), content=m.get("content", ""))
+            for m in raw_messages
+            if isinstance(m, dict)
+        )
+        or fallback_messages
+    )
+
+    raw_technique = state.get("assigned_technique")
+    technique = fallback_technique
+    if raw_technique:
+        technique = AssignedTechnique(
+            name=raw_technique.get("name", ""),
+            instruction=raw_technique.get("instruction", ""),
+            example=raw_technique.get("example", ""),
+        )
+    return messages, technique
+
+
 @dataclass(frozen=True)
 class StartTaskResult:
     task: Task
@@ -217,6 +251,12 @@ class TaskAttemptService:
         # latency never holds a DB transaction open.
         await self._uow.rollback()
 
+        # Rebuild the prompt the user responded to (persisted at generate time)
+        # so the evaluator grades against the right scenario/technique.
+        eval_messages, eval_technique = _runtime_context_from_state(
+            attempt.runtime_state, tuple(prompt_messages), assigned_technique
+        )
+
         # PHASE 2 — external work (no transaction held).
         transcript = await self._transcription.resolve_final_transcript(
             client_transcript=client_transcript,
@@ -229,9 +269,9 @@ class TaskAttemptService:
                 task=task,
                 task_type=task_type,
                 attempt_id=attempt_id,
-                prompt_messages=tuple(prompt_messages),
+                prompt_messages=eval_messages,
                 transcript=transcript.text,
-                assigned_technique=assigned_technique,
+                assigned_technique=eval_technique,
                 stage_responses=tuple(stage_responses),
             )
         )

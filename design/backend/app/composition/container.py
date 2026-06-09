@@ -21,12 +21,11 @@ from app.infrastructure.db.unit_of_work import SqlAlchemyUnitOfWork
 from app.infrastructure.integrations.deepgram_transcription_client import (
     DeepgramTranscriptionProvider,
 )
-from app.infrastructure.integrations.fake_task_runtime_engine import (
-    FakeTaskRuntimeEngine,
-)
 from app.infrastructure.integrations.firebase_auth_verifier import (
     FirebaseAuthTokenVerifier,
 )
+from app.infrastructure.integrations.litellm_provider import LiteLlmProvider
+from app.infrastructure.integrations.openai_tts_client import OpenAiTtsProvider
 from app.infrastructure.integrations.posthog_client import PostHogAnalytics
 from app.infrastructure.integrations.revenue_cat_client import (
     RevenueCatSubscriptionProvider,
@@ -57,6 +56,7 @@ from app.infrastructure.repositories.pg_task_attempt_repository import (
 from app.infrastructure.repositories.pg_task_repository import PgTaskRepository
 from app.infrastructure.repositories.pg_usage_repository import PgUsageRepository
 from app.infrastructure.repositories.pg_user_repository import PgUserRepository
+from app.infrastructure.runtime.voice_prompt_engine import VoicePromptTaskEngine
 from app.ports.integrations.analytics import Analytics
 from app.ports.integrations.auth_token_verifier import AuthTokenVerifier
 from app.ports.integrations.subscription_provider import SubscriptionProvider
@@ -80,16 +80,25 @@ def build_integrations(settings: Settings) -> Integrations:
     """Build the integration clients from settings.
 
     Real vendor adapters for auth (Firebase), subscriptions (RevenueCat),
-    analytics (PostHog), and transcription (Deepgram); each lazily initializes
-    so this never touches credentials/network at startup. The task runtime
-    engine remains a deterministic fake until an LLM provider is wired.
+    analytics (PostHog), transcription (Deepgram), and the LLM-backed voice
+    prompt engine (litellm generation/evaluation + OpenAI TTS); each lazily
+    initializes so this never touches credentials/network at startup.
     """
+    llm = LiteLlmProvider(settings)
+    tts = OpenAiTtsProvider(settings)
+    runtime_engine = VoicePromptTaskEngine(
+        llm,
+        tts,
+        generator_model=settings.llm_generator_model,
+        evaluator_model=settings.llm_evaluator_model,
+        tts_voice=settings.tts_voice,
+    )
     return Integrations(
         auth_verifier=FirebaseAuthTokenVerifier(settings),
         subscription_provider=RevenueCatSubscriptionProvider(settings),
         analytics=PostHogAnalytics(settings),
         transcription_provider=DeepgramTranscriptionProvider(settings),
-        runtime_engine=FakeTaskRuntimeEngine(),
+        runtime_engine=runtime_engine,
     )
 
 
@@ -144,7 +153,7 @@ class RequestContainer:
             uow,
         )
         self.task_runtime_service = TaskRuntimeService(
-            self.task_attempt_service, integrations.runtime_engine
+            self.task_attempt_service, integrations.runtime_engine, attempts, uow
         )
         self.progress_service = ProgressService(users, progress)
         self.entitlement_service = EntitlementService(

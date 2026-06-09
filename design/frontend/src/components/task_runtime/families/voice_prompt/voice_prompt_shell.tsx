@@ -385,29 +385,33 @@ export function VoicePromptShell({
           <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
             {promptArea}
 
+            {/* The spoken prompt autoplays on entering Respond (see effect below);
+                like the legacy app there is no manual play button. A small
+                muted-replay affordance lets the user hear it again. */}
             {hasAudio && (
               <button
                 type="button"
                 onClick={playPrompt}
                 className="riffy-pressable"
+                aria-label="Replay prompt"
                 style={{
                   alignSelf: 'center',
-                  marginTop: 12,
+                  marginTop: 10,
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: 7,
-                  padding: '7px 14px',
+                  gap: 6,
+                  padding: '4px 10px',
                   borderRadius: 999,
-                  border: `1px solid ${colors.line}`,
-                  background: colors.surface,
-                  color: colors.accent,
-                  fontSize: 12.5,
-                  fontWeight: 700,
+                  border: 'none',
+                  background: 'transparent',
+                  color: colors.faint,
+                  fontSize: 11.5,
+                  fontWeight: 600,
                   cursor: 'pointer',
                 }}
               >
                 <IonIcon icon={volumeHighOutline} aria-hidden />
-                Play prompt
+                Replay
               </button>
             )}
 

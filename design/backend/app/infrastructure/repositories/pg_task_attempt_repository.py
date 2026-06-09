@@ -52,6 +52,16 @@ class PgTaskAttemptRepository:
         await self._session.refresh(attempt)
         return self._to_domain(attempt)
 
+    async def attach_runtime_state(
+        self, attempt_id: uuid.UUID, runtime_state: dict
+    ) -> None:
+        """Persist the generated prompt context on the attempt (idempotent overwrite)."""
+        attempt = await self._session.get(OrmTaskAttempt, attempt_id)
+        if attempt is None:
+            return
+        attempt.runtime_state = runtime_state
+        await self._session.flush()
+
     async def abandon_attempt(self, input: AbandonAttemptInput) -> None:
         attempt = await self._session.get(OrmTaskAttempt, input.attempt_id)
         if attempt is None:
@@ -77,4 +87,5 @@ class PgTaskAttemptRepository:
             completed_at=row.completed_at,
             abandoned_at=row.abandoned_at,
             completion_metadata=row.completion_metadata,
+            runtime_state=row.runtime_state,
         )

@@ -31,3 +31,4 @@ class TaskAttempt:
     completed_at: datetime | None
     abandoned_at: datetime | None
     completion_metadata: dict = field(default_factory=dict)
+    runtime_state: dict = field(default_factory=dict)
