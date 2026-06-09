@@ -69,6 +69,9 @@ export interface WittyApi {
   /** Save the user's selected trigger and advance onboarding. */
   saveTrigger(trigger: string): Promise<OnboardingState>;
 
+  /** Advance onboarding forward to a backend step (idempotent, forward-only). */
+  advanceOnboarding(step: string): Promise<OnboardingState>;
+
   /** Fetch the remote app configuration (feature gates, limits, etc.). */
   getConfig(): Promise<AppConfig>;
 
@@ -172,6 +175,14 @@ export function createWittyApi(http: HttpClient): WittyApi {
       const dto = await http.patch<OnboardingStateDto>(endpoints.onboarding, {
         trigger,
       });
+      return mapOnboardingState(dto);
+    },
+
+    async advanceOnboarding(step) {
+      const dto = await http.post<OnboardingStateDto>(
+        endpoints.onboardingAdvance,
+        { step },
+      );
       return mapOnboardingState(dto);
     },
 

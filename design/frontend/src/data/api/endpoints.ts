@@ -10,6 +10,7 @@ export const endpoints = {
 
   // Onboarding
   onboarding: '/v1/onboarding',
+  onboardingAdvance: '/v1/onboarding/advance',
 
   // Config
   config: '/v1/config',

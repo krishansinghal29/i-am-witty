@@ -38,6 +38,10 @@ class UpdateOnboardingRequest(BaseModel):
     trigger: str
 
 
+class AdvanceOnboardingRequest(BaseModel):
+    step: str
+
+
 class OnboardingStateResponse(BaseModel):
     current_step: str
     selected_trigger: str | None
@@ -153,6 +157,21 @@ async def update_onboarding(
         first_task_id=view.first_task_id,
         first_task_attempt_id=view.state.first_task_attempt_id,
         completed_at=view.state.completed_at,
+    )
+
+
+@router.post("/onboarding/advance", response_model=OnboardingStateResponse)
+async def advance_onboarding(
+    body: AdvanceOnboardingRequest, container: ContainerDep, user: CurrentUser
+) -> OnboardingStateResponse:
+    """Advance onboarding forward to the given step (idempotent, forward-only)."""
+    state = await container.onboarding_service.advance_to(user.id, body.step)
+    return OnboardingStateResponse(
+        current_step=state.current_step,
+        selected_trigger=state.selected_trigger,
+        first_task_id=state.first_task_id,
+        first_task_attempt_id=state.first_task_attempt_id,
+        completed_at=state.completed_at,
     )
 
 

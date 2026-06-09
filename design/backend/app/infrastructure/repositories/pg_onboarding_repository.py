@@ -66,6 +66,18 @@ class PgOnboardingRepository:
             orm.current_step = OrmOnboardingStep(step)
             await self._session.flush()
 
+    async def mark_account_prompt_seen(self, app_user_id: uuid.UUID) -> None:
+        orm = await self._session.get(OrmOnboardingState, app_user_id)
+        if orm is not None and orm.account_prompt_seen_at is None:
+            orm.account_prompt_seen_at = datetime.now(timezone.utc)
+            await self._session.flush()
+
+    async def mark_reminder_prompt_seen(self, app_user_id: uuid.UUID) -> None:
+        orm = await self._session.get(OrmOnboardingState, app_user_id)
+        if orm is not None and orm.reminder_prompt_seen_at is None:
+            orm.reminder_prompt_seen_at = datetime.now(timezone.utc)
+            await self._session.flush()
+
     async def mark_completed(self, app_user_id: uuid.UUID) -> None:
         orm = await self._session.get(OrmOnboardingState, app_user_id)
         if orm is not None:

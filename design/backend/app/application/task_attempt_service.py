@@ -169,6 +169,20 @@ class TaskAttemptService:
                     )
                 )
 
+            # Bind the onboarding first-task attempt the first time the user
+            # starts their designated first task, so completing it advances
+            # onboarding to `first_win` (see `complete_task`).
+            ob = await self._onboarding.get_state(app_user_id)
+            if (
+                ob is not None
+                and ob.first_task_id == task_id
+                and ob.first_task_attempt_id is None
+                and ob.completed_at is None
+            ):
+                await self._onboarding.set_first_task(
+                    app_user_id, task_id, attempt.id
+                )
+
         return StartTaskResult(task, task_type, attempt, fl)
 
     async def complete_task(

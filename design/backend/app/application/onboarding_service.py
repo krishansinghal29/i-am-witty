@@ -22,6 +22,18 @@ _ALLOWED_TRIGGERS = frozenset(
 # first task, reached right after the trigger is answered.
 _FIRST_TASK_STEP = "first_task"
 
+# Ordering of OnboardingStep values (see the ORM enum). Advancement is
+# forward-only: a target at or behind the current step is a no-op, which keeps
+# the endpoint idempotent and resume-safe.
+_STEP_ORDER: dict[str, int] = {
+    "trigger_question": 0,
+    "first_task": 1,
+    "first_win": 2,
+    "account_prompt": 3,
+    "reminder_prompt": 4,
+    "complete": 5,
+}
+
 
 @dataclass(frozen=True)
 class OnboardingView:
@@ -57,7 +69,7 @@ class OnboardingService:
         if trigger not in _ALLOWED_TRIGGERS:
             raise ValidationError("invalid_trigger")
         async with self._uow.transaction():
-            state = await self._onboarding.save_trigger(app_user_id, trigger)
+            await self._onboarding.save_trigger(app_user_id, trigger)
             candidates = await self._tasks.list_trigger_task_candidates(trigger)
             first = candidates[0] if candidates else None
             if first is None:
@@ -67,4 +79,40 @@ class OnboardingService:
                 raise ConflictError("no_tasks_available")
             await self._onboarding.set_first_task(app_user_id, first.id)
             await self._onboarding.advance_step(app_user_id, _FIRST_TASK_STEP)
+            # Re-read so the returned view reflects the post-advance step
+            # (`first_task`) rather than the pre-advance snapshot.
+            state = await self._onboarding.get_state(app_user_id)
+        if state is None:
+            raise ConflictError("onboarding_state_missing")
         return OnboardingView(state=state, first_task_id=first.id)
+
+    async def advance_to(
+        self, app_user_id: uuid.UUID, target_step: str
+    ) -> OnboardingStateRecord:
+        """Advance the user's onboarding step forward to `target_step`.
+
+        Forward-only and idempotent: a target at or behind the current step is a
+        no-op. Passing `account_prompt`/`reminder_prompt` stamps the matching
+        "seen" timestamp; `complete` also stamps `completed_at`.
+        """
+        if target_step not in _STEP_ORDER:
+            raise ValidationError("invalid_onboarding_step")
+        async with self._uow.transaction():
+            state = await self._onboarding.get_state(app_user_id)
+            if state is None:
+                state = await self._onboarding.create_initial_state(app_user_id)
+            current_idx = _STEP_ORDER.get(state.current_step, 0)
+            target_idx = _STEP_ORDER[target_step]
+            if target_idx > current_idx:
+                if target_idx > _STEP_ORDER["account_prompt"]:
+                    await self._onboarding.mark_account_prompt_seen(app_user_id)
+                if target_idx > _STEP_ORDER["reminder_prompt"]:
+                    await self._onboarding.mark_reminder_prompt_seen(app_user_id)
+                if target_step == "complete":
+                    await self._onboarding.mark_completed(app_user_id)
+                else:
+                    await self._onboarding.advance_step(app_user_id, target_step)
+                refreshed = await self._onboarding.get_state(app_user_id)
+                if refreshed is not None:
+                    state = refreshed
+        return state

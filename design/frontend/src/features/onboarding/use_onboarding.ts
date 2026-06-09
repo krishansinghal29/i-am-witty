@@ -24,6 +24,7 @@ import { useSession } from '@/features/identity/use_session';
 import { useOnboardingStore } from '@/state/stores/onboarding_store';
 import type { OnboardingState } from '@/types/models';
 import {
+  BACKEND_ADVANCE_TARGET,
   PROGRESS_SEGMENTS,
   UX_STEPS,
   hasFirstWin,
@@ -117,6 +118,17 @@ export function useOnboarding(): UseOnboarding {
     },
   });
 
+  // Backend step advancement for the late steps. Each transition sets the
+  // server step to match the step the user is now on, so resume is authoritative
+  // (the client store is just optimistic UI on top).
+  const advanceMutation = useMutation({
+    mutationFn: (target: string) => api.advanceOnboarding(target),
+    onSuccess: (state) => {
+      queryClient.setQueryData<OnboardingState>(queryKeys.onboarding, state);
+      void queryClient.invalidateQueries({ queryKey: queryKeys.home });
+    },
+  });
+
   const selectTrigger = useCallback(
     (trigger: string) => {
       setSelectedTrigger(trigger);
@@ -132,8 +144,13 @@ export function useOnboarding(): UseOnboarding {
   }, [history, onboarding?.firstTaskId]);
 
   const advance = useCallback(() => {
+    // Optimistically move the UI forward, then persist the matching backend
+    // step where one exists (plan_landing has no backend step — `complete` is
+    // stamped by `completeAndEnter`).
     setUxStep(nextUxStep(step));
-  }, [setUxStep, step]);
+    const target = BACKEND_ADVANCE_TARGET[step];
+    if (target) advanceMutation.mutate(target);
+  }, [advanceMutation, setUxStep, step]);
 
   const back = useCallback(() => {
     const target = Math.max(uxStepIndex(step) - 1, floorIndex);
@@ -145,20 +162,26 @@ export function useOnboarding(): UseOnboarding {
     void homeQuery.refetch();
   }, [onboardingQuery, homeQuery]);
 
-  const completeAndEnter = useCallback(() => {
-    // The backend exposes no client endpoint that stamps `completed_at`, so mark
-    // onboarding complete in cache to let `OnboardingGuard` admit `/app`. A later
-    // server refetch that returns a real `completed_at` keeps the same result.
-    queryClient.setQueryData<OnboardingState>(queryKeys.onboarding, (prev) => ({
-      currentStep: 'complete',
-      selectedTrigger: prev?.selectedTrigger ?? selectedTrigger,
-      firstTaskId: prev?.firstTaskId ?? null,
-      firstTaskAttemptId: prev?.firstTaskAttemptId ?? null,
-      completedAt: new Date().toISOString(),
-    }));
+  const completeAndEnter = useCallback(async () => {
+    // Stamp `completed_at` server-side so `OnboardingGuard` admits `/app`.
+    try {
+      const state = await api.advanceOnboarding('complete');
+      queryClient.setQueryData<OnboardingState>(queryKeys.onboarding, state);
+    } catch {
+      // Never trap the user: fall back to an optimistic complete in cache; a
+      // later server refetch with a real `completed_at` yields the same result.
+      queryClient.setQueryData<OnboardingState>(queryKeys.onboarding, (prev) => ({
+        currentStep: 'complete',
+        selectedTrigger: prev?.selectedTrigger ?? selectedTrigger,
+        firstTaskId: prev?.firstTaskId ?? null,
+        firstTaskAttemptId: prev?.firstTaskAttemptId ?? null,
+        completedAt: new Date().toISOString(),
+      }));
+    }
+    void queryClient.invalidateQueries({ queryKey: queryKeys.home });
     resetStore();
     history.replace('/app/home');
-  }, [history, queryClient, resetStore, selectedTrigger]);
+  }, [api, history, queryClient, resetStore, selectedTrigger]);
 
   return {
     step,

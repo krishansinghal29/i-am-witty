@@ -49,6 +49,17 @@ const BACKEND_TO_UX: Record<string, UxStep> = {
   complete: 'plan_landing',
 };
 
+/**
+ * Backend step to stamp when advancing PAST a given UX step. Each value is the
+ * step the user lands on next. `trigger`/`tiny_practice` are driven by other
+ * flows (saveTrigger / task completion); `reminder` → `plan_landing` is a UI-only
+ * preview (the final `complete` is stamped when entering the app).
+ */
+export const BACKEND_ADVANCE_TARGET: Partial<Record<UxStep, string>> = {
+  variable_reward: BACKEND_STEPS.accountPrompt,
+  login: BACKEND_STEPS.reminderPrompt,
+};
+
 /** Index of a UX step within {@link UX_STEPS} (0-based). */
 export function uxStepIndex(step: UxStep): number {
   return UX_STEPS.indexOf(step);
