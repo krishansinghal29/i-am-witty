@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from app.domain.models.entitlement import AccessState
 
 UNLIMITED_REMAINING = -1
-"""Sentinel `remaining` value meaning "no free-task cap applies" (Witty+).
+"""Sentinel `remaining` value meaning "no free-task cap applies" (Riffy+).
 
 Using -1 rather than 0/None lets callers distinguish "unlimited" from "0 left"
 without a separate flag, while keeping `remaining` a plain int.
@@ -31,13 +31,13 @@ def evaluate_free_limit(
 ) -> FreeLimitDecision:
     """Enforce the non-subscriber free daily task cap (functional req §6).
 
-    Witty+ users are unlimited: allowed, no paywall, and
+    Riffy+ users are unlimited: allowed, no paywall, and
     `remaining = UNLIMITED_REMAINING`. Non-subscribers are allowed while
     `free_tasks_completed < free_task_limit`; once the cap is reached they are
     blocked and the caller should surface the paywall. `remaining` is clamped
     at 0 so an over-count never reports a negative balance.
     """
-    if access.is_witty_plus:
+    if access.is_riffy_plus:
         return FreeLimitDecision(
             allowed=True,
             should_paywall=False,

@@ -37,7 +37,7 @@ export function Sheet({
       breakpoints={breakpoints}
       initialBreakpoint={initialBreakpoint}
       handle
-      className={['witty-sheet', className].filter(Boolean).join(' ')}
+      className={['riffy-sheet', className].filter(Boolean).join(' ')}
       style={SHEET_STYLE}
     >
       {children}

@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { IonIcon, IonSpinner } from '@ionic/react';
 import { chevronForward } from 'ionicons/icons';
 import { colors, radius, shadows } from '@/theme/tokens';
+import { RiffyLockup } from '@/components/ui';
 import { AppError } from '@/data/errors/app_error';
 import { TRIGGER_OPTIONS } from '@/screens/onboarding/triggers';
 import type { TriggerOption } from '@/screens/onboarding/triggers';
@@ -70,7 +71,7 @@ function OptionRow({
   return (
     <button
       type="button"
-      className="witty-pressable"
+      className="riffy-pressable"
       style={{ ...ROW, opacity: disabled && !pending ? 0.55 : 1 }}
       disabled={disabled}
       onClick={() => onSelect(option.value)}
@@ -92,6 +93,7 @@ function OptionRow({
 export function TriggerStep({ selectedTrigger, isSaving, error, onSelect }: TriggerStepProps) {
   return (
     <div style={STEP_BODY}>
+      <RiffyLockup height={32} style={{ marginBottom: 18 }} />
       <span style={KICKER}>Let’s make this yours</span>
       <h1 style={QUESTION}>Where do you want to feel quicker?</h1>
       <p style={SUBTITLE}>

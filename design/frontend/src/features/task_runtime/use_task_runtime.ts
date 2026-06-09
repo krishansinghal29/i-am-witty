@@ -9,7 +9,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useLocation } from 'react-router-dom';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type { TaskRuntime } from '@/types/models';
 
@@ -21,7 +21,7 @@ export interface UseTaskRuntimeResult {
 }
 
 export function useTaskRuntime(taskId: string | undefined): UseTaskRuntimeResult {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const location = useLocation();
 
   const params = new URLSearchParams(location.search);

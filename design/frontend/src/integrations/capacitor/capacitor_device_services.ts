@@ -7,7 +7,7 @@ import type {
   NotificationPermission,
 } from '@/integrations/ports/device_services';
 
-const DEVICE_KEY_STORAGE_KEY = 'witty_device_key';
+const DEVICE_KEY_STORAGE_KEY = 'riffy_device_key';
 const PUSH_TOKEN_TIMEOUT_MS = 10_000;
 
 /**
@@ -132,7 +132,7 @@ export class CapacitorDeviceServices implements DeviceServices {
       return c.randomUUID();
     }
     // Fallback for environments without crypto.randomUUID.
-    return `witty-${Date.now().toString(36)}-${Math.random()
+    return `riffy-${Date.now().toString(36)}-${Math.random()
       .toString(36)
       .slice(2)}`;
   }

@@ -5,40 +5,40 @@
    and a couple of interaction affordances.
    ============================================================= */
 
-.witty-pressable {
+.riffy-pressable {
   cursor: pointer;
   transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
-.witty-pressable:active {
+.riffy-pressable:active {
   transform: scale(0.97);
 }
 
-.witty-rise {
-  animation: witty-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+.riffy-rise {
+  animation: riffy-rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
-.witty-card-glow {
-  animation: witty-glow 3.6s ease-in-out infinite;
+.riffy-card-glow {
+  animation: riffy-glow 3.6s ease-in-out infinite;
 }
 
-.witty-ring-pulse {
-  animation: witty-ring-pulse 1.8s ease-in-out infinite;
+.riffy-ring-pulse {
+  animation: riffy-ring-pulse 1.8s ease-in-out infinite;
 }
 
-.witty-celebration-glow {
-  animation: witty-fade-in 0.4s ease-out both;
+.riffy-celebration-glow {
+  animation: riffy-fade-in 0.4s ease-out both;
 }
 
-.witty-confetti-piece {
+.riffy-confetti-piece {
   position: absolute;
   will-change: transform, opacity;
-  animation-name: witty-confetti-fall;
+  animation-name: riffy-confetti-fall;
   animation-timing-function: linear;
   animation-fill-mode: forwards;
   animation-iteration-count: 1;
 }
 
-@keyframes witty-rise {
+@keyframes riffy-rise {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -49,7 +49,7 @@
   }
 }
 
-@keyframes witty-glow {
+@keyframes riffy-glow {
   0%,
   100% {
     box-shadow: 0 14px 30px rgba(59, 130, 246, 0.14);
@@ -59,7 +59,7 @@
   }
 }
 
-@keyframes witty-ring-pulse {
+@keyframes riffy-ring-pulse {
   0% {
     transform: scale(0.92);
     opacity: 0.55;
@@ -74,7 +74,7 @@
   }
 }
 
-@keyframes witty-confetti-fall {
+@keyframes riffy-confetti-fall {
   0% {
     transform: translateY(0) rotate(0deg);
     opacity: 1;
@@ -85,7 +85,7 @@
   }
 }
 
-@keyframes witty-fade-in {
+@keyframes riffy-fade-in {
   from {
     opacity: 0;
   }
@@ -98,14 +98,14 @@
    also gate motion in JS via lib/reduced_motion, but this guarantees
    no residual animation slips through. */
 @media (prefers-reduced-motion: reduce) {
-  .witty-pressable {
+  .riffy-pressable {
     transition: none;
   }
-  .witty-rise,
-  .witty-card-glow,
-  .witty-ring-pulse,
-  .witty-celebration-glow,
-  .witty-confetti-piece {
+  .riffy-rise,
+  .riffy-card-glow,
+  .riffy-ring-pulse,
+  .riffy-celebration-glow,
+  .riffy-confetti-piece {
     animation: none !important;
   }
 }

@@ -9,7 +9,7 @@ import type {
  * Real PostHog-backed implementation of {@link AnalyticsGateway}.
  *
  * PostHog is the source of truth for feature flags (e.g. `role_play`,
- * `witty_plus` gating), consistent with the backend `feature_gate_defaults`.
+ * `riffy_plus` gating), consistent with the backend `feature_gate_defaults`.
  * When `VITE_POSTHOG_KEY` is absent the gateway is a safe no-op so dev/web
  * still runs without a configured PostHog project.
  */

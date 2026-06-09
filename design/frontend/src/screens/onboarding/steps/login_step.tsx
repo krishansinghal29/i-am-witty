@@ -144,7 +144,7 @@ export function LoginStep({ onContinue }: LoginStepProps) {
       <div style={{ ...AUTH_GROUP, ...PUSH_DOWN }}>
         <button
           type="button"
-          className="witty-pressable"
+          className="riffy-pressable"
           style={APPLE_BTN}
           onClick={() => void handleApple()}
           disabled={isLinking}
@@ -161,7 +161,7 @@ export function LoginStep({ onContinue }: LoginStepProps) {
 
         <button
           type="button"
-          className="witty-pressable"
+          className="riffy-pressable"
           style={GOOGLE_BTN}
           onClick={() => void handleGoogle()}
           disabled={isLinking}
@@ -172,7 +172,7 @@ export function LoginStep({ onContinue }: LoginStepProps) {
 
         <button
           type="button"
-          className="witty-pressable"
+          className="riffy-pressable"
           style={NOT_NOW}
           onClick={onContinue}
           disabled={isLinking}

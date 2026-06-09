@@ -9,6 +9,6 @@ export interface EntitlementDto {
 }
 
 export interface AccessDto {
-  is_witty_plus: boolean;
+  is_riffy_plus: boolean;
   entitlements: EntitlementDto[];
 }

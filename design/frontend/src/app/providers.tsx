@@ -1,5 +1,5 @@
 /**
- * Composition root for the Witty app.
+ * Composition root for the riffy app.
  *
  * Client analog of the backend DI container: it constructs the concrete vendor
  * adapters, wires the HTTP client + typed API + query client, and exposes them
@@ -47,16 +47,16 @@ import type {
 
 import { createHttpClient } from '@/data/api/http_client';
 import type { HttpClient, TokenProvider } from '@/data/api/http_client';
-import { createWittyApi } from '@/data/api/witty_api';
-import type { WittyApi } from '@/data/api/witty_api';
+import { createRiffyApi } from '@/data/api/riffy_api';
+import type { RiffyApi } from '@/data/api/riffy_api';
 import { createQueryClient } from '@/state/query_client';
 
 setupIonicReact();
 
 /** Keys used for persisted client-side secrets/identifiers. */
 export const STORAGE_KEYS = {
-  guestToken: 'witty.guest_session_token',
-  appUserId: 'witty.app_user_id',
+  guestToken: 'riffy.guest_session_token',
+  appUserId: 'riffy.app_user_id',
 } as const;
 
 /** The fully-wired integration graph exposed to feature code. */
@@ -69,7 +69,7 @@ export interface Integrations {
   transcription: TranscriptionGateway;
   updater: AppUpdater;
   http: HttpClient;
-  api: WittyApi;
+  api: RiffyApi;
 }
 
 /**
@@ -97,7 +97,7 @@ function buildIntegrations(): Integrations {
     baseUrl: import.meta.env.VITE_API_BASE_URL,
     tokens,
   });
-  const api = createWittyApi(http);
+  const api = createRiffyApi(http);
 
   const transcription: TranscriptionGateway = new DeepgramTranscriptionGateway({
     mintToken: () => api.mintTranscriptionToken(),
@@ -144,7 +144,7 @@ export function useIntegrations(): Integrations {
   return ctx;
 }
 
-export const useWittyApi = (): WittyApi => useIntegrations().api;
+export const useRiffyApi = (): RiffyApi => useIntegrations().api;
 export const useAuth = (): AuthGateway => useIntegrations().auth;
 export const useSubscriptions = (): SubscriptionGateway =>
   useIntegrations().subscriptions;

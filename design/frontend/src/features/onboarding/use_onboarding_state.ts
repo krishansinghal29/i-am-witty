@@ -6,12 +6,12 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import { useSession } from '@/features/identity/use_session';
 
 export function useOnboardingState() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const { session } = useSession();
 
   const { data, isLoading, isError } = useQuery({

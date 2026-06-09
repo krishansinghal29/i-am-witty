@@ -11,7 +11,7 @@
 import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useHistory } from 'react-router-dom';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type { CatalogItem, DailyPlan, HomeView, PlanItemStatus } from '@/types/models';
 
@@ -40,7 +40,7 @@ function pickNextUpId(items: { id: string; status: PlanItemStatus }[]): string |
 }
 
 export function useTodayPlan() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const history = useHistory();
 
   const home = useQuery({

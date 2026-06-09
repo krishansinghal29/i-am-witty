@@ -382,14 +382,14 @@ export function VoicePromptShell({
         )}
 
         {phase === 'respond' && (
-          <div className="witty-rise" style={{ display: 'flex', flexDirection: 'column' }}>
+          <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
             {promptArea}
 
             {hasAudio && (
               <button
                 type="button"
                 onClick={playPrompt}
-                className="witty-pressable"
+                className="riffy-pressable"
                 style={{
                   alignSelf: 'center',
                   marginTop: 12,
@@ -508,7 +508,7 @@ function BriefStage({
       ];
 
   return (
-    <div className="witty-rise" style={{ display: 'flex', flexDirection: 'column' }}>
+    <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 7, marginTop: 6 }}>
         <div
           style={{
@@ -759,7 +759,7 @@ function RecordArea({
           }}
         >
           <span
-            className="witty-ring-pulse"
+            className="riffy-ring-pulse"
             style={{ width: 8, height: 8, borderRadius: '50%', background: colors.red, display: 'inline-block' }}
           />
           Recording · your turn

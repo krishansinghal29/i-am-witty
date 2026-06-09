@@ -38,7 +38,7 @@ class Entitlement:
 @dataclass(frozen=True)
 class AccessState:
     app_user_id: uuid.UUID
-    is_witty_plus: bool
+    is_riffy_plus: bool
     entitlements: tuple[Entitlement, ...] = ()
 
     @staticmethod
@@ -46,7 +46,7 @@ class AccessState:
         """Whether a raw subscription status grants paid access.
 
         Centralizes the active/trialing rule so policies and repositories
-        derive `is_witty_plus` consistently instead of re-checking enum members.
+        derive `is_riffy_plus` consistently instead of re-checking enum members.
         """
         return status in _ACCESS_GRANTING_STATUSES
 

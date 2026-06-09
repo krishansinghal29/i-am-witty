@@ -27,6 +27,6 @@ export interface ProgressDto {
 export interface HomeDto {
   plan: DailyPlanDto;
   progress: ProgressDto;
-  access: { is_witty_plus: boolean };
+  access: { is_riffy_plus: boolean };
   onboarding: OnboardingStateDto;
 }

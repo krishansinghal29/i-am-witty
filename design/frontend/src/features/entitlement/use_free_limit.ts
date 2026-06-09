@@ -13,7 +13,7 @@ import { useEntitlement } from '@/features/entitlement/use_entitlement';
 import type { FreeLimit } from '@/types/models';
 
 export function useFreeLimit() {
-  const { isWittyPlus } = useEntitlement();
+  const { isRiffyPlus } = useEntitlement();
   const openPaywall = useUiStore((state) => state.openPaywall);
 
   /**
@@ -31,5 +31,5 @@ export function useFreeLimit() {
     [openPaywall],
   );
 
-  return { isWittyPlus, handleFreeLimit };
+  return { isRiffyPlus, handleFreeLimit };
 }

@@ -69,7 +69,7 @@ class EntitlementResponse(BaseModel):
 
 
 class AccessResponse(BaseModel):
-    is_witty_plus: bool
+    is_riffy_plus: bool
     entitlements: list[EntitlementResponse]
 
 
@@ -194,7 +194,7 @@ async def get_access(
     """Return the caller's derived access state and mirrored entitlements."""
     access = await container.entitlement_service.get_access_state(user.id)
     return AccessResponse(
-        is_witty_plus=access.is_witty_plus,
+        is_riffy_plus=access.is_riffy_plus,
         entitlements=[
             EntitlementResponse(
                 entitlement_key=e.entitlement_key,

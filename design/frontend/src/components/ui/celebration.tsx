@@ -75,13 +75,13 @@ export function Celebration({ show, label }: CelebrationProps) {
 
   return (
     <div style={OVERLAY} aria-live="polite" role="status">
-      <div className={reduced ? undefined : 'witty-celebration-glow'} style={GLOW} />
+      <div className={reduced ? undefined : 'riffy-celebration-glow'} style={GLOW} />
 
       {!reduced &&
         pieces.map((piece) => (
           <span
             key={piece.id}
-            className="witty-confetti-piece"
+            className="riffy-confetti-piece"
             style={{
               left: `${piece.left}%`,
               top: -12,

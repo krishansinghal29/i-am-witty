@@ -263,7 +263,7 @@ class TaskAttemptService:
                     )
                 )
 
-            if not access.is_witty_plus:
+            if not access.is_riffy_plus:
                 du = await self._usage.increment_daily_usage(
                     app_user_id, today, user.timezone, limit
                 )

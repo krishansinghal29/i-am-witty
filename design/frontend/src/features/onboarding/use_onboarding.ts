@@ -18,7 +18,7 @@
 import { useCallback, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useHistory } from 'react-router-dom';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import { useSession } from '@/features/identity/use_session';
 import { useOnboardingStore } from '@/state/stores/onboarding_store';
@@ -63,7 +63,7 @@ export interface UseOnboarding {
 }
 
 export function useOnboarding(): UseOnboarding {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const history = useHistory();
   const queryClient = useQueryClient();
   const { session } = useSession();

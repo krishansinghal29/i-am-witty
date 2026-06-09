@@ -10,13 +10,13 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import { useUiStore } from '@/state/stores/ui_store';
 import type { FreeLimit } from '@/types/models';
 
 export function useEntitlementGate() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const access = useQuery({
     queryKey: queryKeys.access,
     queryFn: () => api.getAccess(),
@@ -24,7 +24,7 @@ export function useEntitlementGate() {
   const openPaywall = useUiStore((s) => s.openPaywall);
 
   return {
-    isWittyPlus: access.data?.isWittyPlus ?? false,
+    isRiffyPlus: access.data?.isRiffyPlus ?? false,
     access: access.data ?? null,
     isLoading: access.isLoading,
     guardStart(freeLimit?: FreeLimit): boolean {

@@ -15,7 +15,7 @@ export function mapEntitlement(dto: EntitlementDto): Entitlement {
 
 export function mapAccess(dto: AccessDto): AccessState {
   return {
-    isWittyPlus: dto.is_witty_plus,
+    isRiffyPlus: dto.is_riffy_plus,
     entitlements: dto.entitlements.map(mapEntitlement),
   };
 }

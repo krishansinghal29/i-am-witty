@@ -144,7 +144,7 @@ export function OnboardingFlowPage() {
               {canGoBack ? (
                 <button
                   type="button"
-                  className="witty-pressable"
+                  className="riffy-pressable"
                   style={BACK_BTN}
                   onClick={onboarding.back}
                   aria-label="Back"

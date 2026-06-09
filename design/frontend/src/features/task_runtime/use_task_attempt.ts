@@ -9,7 +9,7 @@
  */
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type {
   AttemptController,
@@ -20,7 +20,7 @@ import type {
 export function useTaskAttempt(
   attemptId: string | null,
 ): AttemptController<VoiceCompleteBody> {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const queryClient = useQueryClient();
 
   const mutation = useMutation({

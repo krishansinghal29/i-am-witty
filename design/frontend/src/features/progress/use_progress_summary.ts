@@ -9,7 +9,7 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type { WeekDay } from '@/components/ui';
 import type { HomeView, Progress } from '@/types/models';
@@ -51,7 +51,7 @@ function buildWeek(progress: Progress | null): WeekDay[] {
 }
 
 export function useProgressSummary() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.home,

@@ -36,7 +36,7 @@ export function mapHome(dto: HomeDto): HomeView {
   return {
     plan: mapDailyPlan(dto.plan),
     progress: mapProgress(dto.progress),
-    access: { isWittyPlus: dto.access.is_witty_plus },
+    access: { isRiffyPlus: dto.access.is_riffy_plus },
     onboarding: mapOnboardingState(dto.onboarding),
   };
 }

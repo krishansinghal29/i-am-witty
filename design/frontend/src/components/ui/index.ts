@@ -1,3 +1,4 @@
+export * from './brand';
 export * from './button';
 export * from './card';
 export * from './sheet';

@@ -44,7 +44,7 @@ export function Card({
 
   return (
     <div
-      className={[pressable ? 'witty-pressable' : '', className].filter(Boolean).join(' ') || undefined}
+      className={[pressable ? 'riffy-pressable' : '', className].filter(Boolean).join(' ') || undefined}
       style={base}
       onClick={onClick}
       onKeyDown={handleKey}

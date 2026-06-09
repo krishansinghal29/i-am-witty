@@ -32,10 +32,10 @@ class PgEntitlementRepository:
         entitlements = tuple(
             self._to_entitlement(row) for row in result.scalars().all()
         )
-        is_witty_plus = any(e.grants_access for e in entitlements)
+        is_riffy_plus = any(e.grants_access for e in entitlements)
         return AccessState(
             app_user_id=app_user_id,
-            is_witty_plus=is_witty_plus,
+            is_riffy_plus=is_riffy_plus,
             entitlements=entitlements,
         )
 

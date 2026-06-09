@@ -12,7 +12,7 @@ export interface Offering {
 }
 
 export interface EntitlementSnapshot {
-  isWittyPlus: boolean;
+  isRiffyPlus: boolean;
   activeEntitlementIds: string[];
   managementUrl: string | null;
 }

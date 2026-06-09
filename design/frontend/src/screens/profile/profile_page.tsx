@@ -15,6 +15,7 @@ import {
   Button,
   ErrorView,
   LoadingView,
+  RiffyWordmark,
   StreakChip,
 } from '@/components/ui';
 import { colors, radius } from '@/theme/tokens';
@@ -232,6 +233,13 @@ const SIGNOUT: CSSProperties = {
   cursor: 'pointer',
 };
 
+const BRAND_FOOTER: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  marginTop: 22,
+  paddingBottom: 6,
+};
+
 function asUrl(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
@@ -262,7 +270,7 @@ function MenuRow({ icon, iconTint, label, trailing, last, onClick }: MenuRowProp
     : MENU_ICON;
 
   return (
-    <button type="button" className="witty-pressable" style={row} onClick={onClick}>
+    <button type="button" className="riffy-pressable" style={row} onClick={onClick}>
       <span style={iconStyle}>
         <IonIcon icon={icon} style={{ fontSize: 18 }} aria-hidden />
       </span>
@@ -339,13 +347,13 @@ export function ProfilePage() {
           </div>
         </div>
 
-        {entitlement.isWittyPlus ? (
+        {entitlement.isRiffyPlus ? (
           <div style={ACTIVE_CARD}>
             <div style={ACTIVE_ICON}>
               <IonIcon icon={checkmarkCircle} style={{ fontSize: 26 }} aria-hidden />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={UPSELL_TITLE}>Witty+ is active</div>
+              <div style={UPSELL_TITLE}>Riffy+ is active</div>
               <p style={UPSELL_SUB}>You’ve got the full library and unlimited practice.</p>
             </div>
           </div>
@@ -355,7 +363,7 @@ export function ProfilePage() {
               <IonIcon icon={sparkles} style={{ fontSize: 24 }} aria-hidden />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={UPSELL_TITLE}>Go unlimited with Witty+</div>
+              <div style={UPSELL_TITLE}>Go unlimited with Riffy+</div>
               <p style={UPSELL_SUB}>Unlimited practice, deeper feedback &amp; more.</p>
             </div>
             <Button variant="accent" size="sm" onClick={() => openPaywall('profile')}>
@@ -408,7 +416,7 @@ export function ProfilePage() {
         {isAuthenticated && (
           <button
             type="button"
-            className="witty-pressable"
+            className="riffy-pressable"
             style={SIGNOUT}
             onClick={() => void signOut()}
             disabled={isSigningOut}
@@ -417,6 +425,10 @@ export function ProfilePage() {
             {isSigningOut ? 'Signing out…' : 'Sign out'}
           </button>
         )}
+
+        <div style={BRAND_FOOTER} aria-hidden>
+          <RiffyWordmark height={18} tone="solid" style={{ opacity: 0.55 }} />
+        </div>
       </div>
     );
   }

@@ -90,7 +90,7 @@ export function FeedbackPanel({ evaluation, feedbackTabs }: FeedbackPanelProps) 
   }, [reduced]);
 
   return (
-    <div className="witty-rise">
+    <div className="riffy-rise">
       <Celebration show={celebrate} label={evaluation.styleLabel ?? undefined} />
 
       <div style={SCOREHEAD}>

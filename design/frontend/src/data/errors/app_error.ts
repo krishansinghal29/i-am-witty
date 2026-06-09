@@ -19,7 +19,7 @@ const DEFAULT_USER_MESSAGES: Record<AppErrorCode, string> = {
   unauthorized: 'You need to sign in to continue.',
   forbidden: 'You don\'t have permission to do that.',
   not_found: 'The requested resource could not be found.',
-  paywall_required: 'This feature requires a Witty+ subscription.',
+  paywall_required: 'This feature requires a Riffy+ subscription.',
   conflict: 'There was a conflict with your request. Please try again.',
   validation: 'Some of the information you provided is invalid.',
   server: 'Something went wrong on our end. Please try again shortly.',

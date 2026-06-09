@@ -111,7 +111,7 @@ export function ReminderStep({ onContinue }: ReminderStepProps) {
             <button
               key={choice.id}
               type="button"
-              className="witty-pressable"
+              className="riffy-pressable"
               style={{ ...TILE, opacity: isSaving && !pending ? 0.55 : 1 }}
               disabled={isSaving}
               onClick={() => void choose(choice)}

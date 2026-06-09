@@ -31,11 +31,11 @@ FEATURE_GATES: list[dict] = [
     {
         "feature_key": "role_play",
         "default_enabled": False,
-        "requires_entitlement": "witty_plus",
+        "requires_entitlement": "riffy_plus",
         "min_app_version": None,
     },
     {
-        "feature_key": "witty_plus",
+        "feature_key": "riffy_plus",
         "default_enabled": True,
         "requires_entitlement": None,
         "min_app_version": None,
@@ -43,7 +43,7 @@ FEATURE_GATES: list[dict] = [
     {
         "feature_key": "premium_task_library",
         "default_enabled": True,
-        "requires_entitlement": "witty_plus",
+        "requires_entitlement": "riffy_plus",
         "min_app_version": None,
     },
 ]

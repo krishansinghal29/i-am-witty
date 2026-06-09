@@ -127,7 +127,7 @@ export interface Entitlement {
 
 /** Summary of what the user can access. */
 export interface AccessState {
-  isWittyPlus: boolean;
+  isRiffyPlus: boolean;
   entitlements?: Entitlement[];
 }
 

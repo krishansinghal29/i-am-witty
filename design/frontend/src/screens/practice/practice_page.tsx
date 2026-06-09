@@ -116,7 +116,7 @@ const LOCK_BADGE: CSSProperties = {
 const FILTERS: { key: CatalogFilter; label: string }[] = [
   { key: 'all', label: 'All' },
   { key: 'free', label: 'Free' },
-  { key: 'premium', label: 'Witty+' },
+  { key: 'premium', label: 'Riffy+' },
 ];
 
 function chipStyle(active: boolean): CSSProperties {
@@ -187,7 +187,7 @@ export function PracticePage() {
                 {item.isLocked && (
                   <span style={LOCK_BADGE}>
                     <IonIcon icon={lockClosed} style={{ fontSize: 11 }} aria-hidden />
-                    Witty+
+                    Riffy+
                   </span>
                 )}
                 <TintedThumbnail
@@ -229,7 +229,7 @@ export function PracticePage() {
               <button
                 key={key}
                 type="button"
-                className="witty-pressable"
+                className="riffy-pressable"
                 style={chipStyle(filter === key)}
                 onClick={() => setFilter(key)}
                 aria-pressed={filter === key}

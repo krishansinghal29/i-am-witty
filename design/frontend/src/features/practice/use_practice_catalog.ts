@@ -8,7 +8,7 @@
 
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type { CatalogItem } from '@/types/models';
 
@@ -16,7 +16,7 @@ import type { CatalogItem } from '@/types/models';
 export type CatalogFilter = 'all' | 'free' | 'premium';
 
 export function usePracticeCatalog() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
   const [filter, setFilter] = useState<CatalogFilter>('all');
 
   const { data, isLoading, isError, refetch } = useQuery({

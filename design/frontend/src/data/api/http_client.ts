@@ -1,5 +1,5 @@
 /**
- * Minimal typed HTTP client used by WittyApi.
+ * Minimal typed HTTP client used by RiffyApi.
  *
  * Auth strategy (in priority order):
  *   1. Firebase id-token  → Authorization: Bearer <token>

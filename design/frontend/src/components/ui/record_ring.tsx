@@ -45,7 +45,7 @@ export function RecordRing({ recording, progress, onPress, disabled = false }: R
     <div style={{ position: 'relative', width: SIZE, height: SIZE, display: 'grid', placeItems: 'center' }}>
       {showPulse && (
         <span
-          className="witty-ring-pulse"
+          className="riffy-ring-pulse"
           style={{
             position: 'absolute',
             width: SIZE,
@@ -79,7 +79,7 @@ export function RecordRing({ recording, progress, onPress, disabled = false }: R
         disabled={disabled}
         aria-label={recording ? 'Stop recording' : 'Start recording'}
         aria-pressed={recording}
-        className="witty-pressable"
+        className="riffy-pressable"
         style={buttonStyle(recording, disabled)}
       >
         <IonIcon icon={recording ? stop : mic} style={{ fontSize: 40, color: '#FFFFFF' }} aria-hidden />

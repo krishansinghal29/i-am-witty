@@ -85,7 +85,7 @@ export function TopCluster({ telegramUrl, supportSource = 'top_cluster' }: TopCl
         <button
           type="button"
           aria-label="Join our Telegram community"
-          className="witty-pressable"
+          className="riffy-pressable"
           style={TG_BUTTON}
           onClick={openTelegram}
         >
@@ -96,7 +96,7 @@ export function TopCluster({ telegramUrl, supportSource = 'top_cluster' }: TopCl
       <button
         type="button"
         aria-label="Chat with us"
-        className="witty-pressable"
+        className="riffy-pressable"
         style={CHAT_BUTTON}
         onClick={() => openSupport(supportSource)}
       >

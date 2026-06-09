@@ -1,5 +1,5 @@
 /**
- * WittyApi — typed API client consumed by feature hooks.
+ * RiffyApi — typed API client consumed by feature hooks.
  *
  * All methods accept camelCase inputs, call the HTTP client with snake_case
  * request bodies, and return camelCase view-models (mapped from DTOs).
@@ -56,7 +56,7 @@ import { mapTranscriptionToken } from '@/data/mappers/transcription_mapper';
 // Public interface
 // ---------------------------------------------------------------------------
 
-export interface WittyApi {
+export interface RiffyApi {
   /** Create an anonymous guest session. */
   createGuestSession(input: { timezone: string; locale?: string }): Promise<Session>;
 
@@ -149,7 +149,7 @@ export interface WittyApi {
 // Factory
 // ---------------------------------------------------------------------------
 
-export function createWittyApi(http: HttpClient): WittyApi {
+export function createRiffyApi(http: HttpClient): RiffyApi {
   return {
     async createGuestSession({ timezone, locale }) {
       const dto = await http.post<GuestSessionDto>(endpoints.guestSessions, {

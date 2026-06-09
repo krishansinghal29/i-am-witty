@@ -16,13 +16,13 @@ class AccessDecision:
 def evaluate_task_access(task: Task, access: AccessState) -> AccessDecision:
     """Decide whether a user may start a task given its access tier.
 
-    Free tasks are always allowed. Premium tasks require an active Witty+
-    entitlement (`access.is_witty_plus`); what counts as "active" is resolved
+    Free tasks are always allowed. Premium tasks require an active Riffy+
+    entitlement (`access.is_riffy_plus`); what counts as "active" is resolved
     in the entitlement model, so this policy stays a pure tier check.
     """
     if not task.requires_premium:
         return AccessDecision(allowed=True, requires_premium=False, reason=None)
-    if access.is_witty_plus:
+    if access.is_riffy_plus:
         return AccessDecision(allowed=True, requires_premium=True, reason=None)
     return AccessDecision(
         allowed=False,

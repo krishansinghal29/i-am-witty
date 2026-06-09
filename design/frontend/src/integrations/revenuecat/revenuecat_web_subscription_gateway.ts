@@ -28,11 +28,11 @@ import type {
 } from '@/integrations/ports/subscription_gateway';
 
 /**
- * Identifier of the entitlement that grants Witty+ access. MUST match the
+ * Identifier of the entitlement that grants Riffy+ access. MUST match the
  * entitlement identifier configured in the RevenueCat dashboard (and the native
  * gateway).
  */
-const WITTY_PLUS_ENTITLEMENT = 'witty_plus';
+const RIFFY_PLUS_ENTITLEMENT = 'riffy_plus';
 
 export class RevenueCatWebSubscriptionGateway implements SubscriptionGateway {
   private configured = false;
@@ -174,7 +174,7 @@ export class RevenueCatWebSubscriptionGateway implements SubscriptionGateway {
   private toSnapshot(info: CustomerInfo): EntitlementSnapshot {
     const ids = Object.keys(info.entitlements.active);
     return {
-      isWittyPlus: ids.includes(WITTY_PLUS_ENTITLEMENT),
+      isRiffyPlus: ids.includes(RIFFY_PLUS_ENTITLEMENT),
       activeEntitlementIds: ids,
       managementUrl: info.managementURL ?? null,
     };
@@ -182,6 +182,6 @@ export class RevenueCatWebSubscriptionGateway implements SubscriptionGateway {
 
   /** Snapshot used when the SDK is unavailable (e.g. no web key configured). */
   private emptySnapshot(): EntitlementSnapshot {
-    return { isWittyPlus: false, activeEntitlementIds: [], managementUrl: null };
+    return { isRiffyPlus: false, activeEntitlementIds: [], managementUrl: null };
   }
 }

@@ -54,7 +54,7 @@ export function PhaseBar({ steps, current, onSelect }: PhaseBarProps) {
             type="button"
             onClick={interactive ? () => onSelect?.(step.key) : undefined}
             disabled={!interactive}
-            className={interactive ? 'witty-pressable' : undefined}
+            className={interactive ? 'riffy-pressable' : undefined}
             style={{
               flex: 1,
               display: 'flex',

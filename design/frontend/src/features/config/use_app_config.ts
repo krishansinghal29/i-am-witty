@@ -6,11 +6,11 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 
 export function useAppConfig() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: queryKeys.config,

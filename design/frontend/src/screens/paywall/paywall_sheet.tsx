@@ -169,11 +169,11 @@ const FEATURES: { icon: string; label: string }[] = [
 function bannerText(reason: string | null): string {
   switch (reason) {
     case 'catalog_locked':
-      return 'That exercise is part of Witty+';
+      return 'That exercise is part of Riffy+';
     case 'free_limit_reached':
       return 'That’s your free practices for today — your streak’s safe';
     default:
-      return 'Go further with Witty+';
+      return 'Go further with Riffy+';
   }
 }
 
@@ -344,7 +344,7 @@ export function PaywallSheet() {
           </div>
           <h2 style={HERO_TITLE}>Keep the momentum going</h2>
           <p style={HERO_SUB}>
-            Come back free tomorrow — or go unlimited right now with Witty+.
+            Come back free tomorrow — or go unlimited right now with Riffy+.
           </p>
         </div>
 

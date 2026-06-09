@@ -88,7 +88,7 @@ until filled (sign-in and purchases need real keys + native builds; everything e
 - **Seeded data**: 3 tasks (the representatives) — `misinterpretation-techniques` (`voice_single_prompt`),
   `question-answer-tease` (`voice_dialogue_prompt`), `push-pull` (`voice_scaffolded_prompt`); all `access_tier=free`,
   `thumbnail_key`/`image_key` = slug. `app_config`: `free_task_limit=3`, `telegram_community_url`, `terms_url`,
-  `privacy_url`. Feature gates: `role_play` (req. `witty_plus`), `witty_plus`, `premium_task_library` (req. `witty_plus`).
+  `privacy_url`. Feature gates: `role_play` (req. `riffy_plus`), `riffy_plus`, `premium_task_library` (req. `riffy_plus`).
 
 ## 5. Authoritative API contract (use THIS, not the idealized DTOs in `frontend_lld.md`)
 
@@ -102,7 +102,7 @@ All app routes under `/v1`. **Auth header**: `Authorization: Bearer <firebaseIdT
 | `GET /v1/onboarding` | — | `{current_step, selected_trigger, first_task_id, first_task_attempt_id, completed_at}` |
 | `PATCH /v1/onboarding` | `{trigger}` | onboarding state (same shape) |
 | `GET /v1/config` | — | `{values{}, free_task_limit, feature_gates[{feature_key, default_enabled, requires_entitlement, min_app_version}]}` |
-| `GET /v1/home` | — | `{plan{id, plan_date, status, items[{id, task_id, position, status, current_attempt_id}]}, progress{completed_task_count, current_streak_count, longest_streak_count, last_activity_date}, access{is_witty_plus}, onboarding{…}}` |
+| `GET /v1/home` | — | `{plan{id, plan_date, status, items[{id, task_id, position, status, current_attempt_id}]}, progress{completed_task_count, current_streak_count, longest_streak_count, last_activity_date}, access{is_riffy_plus}, onboarding{…}}` |
 | `GET /v1/catalog` | — | `[{task{id, slug, title, description, task_type_id, duration_seconds, thumbnail_key, image_key, access_tier, status, sort_order}, requires_premium, is_locked}]` |
 | `POST /v1/tasks/{id}/runtime` | `{source, daily_plan_item_id?}` | `{attempt_id, task, task_type{id, display_name, ui_schema_key, runtime_engine_key}, payload{prompt{messages[{role, content}], speech_text}, assigned_technique|null, scaffold_stages[], audio_base64, audio_content_type, avatar_image_url}}` |
 | `POST /v1/tasks/{id}/start` | `{source, daily_plan_item_id?}` | `{attempt_id, task_id, status, free_limit{allowed, should_paywall, remaining, reason}}` |
@@ -111,7 +111,7 @@ All app routes under `/v1`. **Auth header**: `Authorization: Bearer <firebaseIdT
 | `GET/PUT/DELETE /v1/reminders` | PUT `{status, timing_key?, local_time?, timezone}` | `{status, timing_key, local_time, timezone}` (GET may be `null`) |
 | `POST /v1/notification-devices` | `{device_key, platform, push_token?, permission_status, app_version?, release_channel?}` | device record |
 | `POST /v1/support-messages` | `{message_text, source_screen?}` | `{id, status, created_at}` |
-| `GET /v1/me/access` | — | `{is_witty_plus, entitlements[{entitlement_key, status, product_id, current_period_ends_at, trial_ends_at}]}` |
+| `GET /v1/me/access` | — | `{is_riffy_plus, entitlements[{entitlement_key, status, product_id, current_period_ends_at, trial_ends_at}]}` |
 | `POST /v1/webhooks/revenuecat` | (RevenueCat → backend; not called by client) | — |
 
 **Enums confirmed from backend source:**
@@ -144,7 +144,7 @@ All app routes under `/v1`. **Auth header**: `Authorization: Bearer <firebaseIdT
 
 ```
 Ionic Page (screen)  ->  Feature Hook (view-model)  ->  TanStack Query + Zustand stores
-                                                    ->  Data layer (WittyApi + http_client + mappers)
+                                                    ->  Data layer (RiffyApi + http_client + mappers)
                                                     ->  Integration adapters (ports over vendor SDKs)
 ```
 Rules: screens depend on feature hooks (never on the API client or an SDK). Hooks depend on the data layer + stores +
@@ -162,8 +162,8 @@ convert DTO→`@/types/models`). Vendors are reached only through `@/integration
   with `fromHttp`), `src/lib/result.ts`, `src/lib/reduced_motion.ts`.
 - **Data layer** (`src/data/`): `dto/*` (snake_case wire shapes), `api/http_client.ts` (`createHttpClient` — attaches
   Bearer/X-Guest-Token via a `TokenProvider`, normalizes errors → `AppError`), `api/endpoints.ts`, `mappers/*`
-  (DTO→model; `task_runtime_mapper` regroups `audio_base64`→`payload.audio`), `api/witty_api.ts`
-  (`createWittyApi(http)` → 17 typed methods returning models).
+  (DTO→model; `task_runtime_mapper` regroups `audio_base64`→`payload.audio`), `api/riffy_api.ts`
+  (`createRiffyApi(http)` → 17 typed methods returning models).
 - **Integration ports** (`src/integrations/ports/`): `AuthGateway, SubscriptionGateway, AnalyticsGateway,
   DeviceServices, SecureStore, TranscriptionGateway` (+ `index.ts` barrel).
 - **Real vendor adapters**: `firebase/firebase_auth_gateway.ts` (+ `firebase_app.ts`), `revenuecat/…`, `posthog/…`,
@@ -171,9 +171,9 @@ convert DTO→`@/types/models`). Vendors are reached only through `@/integration
   + `native_transcription_gateway.ts`, `capgo/capgo_updater.ts`. All degrade gracefully on web / without keys.
 - **State** (`src/state/`): `query_keys.ts` (`session, config, onboarding, home, catalog, taskRuntime(id), access,
   reminder, offerings`), `query_client.ts` (no-retry on 4xx), `stores/{ui_store, onboarding_store, runtime_store}.ts`.
-- **Composition root** (`src/app/providers.tsx`): builds adapters, `TokenProvider` → `http` → `WittyApi`, `queryClient`,
-  owns `setupIonicReact` + theme CSS, exposes `IntegrationsContext` + hooks `useIntegrations/useWittyApi/useAuth/…`.
-  Exports `STORAGE_KEYS` (`witty.guest_session_token`, `witty.app_user_id`).
+- **Composition root** (`src/app/providers.tsx`): builds adapters, `TokenProvider` → `http` → `RiffyApi`, `queryClient`,
+  owns `setupIonicReact` + theme CSS, exposes `IntegrationsContext` + hooks `useIntegrations/useRiffyApi/useAuth/…`.
+  Exports `STORAGE_KEYS` (`riffy.guest_session_token`, `riffy.app_user_id`).
 - **Bootstrap hooks**: `features/identity/use_session.ts` (guest-first session bootstrap), `features/config/use_app_config.ts`,
   `features/onboarding/use_onboarding_state.ts`.
 - **Guards** (`src/app/guards/`): `AuthGuard` (bootstrap gate, fail-open), `OnboardingGuard` (redirect to `/onboarding`
@@ -201,7 +201,7 @@ Build the real screens (replace the stubs) and their feature hooks. Suggested or
   "Better Way"). Hooks `features/task_runtime/use_task_runtime.ts` + `use_task_attempt.ts`. See `frontend_lld.md` §Task Runtime.
 - **Paywall** (`screens/paywall/paywall_sheet.tsx`): IonModal sheet, live RevenueCat offerings, Annual/Monthly, restore.
   Hooks `features/entitlement/{use_entitlement, use_free_limit, use_paywall}.ts`.
-- **Profile** (`screens/profile/`): hero, stat duo, Witty+ upsell, community/support menu, sign out.
+- **Profile** (`screens/profile/`): hero, stat duo, Riffy+ upsell, community/support menu, sign out.
 - **Support sheet** (`screens/support/support_sheet.tsx`): message input → `POST /v1/support-messages`. Hook `features/support/use_support.ts`.
 - **Design-system primitives** (`components/ui/`): `Button, Card, Sheet, TintedThumbnail, StreakChip, WeekStrip, PlanPath,
   RecordRing, Celebration` (reduced-motion aware), `StateViews` (Loading/Empty/Error).
@@ -227,7 +227,7 @@ step index), `runtime_store` (attempt id, phase brief/respond/reflect, scaffold 
 
 - TS strict, 2-space indent, single quotes, semicolons. Imports via `@/…` alias.
 - React 19: no global `JSX` namespace — use `import type { ReactNode } from 'react'` for children props.
-- Feature hooks consume `useWittyApi()` / `useIntegrations()` from `@/app/providers` + `useQuery`/`useMutation`.
+- Feature hooks consume `useRiffyApi()` / `useIntegrations()` from `@/app/providers` + `useQuery`/`useMutation`.
 - Keep DTOs out of components; map in `data/mappers`. Add a new task type by adding a `ui_schema_key` + a runtime view +
   one registry line (see `frontend_lld.md` §"Adding a new task type").
 

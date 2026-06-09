@@ -7,7 +7,7 @@
  */
 
 import { useMutation } from '@tanstack/react-query';
-import { useWittyApi } from '@/app/providers';
+import { useRiffyApi } from '@/app/providers';
 import type { SupportMessage } from '@/types/models';
 
 export interface SubmitSupportInput {
@@ -16,7 +16,7 @@ export interface SubmitSupportInput {
 }
 
 export function useSupport() {
-  const api = useWittyApi();
+  const api = useRiffyApi();
 
   const mutation = useMutation<SupportMessage, unknown, SubmitSupportInput>({
     mutationFn: (input) => api.submitSupport(input),

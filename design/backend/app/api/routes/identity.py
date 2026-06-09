@@ -86,7 +86,7 @@ class ProgressResponse(BaseModel):
 
 
 class AccessSummary(BaseModel):
-    is_witty_plus: bool
+    is_riffy_plus: bool
 
 
 class HomeResponse(BaseModel):
@@ -223,7 +223,7 @@ async def get_home(container: ContainerDep, user: CurrentUser) -> HomeResponse:
             longest_streak_count=progress.longest_streak_count,
             last_activity_date=progress.last_activity_date,
         ),
-        access=AccessSummary(is_witty_plus=access.is_witty_plus),
+        access=AccessSummary(is_riffy_plus=access.is_riffy_plus),
         onboarding=OnboardingStateResponse(
             current_step=onboarding.current_step,
             selected_trigger=onboarding.selected_trigger,

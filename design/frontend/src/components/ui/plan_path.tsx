@@ -96,7 +96,7 @@ function PlanCard({ node, onSelect }: { node: PlanNode; onSelect?: (id: string) 
 
   return (
     <Card
-      className={highlighted ? 'witty-card-glow' : undefined}
+      className={highlighted ? 'riffy-card-glow' : undefined}
       style={style}
       onClick={onSelect ? () => onSelect(node.id) : undefined}
       ariaLabel={node.title}
