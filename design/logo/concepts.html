@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>riffy — logo concepts</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+  :root{
+    --bg:#F7F8FA; --surface:#FFFFFF; --text:#2B2F3A; --muted:#6B7589;
+    --line:#E5EAF1; --accent:#F97316; --amber:#F7C13B; --primary:#3B82F6;
+    --dark:#15161B;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Hanken Grotesk',system-ui,sans-serif;padding:40px 28px 56px}
+  h1{font-family:'Fredoka';font-weight:700;font-size:30px;margin:0 0 2px;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:20px 16px 18px;box-shadow:0 4px 20px -2px rgba(249,115,22,.08);text-align:center}
+  .icon{width:104px;height:104px;margin:0 auto 14px;display:block}
+  .name{font-family:'Fredoka';font-weight:600;font-size:15px;margin:0 0 3px}
+  .desc{color:var(--muted);font-size:12px;line-height:1.45;margin:0}
+  .tag{display:inline-block;font-size:10px;font-weight:600;color:var(--accent);
+    background:rgba(249,115,22,.1);border-radius:20px;padding:3px 9px;margin-bottom:10px;
+    letter-spacing:.3px;text-transform:uppercase}
+  h2{font-family:'Fredoka';font-weight:600;font-size:16px;color:var(--muted);
+    margin:42px 0 16px;letter-spacing:.2px}
+  .locks{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .lock{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:24px 26px;display:flex;align-items:center;gap:16px}
+  .lock.dark{background:var(--dark);border-color:#26272f}
+  .lock.dark .word{color:#fff}
+  .wm{display:flex;align-items:baseline;font-family:'Fredoka';font-weight:600}
+  .word{font-family:'Fredoka';font-weight:600;font-size:34px;letter-spacing:-1px;color:var(--text)}
+  .strip{display:flex;gap:18px;background:var(--dark);border-radius:18px;padding:22px 24px;align-items:center}
+  .strip .icon{margin:0;width:74px;height:74px}
+  .dlabel{color:#8a8d99;font-size:12px;margin-left:auto;max-width:230px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- ============ shared SVG defs ============ -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F97316"/><stop offset="1" stop-color="#F7C13B"/>
+  </linearGradient>
+  <linearGradient id="warmFlip" x1="0" y1="1" x2="1" y2="0">
+    <stop offset="0" stop-color="#F97316"/><stop offset="1" stop-color="#F7C13B"/>
+  </linearGradient>
+
+  <!-- A: equalizer knocked out of speech bubble -->
+  <mask id="cutA">
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff"/>
+    <rect x="29.5" y="36" width="7" height="14" rx="3.5" fill="#000"/>
+    <rect x="40.5" y="30" width="7" height="26" rx="3.5" fill="#000"/>
+    <rect x="51.5" y="33" width="7" height="20" rx="3.5" fill="#000"/>
+    <rect x="62.5" y="37" width="7" height="12" rx="3.5" fill="#000"/>
+  </mask>
+
+  <!-- D: smooth riff-wave knocked out of speech bubble -->
+  <mask id="cutD">
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff"/>
+    <path d="M31 44 q5-9 9.5-4.5 T50 44 T59.5 44 T69 41" fill="none" stroke="#000" stroke-width="5" stroke-linecap="round"/>
+  </mask>
+</defs></svg>
+
+<h1>riffy — logo concepts</h1>
+<p class="sub">Voice-first humour &amp; confidence practice · warm gradient + soft rounded forms · friendly, never loud</p>
+
+<!-- ============ app icons ============ -->
+<div class="grid">
+
+  <!-- A -->
+  <div class="card">
+    <span class="tag">Recommend</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+    </svg>
+    <p class="name">Riff Bubble</p>
+    <p class="desc">A speech bubble with a voice equalizer cut into it. Reads instantly as “talk + voice.”</p>
+  </div>
+
+  <!-- B -->
+  <div class="card">
+    <span class="tag">Playful</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <g fill="#fff">
+        <rect x="23" y="41" width="6" height="10" rx="3"/>
+        <rect x="31" y="42.1" width="6" height="21.1" rx="3"/>
+        <rect x="39" y="42.8" width="6" height="27.8" rx="3"/>
+        <rect x="47" y="43" width="6" height="30" rx="3"/>
+        <rect x="55" y="42.8" width="6" height="27.8" rx="3"/>
+        <rect x="63" y="42.1" width="6" height="21.1" rx="3"/>
+        <rect x="71" y="41" width="6" height="10" rx="3"/>
+      </g>
+    </svg>
+    <p class="name">Riff Grin</p>
+    <p class="desc">Sound bars that hang into a smile. The waveform <em>is</em> the grin — humour + voice in one.</p>
+  </div>
+
+  <!-- C -->
+  <div class="card">
+    <span class="tag">Monogram</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <text x="50" y="50" text-anchor="middle" dominant-baseline="central"
+        font-family="Fredoka" font-weight="700" font-size="60" fill="#fff">r</text>
+      <g fill="#fff" opacity=".95">
+        <rect x="58" y="62" width="4.5" height="8" rx="2.25"/>
+        <rect x="65" y="58" width="4.5" height="12" rx="2.25"/>
+        <rect x="72" y="54" width="4.5" height="16" rx="2.25"/>
+      </g>
+    </svg>
+    <p class="name">r-riff Mark</p>
+    <p class="desc">A soft lowercase “r” with a tiny rising riff. Compact &amp; ownable at small sizes.</p>
+  </div>
+
+  <!-- D -->
+  <div class="card">
+    <span class="tag">Calm</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutD)"/>
+    </svg>
+    <p class="name">Riff Wave</p>
+    <p class="desc">One smooth wave inside the bubble — the quietest, most grown-up read. Least “arcade.”</p>
+  </div>
+
+</div>
+
+<!-- ============ horizontal lockups ============ -->
+<h2>Wordmark lockup &nbsp;·&nbsp; concept A</h2>
+<div class="locks">
+  <div class="lock">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+  <div class="lock dark">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+</div>
+
+<!-- ============ dark arcade test ============ -->
+<h2>On the “cozy dark arcade” theme</h2>
+<div class="strip">
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <g fill="#fff">
+      <rect x="23" y="41" width="6" height="10" rx="3"/><rect x="31" y="42.1" width="6" height="21.1" rx="3"/>
+      <rect x="39" y="42.8" width="6" height="27.8" rx="3"/><rect x="47" y="43" width="6" height="30" rx="3"/>
+      <rect x="55" y="42.8" width="6" height="27.8" rx="3"/><rect x="63" y="42.1" width="6" height="21.1" rx="3"/>
+      <rect x="71" y="41" width="6" height="10" rx="3"/>
+    </g>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutD)"/>
+  </svg>
+  <p class="dlabel">The warm gradient icon pops on a dark home screen too — same mark works across both themes.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Hanken+Grotesk:wght@400;500&display=swap');
+  :root{--bg:#F7F8FA;--surface:#fff;--text:#2B2F3A;--muted:#6B7589;--line:#E5EAF1;--dark:#15161B}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);font-family:'Hanken Grotesk',sans-serif;color:var(--text);padding:40px 36px}
+  h1{font-family:'Fredoka';font-weight:700;font-size:30px;margin:0 0 2px}
+  .sub{color:var(--muted);margin:0 0 28px}
+  h2{font-family:'Fredoka';font-weight:600;font-size:14px;color:var(--muted);text-transform:uppercase;
+     letter-spacing:.6px;margin:30px 0 14px}
+  .row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px;text-align:center}
+  .card.dk{background:var(--dark)}
+  .cap{font-size:11px;color:var(--muted);margin-top:10px}
+  .dk .cap{color:#8a8d99}
+  img{display:block}
+  .ring{width:120px;height:120px;border-radius:50%;overflow:hidden}  /* android circle-mask preview */
+  .sq{width:120px;height:120px;border-radius:27px;overflow:hidden}    /* squircle-mask preview */
+</style></head><body>
+
+<h1>riffy — logo system</h1>
+<p class="sub">r-spark mark · warm orange gradient · Fredoka wordmark (outlined). Every tile below is a real exported file.</p>
+
+<h2>App icon</h2>
+<div class="row">
+  <div class="card"><img src="png/icon-1024.png" width="120" height="120"><div class="cap">iOS / store · full-bleed 1024</div></div>
+  <div class="card"><img src="png/icon-rounded-512.png" width="120" height="120"><div class="cap">rounded (web/PWA)</div></div>
+  <div class="card"><div class="ring"><img src="png/maskable-512.png" width="120" height="120"></div><div class="cap">android · circle mask</div></div>
+  <div class="card"><div class="sq"><img src="png/maskable-512.png" width="120" height="120"></div><div class="cap">android · squircle mask</div></div>
+  <div class="card dk"><img src="png/icon-512.png" width="120" height="120"><div class="cap">on dark</div></div>
+</div>
+
+<h2>Favicon / small sizes</h2>
+<div class="row">
+  <div class="card"><img src="png/icon-rounded-512.png" width="64" height="64"><div class="cap">64</div></div>
+  <div class="card"><img src="png/favicon-32.png" width="32" height="32"><div class="cap">32</div></div>
+  <div class="card"><img src="png/favicon-16.png" width="16" height="16"><div class="cap">16</div></div>
+  <div class="card dk"><img src="png/notification-96.png" width="48" height="48"><div class="cap">notification (white)</div></div>
+</div>
+
+<h2>Lockup &amp; wordmark</h2>
+<div class="row">
+  <div class="card"><img src="png/lockup-1200.png" height="64"><div class="cap">lockup · light</div></div>
+  <div class="card dk"><img src="png/lockup-white-1200.png" height="64"><div class="cap">lockup · dark</div></div>
+</div>
+<div class="row" style="margin-top:18px">
+  <div class="card"><img src="png/wordmark-1024.png" height="52"><div class="cap">wordmark</div></div>
+  <div class="card"><img src="png/mark-512.png" height="76"><div class="cap">mark · orange</div></div>
+  <div class="card"><img src="png/mark-black-512.png" height="76"><div class="cap">mark · black</div></div>
+  <div class="card dk"><img src="png/mark-white-512.png" height="76"><div class="cap">mark · white</div></div>
+</div>
+
+<h2>Social card</h2>
+<div class="row">
+  <div class="card"><img src="png/og-1200x630.png" width="420"><div class="cap">OG / share · 1200×630</div></div>
+</div>
+
+</body></html>

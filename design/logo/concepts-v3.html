@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>riffy — logo concepts v3 (playful · real conversation)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+  :root{--bg:#F7F8FA;--surface:#FFFFFF;--text:#2B2F3A;--muted:#6B7589;
+    --line:#E5EAF1;--accent:#F97316;--amber:#F7C13B;--dark:#15161B;}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Hanken Grotesk',system-ui,sans-serif;padding:40px 28px 56px}
+  h1{font-family:'Fredoka';font-weight:700;font-size:30px;margin:0 0 2px;letter-spacing:-.5px}
+  h1 .lt{font-weight:400;color:var(--muted);font-size:18px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:20px 16px 18px;box-shadow:0 4px 20px -2px rgba(249,115,22,.08);text-align:center}
+  .icon{width:104px;height:104px;margin:0 auto 14px;display:block}
+  .name{font-family:'Fredoka';font-weight:600;font-size:15px;margin:0 0 3px}
+  .desc{color:var(--muted);font-size:12px;line-height:1.45;margin:0}
+  .tag{display:inline-block;font-size:10px;font-weight:600;color:var(--accent);
+    background:rgba(249,115,22,.1);border-radius:20px;padding:3px 9px;margin-bottom:10px;
+    letter-spacing:.3px;text-transform:uppercase}
+  h2{font-family:'Fredoka';font-weight:600;font-size:16px;color:var(--muted);
+    margin:42px 0 16px;letter-spacing:.2px}
+  .locks{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .lock{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:24px 26px;display:flex;align-items:center;gap:16px}
+  .lock.dark{background:var(--dark);border-color:#26272f}
+  .lock.dark .word{color:#fff}
+  .word{font-family:'Fredoka';font-weight:600;font-size:34px;letter-spacing:-1px;color:var(--text)}
+  .strip{display:flex;gap:18px;background:var(--dark);border-radius:18px;padding:22px 24px;align-items:center}
+  .strip .icon{margin:0;width:74px;height:74px}
+  .dlabel{color:#8a8d99;font-size:12px;margin-left:auto;max-width:230px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F97316"/><stop offset="1" stop-color="#F7C13B"/>
+  </linearGradient>
+
+  <!-- A: face knocked out of the spark buddy -->
+  <mask id="faceA">
+    <path d="M50,22 Q62,37 77,49 Q62,61 50,76 Q38,61 23,49 Q38,37 50,22 Z" fill="#fff"/>
+    <circle cx="43" cy="45" r="3.1" fill="#000"/>
+    <circle cx="57" cy="45" r="3.1" fill="#000"/>
+    <path d="M42 54 Q50 61 58 55" fill="none" stroke="#000" stroke-width="3.4" stroke-linecap="round"/>
+  </mask>
+</defs></svg>
+
+<h1>riffy — logo concepts <span class="lt">v3 · playful · real conversation</span></h1>
+<p class="sub">No chat bubbles (that reads “texting”). The spark of wit becomes a little personality. Warm orange gradient.</p>
+
+<div class="grid">
+
+  <!-- A: Spark Buddy mascot -->
+  <div class="card">
+    <span class="tag">Recommend</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M50,22 Q62,37 77,49 Q62,61 50,76 Q38,61 23,49 Q38,37 50,22 Z" fill="#fff" mask="url(#faceA)"/>
+      <path d="M80,24 C80.7,28.9 82.1,30.3 87,31 C82.1,31.7 80.7,33.1 80,38 C79.3,33.1 77.9,31.7 73,31 C77.9,30.3 79.3,28.9 80,24 Z" fill="#fff"/>
+    </svg>
+    <p class="name">Spark Buddy</p>
+    <p class="desc">The spark of wit, given a cheeky face. A friendly companion — playful, real, lowers the stakes.</p>
+  </div>
+
+  <!-- B: Cheeky Grin -->
+  <div class="card">
+    <span class="tag">Playful</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M26 42 Q50 78 74 42 Q50 60 26 42 Z" fill="#fff"/>
+      <path d="M76,26 C76.7,30.9 78.1,32.3 83,33 C78.1,33.7 76.7,35.1 76,40 C75.3,35.1 73.9,33.7 69,33 C73.9,32.3 75.3,30.9 76,26 Z" fill="#fff"/>
+    </svg>
+    <p class="name">Cheeky Grin</p>
+    <p class="desc">A bold confident smile + a spark. Pure humour &amp; warmth — talking, not texting.</p>
+  </div>
+
+  <!-- C: Spark -->
+  <div class="card">
+    <span class="tag">Minimal</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M45,26 C47.4,42.8 52.2,47.6 69,50 C52.2,52.4 47.4,57.2 45,74 C42.6,57.2 37.8,52.4 21,50 C37.8,47.6 42.6,42.8 45,26 Z" fill="#fff"/>
+      <path d="M71,20 C71.9,26.3 73.7,28.1 80,29 C73.7,29.9 71.9,31.7 71,38 C70.1,31.7 68.3,29.9 62,29 C68.3,28.1 70.1,26.3 71,20 Z" fill="#fff"/>
+    </svg>
+    <p class="name">Spark</p>
+    <p class="desc">The quick clever spark, clean. No face, no bubble — most modern &amp; endlessly scalable.</p>
+  </div>
+
+  <!-- D: Riff Pop burst -->
+  <div class="card">
+    <span class="tag">Energetic</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path fill="#fff" stroke="#fff" stroke-width="2" stroke-linejoin="round"
+        d="M50,19 L54.6,34.7 L67.6,24.7 L62.1,40.2 L78.5,39.7 L65,49 L78.5,58.3 L62.1,57.8 L67.6,73.3 L54.6,63.3 L50,79 L45.4,63.3 L32.4,73.3 L37.9,57.8 L21.5,58.3 L35,49 L21.5,39.7 L37.9,40.2 L32.4,24.7 L45.4,34.7 Z"/>
+    </svg>
+    <p class="name">Riff Pop</p>
+    <p class="desc">A comic “pop!” burst — laughter &amp; quick energy. Loudest &amp; most arcade of the four.</p>
+  </div>
+
+</div>
+
+<h2>Wordmark lockup &nbsp;·&nbsp; Spark Buddy</h2>
+<div class="locks">
+  <div class="lock">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M50,22 Q62,37 77,49 Q62,61 50,76 Q38,61 23,49 Q38,37 50,22 Z" fill="#fff" mask="url(#faceA)"/>
+      <path d="M80,24 C80.7,28.9 82.1,30.3 87,31 C82.1,31.7 80.7,33.1 80,38 C79.3,33.1 77.9,31.7 73,31 C77.9,30.3 79.3,28.9 80,24 Z" fill="#fff"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+  <div class="lock dark">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M50,22 Q62,37 77,49 Q62,61 50,76 Q38,61 23,49 Q38,37 50,22 Z" fill="#fff" mask="url(#faceA)"/>
+      <path d="M80,24 C80.7,28.9 82.1,30.3 87,31 C82.1,31.7 80.7,33.1 80,38 C79.3,33.1 77.9,31.7 73,31 C77.9,30.3 79.3,28.9 80,24 Z" fill="#fff"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+</div>
+
+<h2>On the “cozy dark arcade” theme</h2>
+<div class="strip">
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M50,22 Q62,37 77,49 Q62,61 50,76 Q38,61 23,49 Q38,37 50,22 Z" fill="#fff" mask="url(#faceA)"/>
+    <path d="M80,24 C80.7,28.9 82.1,30.3 87,31 C82.1,31.7 80.7,33.1 80,38 C79.3,33.1 77.9,31.7 73,31 C77.9,30.3 79.3,28.9 80,24 Z" fill="#fff"/>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M26 42 Q50 78 74 42 Q50 60 26 42 Z" fill="#fff"/>
+    <path d="M76,26 C76.7,30.9 78.1,32.3 83,33 C78.1,33.7 76.7,35.1 76,40 C75.3,35.1 73.9,33.7 69,33 C73.9,32.3 75.3,30.9 76,26 Z" fill="#fff"/>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M45,26 C47.4,42.8 52.2,47.6 69,50 C52.2,52.4 47.4,57.2 45,74 C42.6,57.2 37.8,52.4 21,50 C37.8,47.6 42.6,42.8 45,26 Z" fill="#fff"/>
+    <path d="M71,20 C71.9,26.3 73.7,28.1 80,29 C73.7,29.9 71.9,31.7 71,38 C70.1,31.7 68.3,29.9 62,29 C68.3,28.1 70.1,26.3 71,20 Z" fill="#fff"/>
+  </svg>
+  <p class="dlabel">A little personality on the home screen feels warm &amp; inviting — and never reads as “just another chat app.”</p>
+</div>
+
+</body>
+</html>

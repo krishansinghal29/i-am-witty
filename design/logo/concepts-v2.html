@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>riffy — logo concepts v2 (wit / humour / quick)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Hanken+Grotesk:wght@400;500;600&display=swap');
+  :root{
+    --bg:#F7F8FA;--surface:#FFFFFF;--text:#2B2F3A;--muted:#6B7589;
+    --line:#E5EAF1;--accent:#F97316;--amber:#F7C13B;--dark:#15161B;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);
+    font-family:'Hanken Grotesk',system-ui,sans-serif;padding:40px 28px 56px}
+  h1{font-family:'Fredoka';font-weight:700;font-size:30px;margin:0 0 2px;letter-spacing:-.5px}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 30px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:20px 16px 18px;box-shadow:0 4px 20px -2px rgba(249,115,22,.08);text-align:center}
+  .icon{width:104px;height:104px;margin:0 auto 14px;display:block}
+  .name{font-family:'Fredoka';font-weight:600;font-size:15px;margin:0 0 3px}
+  .desc{color:var(--muted);font-size:12px;line-height:1.45;margin:0}
+  .tag{display:inline-block;font-size:10px;font-weight:600;color:var(--accent);
+    background:rgba(249,115,22,.1);border-radius:20px;padding:3px 9px;margin-bottom:10px;
+    letter-spacing:.3px;text-transform:uppercase}
+  h2{font-family:'Fredoka';font-weight:600;font-size:16px;color:var(--muted);
+    margin:42px 0 16px;letter-spacing:.2px}
+  .locks{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .lock{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:24px 26px;display:flex;align-items:center;gap:16px}
+  .lock.dark{background:var(--dark);border-color:#26272f}
+  .lock.dark .word{color:#fff}
+  .word{font-family:'Fredoka';font-weight:600;font-size:34px;letter-spacing:-1px;color:var(--text)}
+  .strip{display:flex;gap:18px;background:var(--dark);border-radius:18px;padding:22px 24px;align-items:center}
+  .strip .icon{margin:0;width:74px;height:74px}
+  .dlabel{color:#8a8d99;font-size:12px;margin-left:auto;max-width:230px;line-height:1.5}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#F97316"/><stop offset="1" stop-color="#F7C13B"/>
+  </linearGradient>
+
+  <!-- A: sparkle knocked out of speech bubble -->
+  <mask id="cutA">
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff"/>
+    <path d="M48,30 C49.4,39.8 51.8,42.6 62,44 C51.8,45.4 49.4,48.2 48,58 C46.6,48.2 44.2,45.4 34,44 C44.2,42.6 46.6,39.8 48,30 Z" fill="#000"/>
+  </mask>
+
+  <!-- B: cheeky smirk knocked out of speech bubble -->
+  <mask id="cutB">
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff"/>
+    <path d="M31 45 Q42 55 52 49 T67 38" fill="none" stroke="#000" stroke-width="5.5" stroke-linecap="round"/>
+    <circle cx="40" cy="35" r="2.6" fill="#000"/>
+  </mask>
+</defs></svg>
+
+<h1>riffy — logo concepts <span style="font-weight:400;color:var(--muted);font-size:18px">v2 · wit · humour · quick</span></h1>
+<p class="sub">The spark of a clever quip · social, quick, playful — no more soundwaves. Warm orange gradient.</p>
+
+<div class="grid">
+
+  <!-- A: Spark Bubble -->
+  <div class="card">
+    <span class="tag">Recommend</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+      <path d="M82,20 C82.7,24.9 84.1,26.3 89,27 C84.1,27.7 82.7,29.1 82,34 C81.3,29.1 79.9,27.7 75,27 C79.9,26.3 81.3,24.9 82,20 Z" fill="#fff"/>
+    </svg>
+    <p class="name">Spark Bubble</p>
+    <p class="desc">A conversation with a spark of wit in it. Social + quick + clever, all in one read.</p>
+  </div>
+
+  <!-- B: Smirk Bubble -->
+  <div class="card">
+    <span class="tag">Cheeky</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutB)"/>
+    </svg>
+    <p class="name">Smirk Bubble</p>
+    <p class="desc">A bubble with a knowing half-smile + raised brow. Witty &amp; cheeky without being a goofy face.</p>
+  </div>
+
+  <!-- C: Sparkle solo -->
+  <div class="card">
+    <span class="tag">Iconic</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M45,26 C47.4,42.8 52.2,47.6 69,50 C52.2,52.4 47.4,57.2 45,74 C42.6,57.2 37.8,52.4 21,50 C37.8,47.6 42.6,42.8 45,26 Z" fill="#fff"/>
+      <path d="M71,20 C71.9,26.3 73.7,28.1 80,29 C73.7,29.9 71.9,31.7 71,38 C70.1,31.7 68.3,29.9 62,29 C68.3,28.1 70.1,26.3 71,20 Z" fill="#fff"/>
+    </svg>
+    <p class="name">Spark</p>
+    <p class="desc">Pure spark of wit/delight. Simplest, most modern &amp; scalable — the “quick clever” feeling, no bubble.</p>
+  </div>
+
+  <!-- D: r-spark monogram -->
+  <div class="card">
+    <span class="tag">Monogram</span>
+    <svg class="icon" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <text x="44" y="54" text-anchor="middle" dominant-baseline="central"
+        font-family="Fredoka" font-weight="700" font-size="62" fill="#fff">r</text>
+      <path d="M70,24 C70.8,29.6 72.4,31.2 78,32 C72.4,32.8 70.8,34.4 70,40 C69.2,34.4 67.6,32.8 62,32 C67.6,31.2 69.2,29.6 70,24 Z" fill="#fff"/>
+    </svg>
+    <p class="name">r-spark Mark</p>
+    <p class="desc">Compact lowercase “r” with a spark. Best favicon / app-badge fallback at tiny sizes.</p>
+  </div>
+
+</div>
+
+<h2>Wordmark lockup &nbsp;·&nbsp; Spark Bubble</h2>
+<div class="locks">
+  <div class="lock">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+      <path d="M82,20 C82.7,24.9 84.1,26.3 89,27 C84.1,27.7 82.7,29.1 82,34 C81.3,29.1 79.9,27.7 75,27 C79.9,26.3 81.3,24.9 82,20 Z" fill="#fff"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+  <div class="lock dark">
+    <svg class="icon" style="width:60px;height:60px" viewBox="0 0 100 100">
+      <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+      <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+      <path d="M82,20 C82.7,24.9 84.1,26.3 89,27 C84.1,27.7 82.7,29.1 82,34 C81.3,29.1 79.9,27.7 75,27 C79.9,26.3 81.3,24.9 82,20 Z" fill="#fff"/>
+    </svg>
+    <span class="word">riffy</span>
+  </div>
+</div>
+
+<h2>On the “cozy dark arcade” theme</h2>
+<div class="strip">
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutA)"/>
+    <path d="M82,20 C82.7,24.9 84.1,26.3 89,27 C84.1,27.7 82.7,29.1 82,34 C81.3,29.1 79.9,27.7 75,27 C79.9,26.3 81.3,24.9 82,20 Z" fill="#fff"/>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M20 38 q0-16 16-16 h28 q16 0 16 16 v10 q0 16-16 16 h-22 l-9 11 q-2 2-2-2 v-9 q-9-3-9-15 z" fill="#fff" mask="url(#cutB)"/>
+  </svg>
+  <svg class="icon" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="23" fill="url(#warm)"/>
+    <path d="M45,26 C47.4,42.8 52.2,47.6 69,50 C52.2,52.4 47.4,57.2 45,74 C42.6,57.2 37.8,52.4 21,50 C37.8,47.6 42.6,42.8 45,26 Z" fill="#fff"/>
+    <path d="M71,20 C71.9,26.3 73.7,28.1 80,29 C73.7,29.9 71.9,31.7 71,38 C70.1,31.7 68.3,29.9 62,29 C68.3,28.1 70.1,26.3 71,20 Z" fill="#fff"/>
+  </svg>
+  <p class="dlabel">The warm spark icon glows on a dark home screen — works across both themes.</p>
+</div>
+
+</body>
+</html>
