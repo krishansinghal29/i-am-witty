@@ -2,6 +2,7 @@ import type {
   TranscriptionGateway,
   TranscriptionResult,
   TranscriptionSession,
+  TranscriptionSessionStartOptions,
 } from '@/integrations/ports/transcription_gateway';
 import type { TranscriptionToken } from '@/types/models';
 
@@ -27,11 +28,10 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     return { streamingInterim: true };
   }
 
-  async startSession(opts: {
-    recordingLimitSeconds: number;
-    language?: string;
-  }): Promise<TranscriptionSession> {
-    const { recordingLimitSeconds, language } = opts;
+  async startSession(
+    opts: TranscriptionSessionStartOptions,
+  ): Promise<TranscriptionSession> {
+    const { recordingLimitSeconds, language, onInterim } = opts;
 
     try {
       const cred = await this.deps.mintToken();
@@ -39,48 +39,78 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
 
       const ws = new WebSocket(
         'wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&interim_results=true&language=' +
-          (language ?? 'en'),
-        ['token', cred.token],
+          encodeURIComponent(language ?? 'en-US'),
+        deepgramWsProtocols(cred),
       );
 
+      await waitForWsOpen(ws);
+
       const chunks: Blob[] = [];
-      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const { recorder, contentType } = createAudioRecorder(stream);
 
       let finalTranscript = '';
-      let interimCb: ((t: string) => void) | undefined;
+      let interimCb: ((t: string) => void) | undefined = onInterim;
+      let pendingInterim: string | null = null;
       let settled = false;
 
       const startedAt = Date.now();
 
+      const emitInterim = (text: string): void => {
+        if (interimCb) {
+          interimCb(text);
+        } else {
+          pendingInterim = text;
+        }
+      };
+
+      const sendChunk = (chunk: Blob): void => {
+        if (!chunk.size || ws.readyState !== WebSocket.OPEN) return;
+        chunks.push(chunk);
+        ws.send(chunk);
+      };
+
       recorder.addEventListener('dataavailable', (event: BlobEvent) => {
-        if (event.data && event.data.size > 0) {
-          chunks.push(event.data);
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(event.data);
-          }
+        if (event.data?.size) {
+          sendChunk(event.data);
         }
       });
 
-      ws.onmessage = (event: MessageEvent) => {
+      const handleWsMessage = async (payload: unknown): Promise<void> => {
         try {
-          // Deepgram JSON: { channel: { alternatives: [{ transcript }] }, is_final }
-          const data = JSON.parse(event.data as string) as any;
-          const transcript: string =
-            data?.channel?.alternatives?.[0]?.transcript ?? '';
-          if (!transcript) {
+          const data = parseDeepgramMessage(await readWsPayload(payload));
+          if (data.error) {
+            return;
+          }
+          const segment = extractTranscript(data);
+          if (!segment) {
             return;
           }
           if (data.is_final) {
-            finalTranscript = (finalTranscript + ' ' + transcript).trim();
+            finalTranscript = (finalTranscript + ' ' + segment).trim();
+            emitInterim(finalTranscript);
           } else {
-            interimCb?.((finalTranscript + ' ' + transcript).trim());
+            emitInterim((finalTranscript + ' ' + segment).trim());
           }
         } catch {
           // Ignore malformed frames; interim transcript is best-effort.
         }
       };
 
+      ws.onmessage = (event: MessageEvent) => {
+        void handleWsMessage(event.data);
+      };
+
       recorder.start(250);
+
+      // Some browsers buffer MediaRecorder output until stop unless nudged.
+      const pumpTimer = setInterval(() => {
+        if (recorder.state !== 'recording') return;
+        try {
+          recorder.requestData();
+        } catch {
+          // requestData is not available on every platform.
+        }
+      }, 200);
 
       let limitTimer: ReturnType<typeof setTimeout> | undefined = setTimeout(
         () => {
@@ -96,8 +126,13 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
         }
       };
 
+      const clearPump = (): void => {
+        clearInterval(pumpTimer);
+      };
+
       const teardown = (): void => {
         clearLimit();
+        clearPump();
         try {
           if (recorder.state !== 'inactive') {
             recorder.stop();
@@ -125,6 +160,10 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
       const session: TranscriptionSession = {
         onInterim: (cb: (partialTranscript: string) => void): void => {
           interimCb = cb;
+          if (pendingInterim !== null) {
+            cb(pendingInterim);
+            pendingInterim = null;
+          }
         },
         stop: async (): Promise<TranscriptionResult> => {
           if (settled) {
@@ -137,6 +176,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
           }
           settled = true;
           clearLimit();
+          clearPump();
 
           // Let the final dataavailable fire and the socket flush.
           try {
@@ -169,7 +209,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
           try {
             if (chunks.length > 0) {
               audioBase64 = await this.blobToBase64(
-                new Blob(chunks, { type: 'audio/webm' }),
+                new Blob(chunks, { type: contentType }),
               );
             }
           } catch {
@@ -182,7 +222,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
           return {
             transcript,
             audioBase64,
-            contentType: 'audio/webm',
+            contentType,
             durationSeconds: (Date.now() - startedAt) / 1000,
             metadata: { wordCount },
           };
@@ -195,18 +235,9 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
       };
 
       return session;
-    } catch {
-      // Fail soft: mic/permission/WebSocket setup failed.
-      return {
-        onInterim: (): void => {},
-        stop: async (): Promise<TranscriptionResult> => ({
-          transcript: '',
-          audioBase64: null,
-          contentType: null,
-          durationSeconds: 0,
-        }),
-        cancel: async (): Promise<void> => {},
-      };
+    } catch (err) {
+      // Let the runtime shell fall back to typed entry instead of a stuck "recording" UI.
+      throw err;
     }
   }
 
@@ -231,4 +262,125 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
 
 function delay(ms: number): Promise<void> {
   return new Promise<void>((resolve) => setTimeout(resolve, ms));
+}
+
+interface DeepgramMessage {
+  type?: string;
+  is_final?: boolean;
+  error?: string;
+  channel?: {
+    alternatives?: {
+      transcript?: string;
+    }[];
+  };
+  results?: {
+    channels?: {
+      alternatives?: {
+        transcript?: string;
+      }[];
+    }[];
+  };
+}
+
+function extractTranscript(message: DeepgramMessage): string {
+  const live = message.channel?.alternatives?.[0]?.transcript;
+  if (live?.trim()) return live;
+  return message.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim() ?? '';
+}
+
+function isBearerToken(cred: TranscriptionToken): boolean {
+  const scheme = cred.extra?.auth_scheme;
+  if (typeof scheme === 'string' && scheme.toLowerCase() === 'bearer') {
+    return true;
+  }
+  // Ephemeral JWTs from POST /v1/auth/grant always start with eyJ.
+  return cred.token.startsWith('eyJ');
+}
+
+/** Matches @deepgram/sdk browser auth: ["bearer", jwt] or ["token", apiKey]. */
+function deepgramWsProtocols(cred: TranscriptionToken): string[] {
+  return isBearerToken(cred) ? ['bearer', cred.token] : ['token', cred.token];
+}
+
+function waitForWsOpen(ws: WebSocket, timeoutMs = 10_000): Promise<void> {
+  if (ws.readyState === WebSocket.OPEN) {
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error('deepgram_ws_timeout'));
+    }, timeoutMs);
+
+    const onOpen = (): void => {
+      cleanup();
+      resolve();
+    };
+
+    const onError = (): void => {
+      cleanup();
+      reject(new Error('deepgram_ws_error'));
+    };
+
+    const onClose = (): void => {
+      if (ws.readyState !== WebSocket.OPEN) {
+        cleanup();
+        reject(new Error('deepgram_ws_closed'));
+      }
+    };
+
+    const cleanup = (): void => {
+      clearTimeout(timeout);
+      ws.removeEventListener('open', onOpen);
+      ws.removeEventListener('error', onError);
+      ws.removeEventListener('close', onClose);
+    };
+
+    ws.addEventListener('open', onOpen);
+    ws.addEventListener('error', onError);
+    ws.addEventListener('close', onClose);
+  });
+}
+
+function createAudioRecorder(stream: MediaStream): {
+  recorder: MediaRecorder;
+  contentType: string;
+} {
+  const candidates = [
+    'audio/webm;codecs=opus',
+    'audio/webm',
+    'audio/mp4',
+    'audio/ogg;codecs=opus',
+  ];
+  for (const mimeType of candidates) {
+    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mimeType)) {
+      try {
+        return { recorder: new MediaRecorder(stream, { mimeType }), contentType: mimeType };
+      } catch {
+        // isTypeSupported can lie on some mobile browsers; try the next candidate.
+      }
+    }
+  }
+  return { recorder: new MediaRecorder(stream), contentType: 'audio/webm' };
+}
+
+async function readWsPayload(data: unknown): Promise<string> {
+  if (typeof data === 'string') return data;
+  if (data instanceof Blob) return data.text();
+  if (data instanceof ArrayBuffer) return new TextDecoder().decode(data);
+  return '';
+}
+
+function parseDeepgramMessage(raw: string): DeepgramMessage {
+  if (!raw) return {};
+  const parsed: unknown = JSON.parse(raw);
+  if (!parsed || typeof parsed !== 'object') return {};
+  const message = parsed as DeepgramMessage;
+  const type = message.type?.toLowerCase();
+  if (type === 'metadata' || type === 'error') {
+    return { error: message.type };
+  }
+  if (type && type !== 'results') return {};
+  return message;
 }

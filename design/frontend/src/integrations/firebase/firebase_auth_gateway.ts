@@ -24,6 +24,16 @@ import { firebaseConfigured, getFirebaseAuth } from './firebase_app';
 
 export class FirebaseAuthGateway implements AuthGateway {
   /**
+   * Firebase restores persisted auth asynchronously on page load. `currentUser`
+   * is null until that finishes, so every read must wait for the initial state.
+   */
+  private async currentUser() {
+    const auth = getFirebaseAuth();
+    await auth.authStateReady();
+    return auth.currentUser;
+  }
+
+  /**
    * Map the current Firebase user (if any) to a {@link Session}.
    *
    * Note: `appUserId` here is a placeholder equal to the Firebase uid. The
@@ -31,7 +41,7 @@ export class FirebaseAuthGateway implements AuthGateway {
    * `POST /v1/auth/link`.
    */
   async getSession(): Promise<Session | null> {
-    const user = getFirebaseAuth().currentUser;
+    const user = await this.currentUser();
     if (!user) return null;
     return {
       appUserId: user.uid,
@@ -43,7 +53,7 @@ export class FirebaseAuthGateway implements AuthGateway {
 
   /** Current Firebase ID token, used by the HTTP client on every call. */
   async getIdToken(forceRefresh = false): Promise<string | null> {
-    const u = getFirebaseAuth().currentUser;
+    const u = await this.currentUser();
     return u ? await u.getIdToken(forceRefresh) : null;
   }
 

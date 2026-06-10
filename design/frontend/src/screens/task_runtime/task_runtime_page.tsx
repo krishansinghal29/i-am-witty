@@ -5,7 +5,7 @@ import { TaskRuntimeHost } from '@/components/task_runtime/host';
 export function TaskRuntimePage() {
   return (
     <IonPage>
-      <IonContent scrollY={false}>
+      <IonContent scrollY={false} fullscreen>
         <TaskRuntimeHost />
       </IonContent>
     </IonPage>

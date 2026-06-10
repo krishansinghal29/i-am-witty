@@ -8,6 +8,7 @@
  * invalidation set is `home` + `access` only.
  */
 
+import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
@@ -22,6 +23,11 @@ export function useTaskAttempt(
 ): AttemptController<VoiceCompleteBody> {
   const api = useRiffyApi();
   const queryClient = useQueryClient();
+  const [paywallOnDone, setPaywallOnDone] = useState(false);
+
+  useEffect(() => {
+    setPaywallOnDone(false);
+  }, [attemptId]);
 
   const mutation = useMutation({
     mutationFn: (body: VoiceCompleteBody) => {
@@ -30,7 +36,10 @@ export function useTaskAttempt(
       }
       return api.completeTask(attemptId, body);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data.freeLimit.shouldPaywall) {
+        setPaywallOnDone(true);
+      }
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
       void queryClient.invalidateQueries({ queryKey: queryKeys.access });
     },
@@ -49,5 +58,6 @@ export function useTaskAttempt(
     isSubmitting: mutation.isPending,
     result: mutation.data ?? null,
     status,
+    paywallOnDone,
   };
 }

@@ -415,7 +415,7 @@ export function PaywallSheet() {
             )}
           </div>
         ) : isLoading ? (
-          <LoadingView message="Loading plans…" />
+          <LoadingView message="Loading plans…" centerScreen={false} />
         ) : isEmpty ? (
           <p style={{ ...HERO_SUB, marginTop: 22 }}>
             Plans aren’t available right now. You can keep practicing free, and try

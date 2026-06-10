@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { IonIcon, IonSpinner } from '@ionic/react';
 import { lockClosedOutline, logoApple, logoGoogle, sparkles } from 'ionicons/icons';
 import { colors, radius } from '@/theme/tokens';
@@ -11,10 +11,12 @@ import {
   STEP_BODY,
 } from '@/screens/onboarding/onboarding_styles';
 
+type AuthProvider = 'apple' | 'google';
+
 export interface LoginStepProps {
-  onApple: () => void;
-  onGoogle: () => void;
-  isLoading: boolean;
+  onApple: () => Promise<unknown>;
+  onGoogle: () => Promise<unknown>;
+  completingProvider: AuthProvider | null;
   error: unknown;
 }
 
@@ -81,7 +83,38 @@ const GOOGLE_BTN: CSSProperties = {
   boxShadow: '0 2px 8px rgba(17, 24, 39, 0.06)',
 };
 
-export function LoginStep({ onApple, onGoogle, isLoading, error }: LoginStepProps) {
+function authBtnStyle(
+  base: CSSProperties,
+  provider: AuthProvider,
+  activeProvider: AuthProvider | null,
+): CSSProperties {
+  const isBusy = activeProvider !== null;
+  const isActive = activeProvider === provider;
+  return {
+    ...base,
+    opacity: isBusy && !isActive ? 0.55 : 1,
+    cursor: isBusy ? 'not-allowed' : 'pointer',
+  };
+}
+
+export function LoginStep({
+  onApple,
+  onGoogle,
+  completingProvider,
+  error,
+}: LoginStepProps) {
+  // Local flag so the idle button disables immediately on tap, before the
+  // mutation hook re-renders.
+  const [clicked, setClicked] = useState<AuthProvider | null>(null);
+  const activeProvider = completingProvider ?? clicked;
+  const isBusy = activeProvider !== null;
+
+  const run = (provider: AuthProvider, signIn: () => Promise<unknown>) => {
+    if (isBusy) return;
+    setClicked(provider);
+    void signIn().finally(() => setClicked(null));
+  };
+
   return (
     <div style={STEP_BODY}>
       <div style={CENTER_HERO}>
@@ -99,11 +132,12 @@ export function LoginStep({ onApple, onGoogle, isLoading, error }: LoginStepProp
         <button
           type="button"
           className="riffy-pressable"
-          style={APPLE_BTN}
-          onClick={onApple}
-          disabled={isLoading}
+          style={authBtnStyle(APPLE_BTN, 'apple', activeProvider)}
+          onClick={() => run('apple', onApple)}
+          disabled={isBusy}
+          aria-busy={activeProvider === 'apple'}
         >
-          {isLoading ? (
+          {activeProvider === 'apple' ? (
             <IonSpinner name="crescent" />
           ) : (
             <>
@@ -116,12 +150,19 @@ export function LoginStep({ onApple, onGoogle, isLoading, error }: LoginStepProp
         <button
           type="button"
           className="riffy-pressable"
-          style={GOOGLE_BTN}
-          onClick={onGoogle}
-          disabled={isLoading}
+          style={authBtnStyle(GOOGLE_BTN, 'google', activeProvider)}
+          onClick={() => run('google', onGoogle)}
+          disabled={isBusy}
+          aria-busy={activeProvider === 'google'}
         >
-          <IonIcon icon={logoGoogle} style={{ fontSize: 20 }} aria-hidden />
-          Continue with Google
+          {activeProvider === 'google' ? (
+            <IonSpinner name="crescent" />
+          ) : (
+            <>
+              <IonIcon icon={logoGoogle} style={{ fontSize: 20 }} aria-hidden />
+              Continue with Google
+            </>
+          )}
         </button>
 
         {error != null && (

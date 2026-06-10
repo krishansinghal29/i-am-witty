@@ -2,6 +2,7 @@
 
 import { DailyPlan, HomeView, PlanItem, Progress } from '@/types/models';
 import { DailyPlanDto, HomeDto, PlanItemDto, ProgressDto } from '@/data/dto/home_dto';
+import { mapFreeLimit } from '@/data/mappers/attempt_mapper';
 
 export function mapPlanItem(dto: PlanItemDto): PlanItem {
   return {
@@ -36,5 +37,6 @@ export function mapHome(dto: HomeDto): HomeView {
     plan: mapDailyPlan(dto.plan),
     progress: mapProgress(dto.progress),
     access: { isRiffyPlus: dto.access.is_riffy_plus },
+    freeLimit: mapFreeLimit(dto.free_limit),
   };
 }

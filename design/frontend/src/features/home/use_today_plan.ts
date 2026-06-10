@@ -12,6 +12,7 @@ import { useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useHistory } from 'react-router-dom';
 import { useRiffyApi } from '@/app/providers';
+import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { queryKeys } from '@/state/query_keys';
 import type { CatalogItem, DailyPlan, HomeView, PlanItemStatus } from '@/types/models';
 
@@ -42,6 +43,7 @@ function pickNextUpId(items: { id: string; status: PlanItemStatus }[]): string |
 export function useTodayPlan() {
   const api = useRiffyApi();
   const history = useHistory();
+  const { gateTaskStart } = useFreeLimit();
 
   const home = useQuery({
     queryKey: queryKeys.home,
@@ -89,13 +91,15 @@ export function useTodayPlan() {
 
   const openTask = useCallback(
     (item: { id: string; taskId: string }) => {
+      if (!gateTaskStart()) return;
+
       const params = new URLSearchParams({
         source: 'daily_plan',
         dailyPlanItemId: item.id,
       });
       history.push(`/task/${item.taskId}?${params.toString()}`);
     },
-    [history],
+    [gateTaskStart, history],
   );
 
   return {

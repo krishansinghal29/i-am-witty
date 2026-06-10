@@ -6,6 +6,7 @@ import type {
   TranscriptionGateway,
   TranscriptionResult,
   TranscriptionSession,
+  TranscriptionSessionStartOptions,
 } from '@/integrations/ports/transcription_gateway';
 
 /**
@@ -25,25 +26,19 @@ export class NativeTranscriptionGateway implements TranscriptionGateway {
     return { streamingInterim: true };
   }
 
-  async startSession(opts: {
-    recordingLimitSeconds: number;
-    language?: string;
-  }): Promise<TranscriptionSession> {
+  async startSession(opts: TranscriptionSessionStartOptions): Promise<TranscriptionSession> {
     if (Capacitor.isNativePlatform()) {
       return this.startNativeSession(opts);
     }
     return this.startWebSession(opts);
   }
 
-  private async startNativeSession(opts: {
-    recordingLimitSeconds: number;
-    language?: string;
-  }): Promise<TranscriptionSession> {
-    const { recordingLimitSeconds, language } = opts;
+  private async startNativeSession(opts: TranscriptionSessionStartOptions): Promise<TranscriptionSession> {
+    const { recordingLimitSeconds, language, onInterim } = opts;
     const startedAt = Date.now();
 
     let latest = '';
-    let interimCb: ((t: string) => void) | undefined;
+    let interimCb: ((t: string) => void) | undefined = onInterim;
     let settled = false;
     let listener: PluginListenerHandle | undefined;
     let limitTimer: ReturnType<typeof setTimeout> | undefined;
@@ -132,11 +127,8 @@ export class NativeTranscriptionGateway implements TranscriptionGateway {
     }
   }
 
-  private async startWebSession(opts: {
-    recordingLimitSeconds: number;
-    language?: string;
-  }): Promise<TranscriptionSession> {
-    const { recordingLimitSeconds, language } = opts;
+  private async startWebSession(opts: TranscriptionSessionStartOptions): Promise<TranscriptionSession> {
+    const { recordingLimitSeconds, language, onInterim } = opts;
     const startedAt = Date.now();
 
     // The Web Speech API has no DOM typings; treat it as `any`.
@@ -149,7 +141,7 @@ export class NativeTranscriptionGateway implements TranscriptionGateway {
     }
 
     let latest = '';
-    let interimCb: ((t: string) => void) | undefined;
+    let interimCb: ((t: string) => void) | undefined = onInterim;
     let settled = false;
     let limitTimer: ReturnType<typeof setTimeout> | undefined;
 

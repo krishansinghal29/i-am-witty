@@ -5,7 +5,6 @@ import { IonIcon } from '@ionic/react';
 import {
   close as closeIcon,
   helpCircleOutline,
-  volumeHighOutline,
   arrowForward,
   micOutline,
 } from 'ionicons/icons';
@@ -13,6 +12,7 @@ import {
 import { colors, radius } from '@/theme/tokens';
 import { Button, RecordRing } from '@/components/ui';
 import { useIntegrations } from '@/app/providers';
+import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useRuntimeStore } from '@/state/stores/runtime_store';
 import type { TranscriptionSession } from '@/integrations/ports/transcription_gateway';
 import type { ScaffoldStage, TaskRuntime } from '@/types/models';
@@ -26,6 +26,7 @@ import {
 } from './phase_machine';
 import { PhaseBar } from './phase_bar';
 import { FeedbackPanel } from './feedback_panel';
+import { ReflectRecap } from './reflect_recap';
 
 export interface VoicePromptShellProps {
   payload: TaskRuntime;
@@ -135,6 +136,19 @@ function formatRemaining(seconds: number): string {
   return `${m}:${rem.toString().padStart(2, '0')}`;
 }
 
+/** Sent to the backend when the timer expires with no typed or spoken answer. */
+const NO_RESPONSE_PLACEHOLDER =
+  '[No response — the user did not answer within the time limit.]';
+
+/** Join typed prefix (captured at speak-start) with cumulative session speech. */
+function liveSpeechText(base: string, sessionSpeech: string): string {
+  const spoken = sessionSpeech.trim();
+  if (!spoken) return base;
+  const prefix = base.trimEnd();
+  if (!prefix) return spoken;
+  return `${prefix}${/\s$/.test(prefix) ? '' : ' '}${spoken}`;
+}
+
 export function VoicePromptShell({
   payload,
   attempt,
@@ -144,11 +158,12 @@ export function VoicePromptShell({
 }: VoicePromptShellProps) {
   const history = useHistory();
   const { transcription } = useIntegrations();
+  const { handleFreeLimit } = useFreeLimit();
 
   const phase = useRuntimeStore((s) => s.phase);
   const isRecording = useRuntimeStore((s) => s.isRecording);
   const transcript = useRuntimeStore((s) => s.transcript);
-  const interim = useRuntimeStore((s) => s.interimTranscript);
+  const interimTranscript = useRuntimeStore((s) => s.interimTranscript);
   const stageIndex = useRuntimeStore((s) => s.scaffoldStageIndex);
   const startAttempt = useRuntimeStore((s) => s.startAttempt);
   const setPhase = useRuntimeStore((s) => s.setPhase);
@@ -158,14 +173,20 @@ export function VoicePromptShell({
   const setScaffoldStageIndex = useRuntimeStore((s) => s.setScaffoldStageIndex);
   const recordStageResponse = useRuntimeStore((s) => s.recordStageResponse);
 
-  const [elapsed, setElapsed] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const [hasCapturedAudio, setHasCapturedAudio] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const sessionRef = useRef<TranscriptionSession | null>(null);
+  /** Textarea contents when the current speech session started (typed prefix to preserve). */
+  const speechBaseRef = useRef('');
   const audioRef = useRef<{ audioBase64: string; contentType: string | null } | null>(null);
-  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const ttsRef = useRef<HTMLAudioElement | null>(null);
   const autoplayedRef = useRef(false);
   const stoppingRef = useRef(false);
+  const stopPromiseRef = useRef<Promise<void> | null>(null);
+  const actionInFlightRef = useRef(false);
 
   const content = payload.content;
   const runtime = payload.payload;
@@ -174,63 +195,70 @@ export function VoicePromptShell({
   const stage = scaffolded ? currentStage(stages, stageIndex) : null;
   const finalStage = isFinalStage(scaffolded ? stages : [], stageIndex);
 
-  const clearTick = useCallback(() => {
-    if (tickRef.current !== null) {
-      clearInterval(tickRef.current);
-      tickRef.current = null;
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
     }
   }, []);
 
   const stopRecording = useCallback(async (): Promise<void> => {
-    if (stoppingRef.current) return;
+    if (stoppingRef.current) {
+      await stopPromiseRef.current;
+      return;
+    }
     stoppingRef.current = true;
-    clearTick();
-    const session = sessionRef.current;
-    sessionRef.current = null;
-    setRecording(false);
-    try {
+    stopPromiseRef.current = (async () => {
+      const session = sessionRef.current;
+      sessionRef.current = null;
+      setRecording(false);
       if (session) {
         const result = await session.stop();
         const text = result.transcript.trim();
-        if (text) setTranscript(text);
-        audioRef.current = result.audioBase64
-          ? { audioBase64: result.audioBase64, contentType: result.contentType }
-          : null;
+        if (text) {
+          setTranscript(liveSpeechText(speechBaseRef.current, text));
+        }
+        if (result.audioBase64) {
+          audioRef.current = {
+            audioBase64: result.audioBase64,
+            contentType: result.contentType,
+          };
+          setHasCapturedAudio(true);
+        }
       }
-    } finally {
       setInterim('');
+    })();
+
+    try {
+      await stopPromiseRef.current;
+    } finally {
+      stopPromiseRef.current = null;
       stoppingRef.current = false;
     }
-  }, [clearTick, setInterim, setRecording, setTranscript]);
+  }, [setInterim, setRecording, setTranscript]);
 
   const startRecording = useCallback(async (): Promise<void> => {
     if (isRecording) return;
+    setLocalError(null);
     setInterim('');
-    setElapsed(0);
+    speechBaseRef.current = useRuntimeStore.getState().transcript;
     setRecording(true);
     try {
       const session = await transcription.startSession({
         recordingLimitSeconds: limit,
-        language: 'en',
+        language: 'en-US',
+        onInterim: (t) => {
+          setInterim(t);
+          setTranscript(liveSpeechText(speechBaseRef.current, t));
+        },
       });
       sessionRef.current = session;
-      session.onInterim?.((t) => setInterim(t));
-
-      const startedAt = Date.now();
-      clearTick();
-      tickRef.current = setInterval(() => {
-        const secs = (Date.now() - startedAt) / 1000;
-        setElapsed(secs);
-        if (secs >= limit) {
-          void stopRecording();
-        }
-      }, 250);
     } catch {
       // Mic/permission/setup failure — fall back to the always-on text entry.
       setRecording(false);
       sessionRef.current = null;
     }
-  }, [clearTick, isRecording, limit, setInterim, setRecording, stopRecording, transcription]);
+  }, [isRecording, limit, setInterim, setRecording, setTranscript, transcription]);
 
   const playPrompt = useCallback(() => {
     const b64 = runtime.audio.audioBase64;
@@ -249,8 +277,11 @@ export function VoicePromptShell({
   useEffect(() => {
     startAttempt(payload.attemptId);
     audioRef.current = null;
+    actionInFlightRef.current = false;
     autoplayedRef.current = false;
-    setElapsed(0);
+    setRemainingSeconds(0);
+    setHasCapturedAudio(false);
+    setLocalError(null);
   }, [payload.attemptId, startAttempt]);
 
   // Auto-voice the prompt once when entering Respond (user gesture from Start).
@@ -264,19 +295,29 @@ export function VoicePromptShell({
   // Teardown on unmount.
   useEffect(() => {
     return () => {
-      clearTick();
+      clearTimer();
       void sessionRef.current?.cancel();
       sessionRef.current = null;
       ttsRef.current?.pause();
     };
-  }, [clearTick]);
+  }, [clearTimer]);
 
   const exit = useCallback(() => {
-    clearTick();
+    clearTimer();
     void sessionRef.current?.cancel();
     ttsRef.current?.pause();
     history.goBack();
-  }, [clearTick, history]);
+  }, [clearTimer, history]);
+
+  const finish = useCallback(() => {
+    clearTimer();
+    void sessionRef.current?.cancel();
+    ttsRef.current?.pause();
+    if (attempt.paywallOnDone) {
+      handleFreeLimit(attempt.result?.freeLimit, 'free_limit_reached');
+    }
+    history.goBack();
+  }, [attempt.paywallOnDone, attempt.result?.freeLimit, clearTimer, handleFreeLimit, history]);
 
   const handleRingPress = useCallback(() => {
     if (isRecording) {
@@ -287,52 +328,111 @@ export function VoicePromptShell({
   }, [isRecording, startRecording, stopRecording]);
 
   const saveTake = useCallback(async () => {
-    await stopRecording();
-    const state = useRuntimeStore.getState();
-    const text = state.transcript.trim();
-    const here = currentStage(stages, state.scaffoldStageIndex);
-    if (here) recordStageResponse({ position: here.position, transcript: text });
-    setScaffoldStageIndex(nextStageIndex(stages, state.scaffoldStageIndex));
-    setTranscript('');
-    setInterim('');
-    audioRef.current = null;
-    setElapsed(0);
-  }, [recordStageResponse, setInterim, setScaffoldStageIndex, setTranscript, stages, stopRecording]);
+    if (actionInFlightRef.current) return;
+    actionInFlightRef.current = true;
+    clearTimer();
+    setLocalError(null);
+    try {
+      await stopRecording();
+      const state = useRuntimeStore.getState();
+      const text = state.transcript.trim() || NO_RESPONSE_PLACEHOLDER;
+      const here = currentStage(stages, state.scaffoldStageIndex);
+      if (here) recordStageResponse({ position: here.position, transcript: text });
+      setScaffoldStageIndex(nextStageIndex(stages, state.scaffoldStageIndex));
+      setTranscript('');
+      setInterim('');
+      audioRef.current = null;
+      setHasCapturedAudio(false);
+      setRemainingSeconds(limit);
+    } finally {
+      actionInFlightRef.current = false;
+    }
+  }, [clearTimer, limit, recordStageResponse, setInterim, setScaffoldStageIndex, setTranscript, stages, stopRecording]);
 
   const submit = useCallback(async () => {
-    await stopRecording();
-    const state = useRuntimeStore.getState();
-    const finalTranscript = state.transcript.trim();
-
-    let stageResponses: { position: number; transcript: string }[] | undefined;
-    if (scaffolded) {
-      const here = currentStage(stages, state.scaffoldStageIndex);
-      const prior = state.stageResponses.filter((p) => p.position !== here?.position);
-      stageResponses = [
-        ...prior,
-        ...(here ? [{ position: here.position, transcript: finalTranscript }] : []),
-      ].sort((a, b) => a.position - b.position);
-    }
-
-    const body: VoiceCompleteBody = {
-      ...(finalTranscript ? { clientTranscript: finalTranscript } : {}),
-      ...(audioRef.current?.audioBase64
-        ? { audioBase64: audioRef.current.audioBase64 }
-        : {}),
-      ...(audioRef.current?.contentType
-        ? { contentType: audioRef.current.contentType }
-        : {}),
-      language: 'en',
-      ...(stageResponses ? { stageResponses } : {}),
-    };
-
+    if (actionInFlightRef.current) return;
+    actionInFlightRef.current = true;
+    clearTimer();
+    setLocalError(null);
     try {
-      await attempt.complete(body);
-      setPhase('reflect');
-    } catch {
-      // attempt.status === 'error' surfaces below the action bar.
+      await stopRecording();
+      const state = useRuntimeStore.getState();
+      const typedTranscript = state.transcript.trim();
+      const capturedAudio = audioRef.current;
+      const clientTranscript =
+        typedTranscript ||
+        (capturedAudio?.audioBase64 ? '' : NO_RESPONSE_PLACEHOLDER);
+      const fallbackAudio = !typedTranscript ? capturedAudio : null;
+
+      let stageResponses: { position: number; transcript: string }[] | undefined;
+      if (scaffolded) {
+        const here = currentStage(stages, state.scaffoldStageIndex);
+        const prior = state.stageResponses.filter((p) => p.position !== here?.position);
+        stageResponses = [
+          ...prior,
+          ...(here
+            ? [{ position: here.position, transcript: typedTranscript || NO_RESPONSE_PLACEHOLDER }]
+            : []),
+        ].sort((a, b) => a.position - b.position);
+      }
+
+      const body: VoiceCompleteBody = {
+        ...(clientTranscript ? { clientTranscript } : {}),
+        ...(fallbackAudio?.audioBase64
+          ? { audioBase64: fallbackAudio.audioBase64 }
+          : {}),
+        ...(fallbackAudio?.contentType
+          ? { contentType: fallbackAudio.contentType }
+          : {}),
+        language: 'en',
+        ...(stageResponses ? { stageResponses } : {}),
+      };
+
+      try {
+        await attempt.complete(body);
+        setPhase('reflect');
+      } catch {
+        // attempt.status === 'error' surfaces below the action bar.
+      }
+    } finally {
+      actionInFlightRef.current = false;
     }
-  }, [attempt, scaffolded, setPhase, stages, stopRecording]);
+  }, [attempt, clearTimer, scaffolded, setPhase, stages, stopRecording]);
+
+  useEffect(() => {
+    clearTimer();
+    if (phase !== 'respond' || attempt.isSubmitting) {
+      return;
+    }
+
+    const startedAt = Date.now();
+    setRemainingSeconds(limit);
+    timerRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startedAt) / 1000;
+      const nextRemaining = Math.max(0, limit - elapsed);
+      setRemainingSeconds(nextRemaining);
+      if (nextRemaining <= 0) {
+        clearTimer();
+        if (scaffolded && !finalStage) {
+          void saveTake();
+        } else {
+          void submit();
+        }
+      }
+    }, 250);
+
+    return clearTimer;
+  }, [
+    attempt.isSubmitting,
+    clearTimer,
+    finalStage,
+    limit,
+    phase,
+    saveTake,
+    scaffolded,
+    stageIndex,
+    submit,
+  ]);
 
   const onPhaseSelect = useCallback(
     (target: 'brief' | 'respond' | 'reflect') => {
@@ -342,8 +442,11 @@ export function VoicePromptShell({
     [phase, setPhase],
   );
 
-  const canSubmit = isRecording || transcript.trim().length > 0;
-  const hasAudio = Boolean(runtime.audio.audioBase64);
+  const canSubmit = isRecording || transcript.trim().length > 0 || hasCapturedAudio;
+  const answerText =
+    isRecording && interimTranscript.trim()
+      ? liveSpeechText(speechBaseRef.current, interimTranscript)
+      : transcript;
 
   return (
     <div style={COL}>
@@ -385,36 +488,6 @@ export function VoicePromptShell({
           <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
             {promptArea}
 
-            {/* The spoken prompt autoplays on entering Respond (see effect below);
-                like the legacy app there is no manual play button. A small
-                muted-replay affordance lets the user hear it again. */}
-            {hasAudio && (
-              <button
-                type="button"
-                onClick={playPrompt}
-                className="riffy-pressable"
-                aria-label="Replay prompt"
-                style={{
-                  alignSelf: 'center',
-                  marginTop: 10,
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  padding: '4px 10px',
-                  borderRadius: 999,
-                  border: 'none',
-                  background: 'transparent',
-                  color: colors.faint,
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                <IonIcon icon={volumeHighOutline} aria-hidden />
-                Replay
-              </button>
-            )}
-
             {scaffolded && stages.length > 0 && (
               <ScaffoldStepper stages={stages} currentIndex={stageIndex} />
             )}
@@ -428,16 +501,24 @@ export function VoicePromptShell({
 
             <RecordArea
               recording={isRecording}
-              progress={elapsed / limit}
-              remaining={limit - elapsed}
-              interim={interim}
+              progress={(limit - remainingSeconds) / limit}
+              remaining={remainingSeconds}
+              error={localError}
               onPress={handleRingPress}
             />
 
             <textarea
               style={TEXTAREA}
-              value={transcript}
-              onChange={(e) => setTranscript(e.target.value)}
+              value={answerText}
+              onChange={(e) => {
+                setLocalError(null);
+                const next = e.target.value;
+                setTranscript(next);
+                if (isRecording) {
+                  speechBaseRef.current = next;
+                  setInterim('');
+                }
+              }}
               placeholder="Type your line — one line is plenty."
               aria-label="Your response"
             />
@@ -445,10 +526,17 @@ export function VoicePromptShell({
         )}
 
         {phase === 'reflect' && attempt.result && (
-          <FeedbackPanel
-            evaluation={attempt.result.result}
-            feedbackTabs={content.feedbackTabs}
-          />
+          <>
+            <ReflectRecap
+              promptMessages={runtime.prompt.messages}
+              promptLabel={content.promptLabel || undefined}
+              userAnswer={transcript}
+            />
+            <FeedbackPanel
+              evaluation={attempt.result.result}
+              feedbackTabs={content.feedbackTabs}
+            />
+          </>
         )}
       </main>
 
@@ -463,7 +551,7 @@ export function VoicePromptShell({
         onStart={() => setPhase('respond')}
         onSaveTake={() => void saveTake()}
         onSubmit={() => void submit()}
-        onDone={exit}
+        onDone={finish}
       />
     </div>
   );
@@ -507,7 +595,7 @@ function BriefStage({
       }))
     : [
         { tint: colors.primary, head: 'Hear the prompt', body: 'It plays out loud — just listen.' },
-        { tint: colors.accent, head: 'Your turn', body: `Tap the mic and react — about ${limit}s.` },
+        { tint: colors.accent, head: 'Your turn', body: `Speak or type before the ${limit}s timer ends.` },
         { tint: colors.green, head: 'Gentle feedback', body: 'Plus sharper lines you can borrow.' },
       ];
 
@@ -550,7 +638,7 @@ function BriefStage({
             margin: '20px 0 10px',
           }}
         >
-          You record each take — only the last is scored
+          Answer each stage — only the last is scored
         </div>
       )}
 
@@ -738,13 +826,13 @@ function RecordArea({
   recording,
   progress,
   remaining,
-  interim,
+  error,
   onPress,
 }: {
   recording: boolean;
   progress: number;
   remaining: number;
-  interim: string;
+  error: string | null;
   onPress: () => void;
 }) {
   return (
@@ -766,38 +854,23 @@ function RecordArea({
             className="riffy-ring-pulse"
             style={{ width: 8, height: 8, borderRadius: '50%', background: colors.red, display: 'inline-block' }}
           />
-          Recording · your turn
+          Tap-to-speak on
         </span>
       )}
 
       <RecordRing recording={recording} progress={progress} onPress={onPress} />
 
       <div style={{ fontWeight: 800, fontSize: 16, color: colors.accent }}>
-        {recording ? (
-          <>
-            {formatRemaining(remaining)}{' '}
-            <span style={{ color: colors.faint, fontWeight: 600, fontSize: 13 }}>left · tap to stop</span>
-          </>
-        ) : (
-          <span style={{ color: colors.muted, fontWeight: 600, fontSize: 13 }}>Tap to record — or type below</span>
-        )}
+        {formatRemaining(remaining)}{' '}
+        <span style={{ color: colors.faint, fontWeight: 600, fontSize: 13 }}>
+          left · {recording ? 'tap to stop speaking' : 'tap to speak or type'}
+        </span>
       </div>
 
-      {recording && interim && (
-        <div
-          style={{
-            width: '100%',
-            background: colors.surface,
-            border: `1px solid ${colors.line}`,
-            borderRadius: radius.md,
-            padding: '10px 13px',
-            fontSize: 13.5,
-            lineHeight: 1.5,
-            color: colors.text,
-          }}
-        >
-          {interim}
-        </div>
+      {error && (
+        <p style={{ color: colors.red, fontSize: 12.5, textAlign: 'center', margin: 0 }}>
+          {error}
+        </p>
       )}
     </div>
   );

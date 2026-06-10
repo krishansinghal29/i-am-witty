@@ -17,6 +17,7 @@ export interface UseTaskRuntimeResult {
   data: TaskRuntime | undefined;
   isLoading: boolean;
   isError: boolean;
+  error: unknown;
   refetch: () => void;
 }
 
@@ -48,6 +49,7 @@ export function useTaskRuntime(taskId: string | undefined): UseTaskRuntimeResult
     data: query.data,
     isLoading: query.isLoading,
     isError: query.isError,
+    error: query.error,
     refetch: () => {
       void query.refetch();
     },

@@ -17,7 +17,14 @@ export interface TranscriptionSession {
   cancel(): Promise<void>;
 }
 
+export interface TranscriptionSessionStartOptions {
+  recordingLimitSeconds: number;
+  language?: string;
+  /** Register before audio/transcripts flow to avoid missing early interim frames. */
+  onInterim?: (partialTranscript: string) => void;
+}
+
 export interface TranscriptionGateway {
-  startSession(opts: { recordingLimitSeconds: number; language?: string }): Promise<TranscriptionSession>;
+  startSession(opts: TranscriptionSessionStartOptions): Promise<TranscriptionSession>;
   capabilities(): { streamingInterim: boolean };
 }

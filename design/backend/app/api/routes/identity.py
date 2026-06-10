@@ -7,6 +7,7 @@ from fastapi import APIRouter, status
 from pydantic import BaseModel
 
 from app.api.deps import ContainerDep, CurrentUser
+from app.api.routes.tasks import FreeLimitResponse
 
 router = APIRouter(prefix="/v1", tags=["identity"])
 
@@ -68,6 +69,7 @@ class HomeResponse(BaseModel):
     plan: DailyPlanResponse
     progress: ProgressResponse
     access: AccessSummary
+    free_limit: FreeLimitResponse
 
 
 @router.post(
@@ -120,6 +122,7 @@ async def get_home(container: ContainerDep, user: CurrentUser) -> HomeResponse:
     plan = await container.daily_plan_service.get_or_create_today_plan(user.id)
     progress = await container.progress_service.get_progress(user.id)
     access = await container.entitlement_service.get_access_state(user.id)
+    free_limit = await container.task_attempt_service.get_free_limit(user.id)
     return HomeResponse(
         plan=DailyPlanResponse(
             id=plan.id,
@@ -143,4 +146,5 @@ async def get_home(container: ContainerDep, user: CurrentUser) -> HomeResponse:
             last_activity_date=progress.last_activity_date,
         ),
         access=AccessSummary(is_riffy_plus=access.is_riffy_plus),
+        free_limit=FreeLimitResponse.from_decision(free_limit),
     )

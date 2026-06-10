@@ -1,18 +1,27 @@
 import type { CSSProperties, ReactNode } from 'react';
-import { IonIcon, IonSpinner } from '@ionic/react';
+import { IonIcon } from '@ionic/react';
 import { alertCircleOutline, sparklesOutline } from 'ionicons/icons';
 import { colors } from '@/theme/tokens';
 import { Button } from './button';
+import { SparkLoader } from './spark_loader';
 
-const CONTAINER: CSSProperties = {
+const CONTAINER_SCREEN: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  gap: 14,
+  minHeight: '100%',
   padding: '48px 24px',
-  textAlign: 'center',
-  minHeight: 220,
+  boxSizing: 'border-box',
+};
+
+const CONTAINER_INLINE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '32px 24px',
+  boxSizing: 'border-box',
 };
 
 const TITLE: CSSProperties = {
@@ -42,13 +51,20 @@ function iconBubble(tint: string): CSSProperties {
 
 export interface LoadingViewProps {
   message?: string;
+  /** When true (default), fill the page and center vertically. */
+  centerScreen?: boolean;
 }
 
-export function LoadingView({ message = 'Loading…' }: LoadingViewProps) {
+export function LoadingView({
+  message = 'Loading…',
+  centerScreen = true,
+}: LoadingViewProps) {
   return (
-    <div style={CONTAINER} aria-busy="true">
-      <IonSpinner name="crescent" style={{ color: colors.accent, width: 36, height: 36 }} />
-      <p style={MESSAGE}>{message}</p>
+    <div
+      className={centerScreen ? 'riffy-loading-screen' : undefined}
+      style={centerScreen ? CONTAINER_SCREEN : CONTAINER_INLINE}
+    >
+      <SparkLoader message={message} ariaLabel={message} />
     </div>
   );
 }
@@ -68,7 +84,7 @@ export function EmptyView({
   action,
 }: EmptyViewProps) {
   return (
-    <div style={CONTAINER}>
+    <div style={CONTAINER_INLINE}>
       <div style={iconBubble(colors.accent)}>
         <IonIcon icon={icon} style={{ fontSize: 26 }} aria-hidden />
       </div>
@@ -93,7 +109,7 @@ export function ErrorView({
   retryLabel = 'Try again',
 }: ErrorViewProps) {
   return (
-    <div style={CONTAINER} role="alert">
+    <div style={CONTAINER_INLINE} role="alert">
       <div style={iconBubble(colors.red)}>
         <IonIcon icon={alertCircleOutline} style={{ fontSize: 26 }} aria-hidden />
       </div>

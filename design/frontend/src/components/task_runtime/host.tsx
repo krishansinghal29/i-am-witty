@@ -4,10 +4,13 @@
  * to the view registered for the task's `uiSchemaKey` (or a graceful fallback).
  */
 
-import { useParams } from 'react-router-dom';
-import { LoadingView, ErrorView, EmptyView } from '@/components/ui';
+import { useEffect, useRef } from 'react';
+import { useHistory, useParams } from 'react-router-dom';
+import { AppError } from '@/data/errors/app_error';
+import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useTaskRuntime } from '@/features/task_runtime/use_task_runtime';
 import { useTaskAttempt } from '@/features/task_runtime/use_task_attempt';
+import { LoadingView, ErrorView, EmptyView } from '@/components/ui';
 import { taskRuntimeRegistry } from './registry';
 import type { TaskRuntimeViewProps } from './contract';
 
@@ -22,10 +25,23 @@ function UnsupportedRuntime({ payload }: TaskRuntimeViewProps) {
 
 export function TaskRuntimeHost() {
   const { taskId } = useParams<{ taskId: string }>();
-  const { data, isLoading, isError, refetch } = useTaskRuntime(taskId);
+  const history = useHistory();
+  const { handlePaywallRequired } = useFreeLimit();
+  const { data, isLoading, isError, error, refetch } = useTaskRuntime(taskId);
   const attempt = useTaskAttempt(data?.attemptId ?? null);
+  const handledPaywallRef = useRef(false);
 
-  if (isLoading) {
+  const paywallBlocked =
+    isError && error != null && AppError.from(error).code === 'paywall_required';
+
+  useEffect(() => {
+    if (!paywallBlocked || handledPaywallRef.current) return;
+    handledPaywallRef.current = true;
+    handlePaywallRequired(error);
+    history.goBack();
+  }, [paywallBlocked, error, handlePaywallRequired, history]);
+
+  if (isLoading || paywallBlocked) {
     return <LoadingView message="Setting up your practice…" />;
   }
 

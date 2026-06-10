@@ -1,5 +1,7 @@
 /** Wire shapes for home / daily-plan endpoints (snake_case). */
 
+import type { FreeLimitDto } from '@/data/dto/attempt_dto';
+
 export interface PlanItemDto {
   id: string;
   task_id: string;
@@ -26,4 +28,5 @@ export interface HomeDto {
   plan: DailyPlanDto;
   progress: ProgressDto;
   access: { is_riffy_plus: boolean };
+  free_limit: FreeLimitDto;
 }

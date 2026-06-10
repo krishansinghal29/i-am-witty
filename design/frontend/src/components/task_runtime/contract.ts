@@ -32,6 +32,8 @@ export interface AttemptController<Body = VoiceCompleteBody> {
   isSubmitting: boolean;
   result: CompleteTaskResult | null;
   status: AttemptStatus;
+  /** True when the last completion exhausted today's free tier. */
+  paywallOnDone: boolean;
 }
 
 /** Props every runtime view receives from the host. */

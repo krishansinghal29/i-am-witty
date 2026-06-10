@@ -8,9 +8,9 @@
  */
 
 import type { ReactNode } from 'react';
-import { IonPage, IonContent, IonSpinner } from '@ionic/react';
 import { useLocation } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
+import { BootLoadingScreen } from '@/components/ui';
 import { useSession } from '@/features/identity/use_session';
 import { useSubscriptionIdentity } from '@/features/entitlement/use_subscription_identity';
 
@@ -31,13 +31,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   // Block briefly until the first session resolve settles.
   if (isLoading) {
-    return (
-      <IonPage>
-        <IonContent class="ion-padding">
-          <IonSpinner />
-        </IonContent>
-      </IonPage>
-    );
+    return <BootLoadingScreen />;
   }
 
   return <>{children}</>;

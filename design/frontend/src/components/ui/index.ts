@@ -8,5 +8,8 @@ export * from './plan_path';
 export * from './record_ring';
 export * from './celebration';
 export * from './state_views';
+export * from './spark_loader';
+export * from './boot_loading_screen';
+export * from './riffy_mark';
 export * from './top_cluster';
 export { useReducedMotion } from './use_reduced_motion';

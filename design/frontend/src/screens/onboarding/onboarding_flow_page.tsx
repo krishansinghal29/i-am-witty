@@ -57,7 +57,8 @@ function segmentStyle(on: boolean): CSSProperties {
 export function OnboardingFlowPage() {
   const { session, isLoading } = useSession();
   const onboarding = useOnboarding();
-  const { step, selectedTrigger, isCompleting, error } = onboarding;
+  const { step, selectedTrigger, isCompleting, completingProvider, error } =
+    onboarding;
 
   // A returning (already-onboarded) user has no business re-onboarding.
   if (!isLoading && session !== null) {
@@ -70,9 +71,9 @@ export function OnboardingFlowPage() {
   const body =
     step === 'login' ? (
       <LoginStep
-        onApple={() => void onboarding.signInWithApple().catch(() => {})}
-        onGoogle={() => void onboarding.signInWithGoogle().catch(() => {})}
-        isLoading={isCompleting}
+        onApple={() => onboarding.signInWithApple().catch(() => {})}
+        onGoogle={() => onboarding.signInWithGoogle().catch(() => {})}
+        completingProvider={completingProvider}
         error={error}
       />
     ) : (

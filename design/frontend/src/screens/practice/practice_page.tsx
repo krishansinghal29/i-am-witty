@@ -11,6 +11,7 @@ import {
   TintedThumbnail,
 } from '@/components/ui';
 import { colors, gradients } from '@/theme/tokens';
+import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useUiStore } from '@/state/stores/ui_store';
 import {
   usePracticeCatalog,
@@ -145,12 +146,15 @@ export function PracticePage() {
     usePracticeCatalog();
   const history = useHistory();
   const openPaywall = useUiStore((state) => state.openPaywall);
+  const { gateTaskStart } = useFreeLimit();
 
   const handleTap = (item: CatalogItem) => {
     if (item.isLocked) {
       openPaywall('catalog_locked');
       return;
     }
+    if (!gateTaskStart()) return;
+
     const params = new URLSearchParams({ source: 'practice_library' });
     history.push(`/task/${item.task.id}?${params.toString()}`);
   };

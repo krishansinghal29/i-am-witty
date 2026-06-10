@@ -7,20 +7,14 @@
 
 import type { ReactNode } from 'react';
 import { Redirect } from 'react-router-dom';
-import { IonPage, IonContent, IonSpinner } from '@ionic/react';
+import { BootLoadingScreen } from '@/components/ui';
 import { useSession } from '@/features/identity/use_session';
 
 export function OnboardingGuard({ children }: { children: ReactNode }) {
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    return (
-      <IonPage>
-        <IonContent class="ion-padding">
-          <IonSpinner />
-        </IonContent>
-      </IonPage>
-    );
+    return <BootLoadingScreen />;
   }
 
   if (session === null) {

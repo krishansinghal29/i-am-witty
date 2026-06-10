@@ -109,6 +109,7 @@ export interface HomeView {
   plan: DailyPlan;
   progress: Progress;
   access: AccessState;
+  freeLimit: FreeLimit;
 }
 
 // ---------------------------------------------------------------------------

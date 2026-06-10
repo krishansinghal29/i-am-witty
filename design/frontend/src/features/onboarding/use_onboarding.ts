@@ -85,6 +85,9 @@ export function useOnboarding() {
     signInWithApple: () => completion.mutateAsync('apple'),
     signInWithGoogle: () => completion.mutateAsync('google'),
     isCompleting: completion.isPending,
+    completingProvider: completion.isPending
+      ? (completion.variables ?? null)
+      : null,
     error: completion.error,
   };
 }
