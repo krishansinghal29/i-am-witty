@@ -15,6 +15,7 @@ The DDL below is the design source of truth for the physical schema. In code it 
 - Let `tasks` define per-task content and assets, such as text, image, and thumbnail.
 - Store user-specific daily plans as plan instances, not only derived views, so progress can resume reliably.
 - Treat RevenueCat as the source of subscription truth, while keeping a local entitlement mirror for access checks.
+- Allow backend-operated manual premium grants with explicit expiry dates for founder/support/promotional access.
 - Treat PostHog as the source for analytics/session replay/feature flags, while keeping only local config or overrides that the backend must enforce.
 
 ## Entity Overview
@@ -41,6 +42,7 @@ Limits and subscriptions:
 - `daily_usage_counters`: Per-day free task usage for enforcing non-subscriber limits.
 - `revenuecat_customers`: Links app users to their RevenueCat customer identity.
 - `subscription_entitlements`: Local mirror of RevenueCat entitlement state for backend access checks.
+- `manual_premium_grants`: Backend-operated Riffy+ grants with start, expiry, and revocation timestamps.
 - `revenuecat_events`: RevenueCat webhook events for idempotency, audit, and entitlement sync.
 
 Reminders and devices:
@@ -436,6 +438,31 @@ create table subscription_entitlements (
 );
 ```
 
+### manual_premium_grants
+
+Backend-operated premium access grants. These are separate from
+`subscription_entitlements` so RevenueCat sync can remain a provider mirror.
+
+```sql
+create table manual_premium_grants (
+  id uuid primary key default gen_random_uuid(),
+  app_user_id uuid not null references app_users(id) on delete cascade,
+  entitlement_key text not null default 'riffy_plus',
+  starts_at timestamptz not null default now(),
+  expires_at timestamptz not null,
+  revoked_at timestamptz,
+  granted_by text,
+  reason text,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (expires_at > starts_at)
+);
+```
+
+Access is active when `starts_at <= now()`, `expires_at > now()`, and
+`revoked_at is null`.
+
 ### revenuecat_events
 
 Stores webhook events for idempotency and audit.
@@ -611,6 +638,7 @@ create index task_attempts_plan_item_idx on task_attempts (daily_plan_item_id);
 
 create index user_day_activity_user_date_idx on user_day_activity (app_user_id, activity_date desc);
 create index subscription_entitlements_user_status_idx on subscription_entitlements (app_user_id, status);
+create index manual_premium_grants_user_active_idx on manual_premium_grants (app_user_id, entitlement_key, expires_at, revoked_at);
 create index revenuecat_events_app_user_idx on revenuecat_events (app_user_id);
 create index notification_devices_user_idx on notification_devices (app_user_id);
 create index support_messages_status_created_idx on support_messages (status, created_at);

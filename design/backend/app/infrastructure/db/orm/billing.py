@@ -119,6 +119,57 @@ class SubscriptionEntitlement(Base):
     )
 
 
+class ManualPremiumGrant(Base):
+    __tablename__ = "manual_premium_grants"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        primary_key=True,
+        server_default=text("gen_random_uuid()"),
+    )
+    app_user_id: Mapped[uuid.UUID] = mapped_column(
+        postgresql.UUID(as_uuid=True),
+        ForeignKey("app_users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    entitlement_key: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'riffy_plus'")
+    )
+    starts_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    granted_by: Mapped[str | None] = mapped_column(Text)
+    reason: Mapped[str | None] = mapped_column(Text)
+    grant_metadata: Mapped[dict] = mapped_column(
+        "metadata",
+        postgresql.JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, server_default=text("now()")
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=text("now()"),
+        onupdate=text("now()"),
+    )
+
+    __table_args__ = (
+        CheckConstraint("expires_at > starts_at", name="manual_grant_expiry_after_start"),
+        Index(
+            "manual_premium_grants_user_active_idx",
+            "app_user_id",
+            "entitlement_key",
+            "expires_at",
+            "revoked_at",
+        ),
+    )
+
+
 class RevenueCatEvent(Base):
     __tablename__ = "revenuecat_events"
 

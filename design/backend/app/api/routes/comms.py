@@ -54,9 +54,20 @@ class EntitlementResponse(BaseModel):
     trial_ends_at: datetime | None
 
 
+class ManualPremiumGrantResponse(BaseModel):
+    id: UUID
+    entitlement_key: str
+    starts_at: datetime
+    expires_at: datetime
+    revoked_at: datetime | None
+    granted_by: str | None
+    reason: str | None
+
+
 class AccessResponse(BaseModel):
     is_riffy_plus: bool
     entitlements: list[EntitlementResponse]
+    manual_grants: list[ManualPremiumGrantResponse]
 
 
 @router.post("/webhooks/revenuecat", response_model=WebhookAck)
@@ -143,6 +154,18 @@ def _to_access_response(access) -> AccessResponse:
                 trial_ends_at=e.trial_ends_at,
             )
             for e in access.entitlements
+        ],
+        manual_grants=[
+            ManualPremiumGrantResponse(
+                id=g.id,
+                entitlement_key=g.entitlement_key,
+                starts_at=g.starts_at,
+                expires_at=g.expires_at,
+                revoked_at=g.revoked_at,
+                granted_by=g.granted_by,
+                reason=g.reason,
+            )
+            for g in access.manual_grants
         ],
     )
 

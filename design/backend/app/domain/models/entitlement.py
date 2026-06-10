@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 
@@ -22,6 +22,12 @@ _ACCESS_GRANTING_STATUSES = frozenset(
 )
 
 
+def _as_aware_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 @dataclass(frozen=True)
 class Entitlement:
     entitlement_key: str
@@ -36,10 +42,28 @@ class Entitlement:
 
 
 @dataclass(frozen=True)
+class ManualPremiumGrant:
+    id: uuid.UUID
+    entitlement_key: str
+    starts_at: datetime
+    expires_at: datetime
+    revoked_at: datetime | None
+    granted_by: str | None
+    reason: str | None
+
+    def grants_access(self, now: datetime | None = None) -> bool:
+        now = _as_aware_utc(now or datetime.now(timezone.utc))
+        starts_at = _as_aware_utc(self.starts_at)
+        expires_at = _as_aware_utc(self.expires_at)
+        return starts_at <= now < expires_at and self.revoked_at is None
+
+
+@dataclass(frozen=True)
 class AccessState:
     app_user_id: uuid.UUID
     is_riffy_plus: bool
     entitlements: tuple[Entitlement, ...] = ()
+    manual_grants: tuple[ManualPremiumGrant, ...] = ()
 
     @staticmethod
     def status_grants_access(status: SubscriptionStatus) -> bool:
@@ -54,3 +78,9 @@ class AccessState:
     def has_active_entitlement(self) -> bool:
         """True if any mirrored entitlement is in an access-granting state."""
         return any(e.grants_access for e in self.entitlements)
+
+    @property
+    def has_active_manual_grant(self) -> bool:
+        """True if any manual grant is active at the time of evaluation."""
+        now = datetime.now(timezone.utc)
+        return any(g.grants_access(now) for g in self.manual_grants)
