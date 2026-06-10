@@ -44,9 +44,17 @@ class Settings(BaseSettings):
     llm_generator_model: str = "gpt-5.3-chat-latest"
     llm_evaluator_model: str = "gpt-5.3-chat-latest"
 
+    # Per-call bounds for the LLM. Without an explicit timeout the OpenAI SDK
+    # waits its 600s (10 min) default read timeout on a stalled response, which
+    # surfaces as a frontend stuck on "Setting up your practice…". One retry
+    # lets a transient stall recover quickly instead of hanging.
+    llm_request_timeout_seconds: float = 30.0
+    llm_num_retries: int = 1
+
     # TTS (OpenAI): spoken prompts. Synthesized eagerly at generate time when a
     # key is present; absent key disables TTS gracefully.
     tts_voice: str = "nova"
+    tts_request_timeout_seconds: float = 20.0
 
     # Capgo OTA (self-hosted): the app's @capgo/capacitor-updater checks this
     # backend (POST /v1/ota/check) for new web-layer bundles, so we never use

@@ -31,6 +31,8 @@ class LiteLlmProvider:
     ) -> None:
         self._settings = settings
         self._default_model = default_model or settings.llm_generator_model
+        self._timeout = settings.llm_request_timeout_seconds
+        self._num_retries = settings.llm_num_retries
         self._configured = False
 
     def _ensure_configured(self) -> None:
@@ -67,6 +69,8 @@ class LiteLlmProvider:
             temperature=temperature,
             max_tokens=max_tokens or _DEFAULT_MAX_TOKENS,
             response_format=response_model,
+            timeout=self._timeout,
+            num_retries=self._num_retries,
         )
         content = response.choices[0].message.content
         if content is None:
@@ -91,5 +95,7 @@ class LiteLlmProvider:
             messages=messages,
             temperature=temperature,
             max_tokens=max_tokens or _DEFAULT_MAX_TOKENS,
+            timeout=self._timeout,
+            num_retries=self._num_retries,
         )
         return response.choices[0].message.content or ""

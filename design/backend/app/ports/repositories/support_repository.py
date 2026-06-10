@@ -10,7 +10,6 @@ from typing import Protocol
 class CreateSupportMessageInput:
     message_text: str
     app_user_id: uuid.UUID | None = None
-    guest_session_id: uuid.UUID | None = None
     source_screen: str | None = None
 
 

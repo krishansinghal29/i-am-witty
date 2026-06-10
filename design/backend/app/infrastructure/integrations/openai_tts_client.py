@@ -29,6 +29,7 @@ class OpenAiTtsProvider:
     def __init__(self, settings: Settings) -> None:
         self._api_key = settings.openai_api_key
         self._voice = settings.tts_voice or _DEFAULT_VOICE
+        self._timeout = settings.tts_request_timeout_seconds
         self._client: AsyncOpenAI | None = None
 
     def _get_client(self) -> AsyncOpenAI | None:
@@ -37,7 +38,10 @@ class OpenAiTtsProvider:
         if self._client is None:
             from openai import AsyncOpenAI
 
-            self._client = AsyncOpenAI(api_key=self._api_key)
+            # Without an explicit timeout the SDK waits its 600s default on a
+            # stalled response; TTS is best-effort so we fail fast and fall back
+            # to text instead of holding the generate request open.
+            self._client = AsyncOpenAI(api_key=self._api_key, timeout=self._timeout)
         return self._client
 
     async def synthesize(

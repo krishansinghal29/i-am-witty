@@ -6,13 +6,12 @@
  *
  * Domains:
  *   - Session & Auth
- *   - Onboarding
  *   - Config & Feature Gates
  *   - Home / Daily Plan
  *   - Catalog & Tasks
  *   - Task Runtime & Execution
  *   - Entitlements & Access
- *   - Reminders & Notifications
+ *   - Notifications
  *   - Support & Utility
  */
 

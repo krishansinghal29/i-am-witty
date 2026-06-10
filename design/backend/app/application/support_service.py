@@ -20,7 +20,6 @@ class SupportService:
         self,
         message_text: str,
         app_user_id: uuid.UUID | None = None,
-        guest_session_id: uuid.UUID | None = None,
         source_screen: str | None = None,
     ) -> SupportMessageRecord:
         if not message_text or not message_text.strip():
@@ -30,7 +29,6 @@ class SupportService:
                 CreateSupportMessageInput(
                     message_text=message_text,
                     app_user_id=app_user_id,
-                    guest_session_id=guest_session_id,
                     source_screen=source_screen,
                 )
             )

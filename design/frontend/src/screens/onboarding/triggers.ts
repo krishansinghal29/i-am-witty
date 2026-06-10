@@ -1,8 +1,7 @@
 /**
  * The six onboarding trigger options. `value` mirrors the backend
  * `OnboardingTrigger` enum exactly (group_chats | dates | work | friends |
- * stage | teased); the rest is presentation copy for the trigger + tiny-practice
- * steps.
+ * stage | teased); the rest is presentation copy for the trigger step.
  */
 
 export type TriggerValue =
@@ -17,17 +16,15 @@ export interface TriggerOption {
   value: TriggerValue;
   label: string;
   emoji: string;
-  /** "Tuned for …" phrase shown on the tiny-practice step. */
-  forPhrase: string;
 }
 
 export const TRIGGER_OPTIONS: readonly TriggerOption[] = [
-  { value: 'group_chats', label: 'Group chats', emoji: '💬', forPhrase: 'group chats' },
-  { value: 'dates', label: 'Dates', emoji: '💘', forPhrase: 'dates' },
-  { value: 'work', label: 'Work', emoji: '💼', forPhrase: 'work' },
-  { value: 'friends', label: 'With friends', emoji: '👥', forPhrase: 'time with friends' },
-  { value: 'stage', label: 'On stage', emoji: '🎤', forPhrase: 'the stage' },
-  { value: 'teased', label: 'When someone teases me', emoji: '😏', forPhrase: 'quick comebacks' },
+  { value: 'group_chats', label: 'Group chats', emoji: '💬' },
+  { value: 'dates', label: 'Dates', emoji: '💘' },
+  { value: 'work', label: 'Work', emoji: '💼' },
+  { value: 'friends', label: 'With friends', emoji: '👥' },
+  { value: 'stage', label: 'On stage', emoji: '🎤' },
+  { value: 'teased', label: 'When someone teases me', emoji: '😏' },
 ] as const;
 
 /** Look up a trigger option by its backend value. */

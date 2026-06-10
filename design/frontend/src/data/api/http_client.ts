@@ -30,6 +30,12 @@ export interface HttpClient {
 // Factory
 // ---------------------------------------------------------------------------
 
+// Backstop so a stalled request can never hang a screen forever (e.g. the
+// task-runtime spinner). Generous on purpose: the runtime POST runs an LLM +
+// TTS call server-side, so normal requests stay well under it while a true
+// stall still aborts instead of spinning indefinitely.
+const DEFAULT_TIMEOUT_MS = 90_000;
+
 export function createHttpClient(opts: {
   baseUrl: string;
   tokens: TokenProvider;
@@ -40,8 +46,10 @@ export function createHttpClient(opts: {
    * single-flight so concurrent 401s don't trigger multiple recoveries.
    */
   reauth?: () => Promise<boolean>;
+  /** Per-request abort deadline; defaults to {@link DEFAULT_TIMEOUT_MS}. */
+  timeoutMs?: number;
 }): HttpClient {
-  const { baseUrl, tokens, reauth } = opts;
+  const { baseUrl, tokens, reauth, timeoutMs = DEFAULT_TIMEOUT_MS } = opts;
 
   async function buildHeaders(hasBody: boolean): Promise<HeadersInit> {
     const headers: Record<string, string> = {};
@@ -67,15 +75,21 @@ export function createHttpClient(opts: {
     const url = baseUrl + path;
     const hasBody = body !== undefined;
 
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
     let response: Response;
     try {
       response = await fetch(url, {
         method,
         headers: await buildHeaders(hasBody),
         body: hasBody ? JSON.stringify(body) : undefined,
+        signal: controller.signal,
       });
     } catch (e) {
       throw AppError.from(e);
+    } finally {
+      clearTimeout(timer);
     }
 
     // A 401 means our token is stale or absent. Give the injected reauth hook

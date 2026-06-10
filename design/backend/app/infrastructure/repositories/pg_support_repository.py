@@ -23,7 +23,6 @@ class PgSupportRepository(SupportRepository):
     ) -> SupportMessageRecord:
         row = OrmSupportMessage(
             app_user_id=input.app_user_id,
-            guest_session_id=input.guest_session_id,
             source_screen=input.source_screen,
             message_text=input.message_text,
         )
