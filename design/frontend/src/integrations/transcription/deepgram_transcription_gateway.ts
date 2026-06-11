@@ -64,11 +64,17 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
 
   warmup(opts?: TranscriptionWarmupOptions): TranscriptionWarmup {
     const language = opts?.language ?? 'en-US';
-    let disposed = false;
+    // `cancelled`: warmup was abandoned before use, so release the connection
+    // once it opens. `taken`: a session has claimed the connection, so neither
+    // the pending open nor a late cancel() may tear it down underneath it.
+    // These must stay distinct — folding them into one flag makes a tap that
+    // beats the open finish poison its own connection.
+    let cancelled = false;
+    let taken = false;
 
     const ready = (async (): Promise<WarmedConnection> => {
       const connection = await openConnection(this.deps.mintToken, language);
-      if (disposed) {
+      if (cancelled) {
         await releaseConnection(connection);
         throw new Error('transcription_warmup_cancelled');
       }
@@ -76,7 +82,8 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     })();
 
     const cancel = async (): Promise<void> => {
-      disposed = true;
+      if (taken) return;
+      cancelled = true;
       try {
         await releaseConnection(await ready);
       } catch {
@@ -95,7 +102,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     this.warmupEntries.set(handle, {
       ready,
       take: async (): Promise<WarmedConnection> => {
-        disposed = true;
+        taken = true;
         this.warmupEntries.delete(handle);
         return ready;
       },
