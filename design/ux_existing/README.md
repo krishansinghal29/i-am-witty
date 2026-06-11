@@ -84,6 +84,7 @@ HTML sources live in [`mockups/html/`](mockups/html/); rendered PNGs in [`mockup
 | Practice | [`mockups/html/practice.html`](mockups/html/practice.html) · [`mockups/images/practice.png`](mockups/images/practice.png) |
 | Profile | [`mockups/html/profile.html`](mockups/html/profile.html) · [`mockups/images/profile.png`](mockups/images/profile.png) |
 | Witty+ paywall | [`mockups/html/paywall.html`](mockups/html/paywall.html) · [`mockups/images/paywall.png`](mockups/images/paywall.png) |
+| **Loading states** *(Spark loader)* | [`mockups/html/loading.html`](mockups/html/loading.html) · [`mockups/images/loading.png`](mockups/images/loading.png) |
 
 ### Task runtime *(the three task types)*
 A new, focused **in-exercise** design (a calm full-screen runtime — not a tab). Each
@@ -123,10 +124,26 @@ through all six steps (one trigger question → tiny practice → variable rewar
 reminder → today's plan). Preview a stage with a hash, e.g. `html/onboarding.html#3` or
 `html/onboarding.html#5perm`.
 
+### Loading states — "Spark loader"
+Replaces the plain `IonSpinner` crescent with a calm, branded loader: the **riffy mark**
+breathes inside a chasing **blue→orange ring**, three orbiting accent dots, and gentle
+**voice equalizer bars** (same bob animation as the task runtime mockups). Four placements:
+
+| Variant | Use in app | Message |
+|---------|------------|---------|
+| **Boot** | `AuthGuard` · `OnboardingGuard` session resolve | optional ("Starting up…") |
+| **In-page** | `LoadingView` on Home, Practice, Profile, task host | contextual copy |
+| **Sheet** | Paywall offerings, modal fetches | short label |
+| **Compact** | `Button` `loading` prop, inline auth steps | beside label or icon-only |
+
+Motion stays **slow & ease-in-out** (2–3s loops). `prefers-reduced-motion` falls back to
+a static mark with an opacity pulse — no spinning. Preview all variants in
+[`mockups/html/loading.html`](mockups/html/loading.html).
+
 Open any file in [`mockups/html/`](mockups/html/) in a browser (static preview). Regenerate
 the PNGs into [`mockups/images/`](mockups/images/) (one per screen):
 ```bash
-for p in onboarding home practice profile paywall \
+for p in onboarding home practice profile paywall loading \
          task-single-prompt task-dialogue-prompt task-scaffolded-prompt; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
     --force-device-scale-factor=2 --window-size=560,940 --virtual-time-budget=3500 \
