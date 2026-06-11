@@ -516,5 +516,43 @@ TASKS: list[dict] = [
             },
         },
     },
+    {
+        "slug": "shit-test",
+        "title": "Shit Test",
+        "description": "Treat her tease like a compliment and reframe it with a smirk.",
+        "task_type_id": "voice_single_prompt",
+        "duration_seconds": 30,
+        "thumbnail_key": "shit-test",
+        "image_key": "shit-test",
+        "access_tier": "free",
+        "status": "active",
+        "sort_order": 110,
+        "content": {
+            "exercise_key": "shitTest",
+            "prompt_label": "Tease/Statement",
+            "prompt_roles": ["She"],
+            "response_instruction": "Treat the tease as a compliment and reframe it — own it, don't explain.",
+            "recording_limit_seconds": 30,
+            "assigned_technique_mode": "none",
+            "scaffold_stages": [],
+            "feedback_tabs": {
+                "feedback_label": "Feedback",
+                "sample_answer_label": "Better Way",
+            },
+        },
+        "runtime_config": {
+            "backend_key": "shitTest",
+            "prompt_bundle_key": "shit_test_v1",
+            "generator": {
+                "strategy": "archetype",
+                "output_shape": "single_message",
+                "message_role": "She",
+            },
+            "evaluator": {
+                "strategy": "transcript_feedback",
+                "criteria": ["reframe", "confidence", "wit", "brevity"],
+            },
+        },
+    },
 ]
 

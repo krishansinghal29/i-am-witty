@@ -140,12 +140,9 @@ CRITICAL RULES:
 - 1 sentence (2 only if needed), no punctuation theatrics.
 - Output only the scene, nothing else.
 
-Examples:
+Examples (for the deliberately plain register, not scenes to copy):
 - "I'm folding laundry on the couch while the TV plays in the background."
-- "We're sitting at the bus stop waiting for the 7:15."
-- "I'm in line at the post office holding a package I need to mail."
-- "I'm reheating last night's pasta in the office microwave."
-- "We're walking the dog around the block before it gets dark."''',
+- "I'm in line at the post office holding a package I need to mail."''',
     },
 }
 

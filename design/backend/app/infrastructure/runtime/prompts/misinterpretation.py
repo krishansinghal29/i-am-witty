@@ -97,8 +97,7 @@ Valid misinterpretations must involve one of:
 Given a verb, write ONE short, natural sentence that a person might actually say in everyday life.
 
 Rules:
-- The sentence must contain the given pronoun ("I", "you", or "we")
-- The sentence must use the given verb and pronoun naturally
+- The sentence must use the given verb and pronoun ("I", "you", or "we") naturally
 - Sound completely ordinary — something real people say
 - 1 sentence only, no punctuation theatrics
 - Output only the sentence, nothing else''',

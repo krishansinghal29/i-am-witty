@@ -109,47 +109,10 @@ Avoid premises that are already fully absurd (nowhere left to climb) and premise
 
 Output ONLY the statement — one sentence, nothing else.
 
-Examples:
+Examples (for register, not topics to copy):
 - "My cat ignores me all day, then screams for food at exactly 6am."
-- "My neighbor waters his lawn in a full suit."
-- "She alphabetizes her spice rack but won't tell anyone the system."
-- "The new guy at work has never once been seen eating."
 - "My grandma still mails me printed-out emails."
-- "He claps every time the plane lands, even on the small ones."
-- "My houseplant only perks up when I talk to it about my problems."
-- "The barista remembers my order but pretends she doesn't."''',
-        "prompt_styles": '''Generate a premise with one clear unusual detail for a 'Heightening' exercise.
-Create a new statement with a single odd, specific hook to heighten. Make it fresh.
-Generate a grounded statement that has one strange detail worth escalating.
-Come up with an original premise for 'Heightening' practice with one obvious hook.
-Generate a mundane-sounding statement with one slightly-off detail.
-Create a believable statement with a single escalatable quirk.
-Generate a natural-sounding observation with one specific unusual element.
-Come up with a fresh everyday statement that has one strange, precise detail.''',
-        "contexts": '''Think of an everyday situation with one weirdly specific detail.
-Imagine a small ordinary moment that has one odd hook.
-Consider a person's harmless quirk described concretely.
-Think of a mundane scene with a single strange element.
-Create a believable observation with room to escalate.
-Imagine something a friend might mention offhand that has one funny hook.
-Think of a normal setting with one precise, odd detail.
-Consider a small habit or event with a single escalatable quirk.''',
-        "topic_suggestions": '''Consider themes like pets, neighbors, coworkers, family habits, dating, hobbies, food, commuting, technology, or small daily routines.
-Think about oddly-specific habits, harmless obsessions, or strangely precise behaviors.
-Consider quirks of people, animals, machines, or objects in everyday life.
-Think of diverse everyday domains that could host one strange detail.
-Consider settings like the office, the gym, the kitchen, the street, or the phone.
-Think about mundane events with one precise, surprising twist.
-Consider different relationships: strangers, friends, partners, relatives, colleagues.
-Think of diverse ordinary scenarios with one clear hook to climb.''',
-        "creativity_boosters": '''Make the unusual detail specific and unexpected!
-Keep it grounded but give it one strange hook!
-Be fresh — avoid clichés and repeated setups!
-Pick a precise, odd detail that begs to be escalated!
-Surprise with the specificity, not the absurdity!
-Make the one detail vivid and concrete!
-Leave obvious room to go bigger!
-Make each premise feel real, particular, and new!''',
+- "He claps every time the plane lands, even on the small ones."''',
     },
 }
 
@@ -163,10 +126,6 @@ SPEC = ExerciseSpec(
     sprint_question_label="Premise",
     generator_system=_generator["intro"],
     generator_prompt=creative_generator_prompt(
-        prompt_styles=_generator["prompt_styles"],
-        contexts=_generator["contexts"],
-        topic_suggestions=_generator["topic_suggestions"],
-        creativity_boosters=_generator["creativity_boosters"],
         # Heightening's target space ("mundane scene + one odd detail") is the
         # narrowest of the creative exercises and collapses onto its examples the
         # hardest, so give it two spark words for a richer, more surprising nudge.

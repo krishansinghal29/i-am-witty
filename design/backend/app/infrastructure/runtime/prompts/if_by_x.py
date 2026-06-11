@@ -67,70 +67,13 @@ When she challenges or criticizes you, use the "If by X you mean Y" structure to
     "generator": {
         "intro": '''You are an improv partner generating prompts for "If by X, you mean Y" exercises.
 
-Your role is to generate seemingly negative statements or criticisms that can be creatively reinterpreted
-in a positive way. The statements should be ambiguous enough to allow for clever wordplay and reframing.
+Generate ONE statement that sounds like a criticism or negative judgment of a person but is ambiguous enough to be cleverly reframed as a positive. Output only the statement — the criticism itself, not the reframe.
 
-For example, if someone says "You're so disorganized", a response might be
-"If by disorganized you mean I have a creative system where every pile tells a story..."
+Assume the user has practiced hundreds of these — skip the obvious.
 
-When given a request, respond with a single statement. The statement should be something that appears
-negative on the surface but can be cleverly reframed as positive.
-
-CRITICAL INSTRUCTIONS FOR VARIETY:
-- NEVER repeat the same type of criticism or statement
-- Think of DIFFERENT topics: work habits, personality traits, social behavior, lifestyle choices, communication style, decision-making, etc.
-- Use DIFFERENT angles: organization, time management, risk-taking, spontaneity, attention to detail, social skills, etc.
-- Be CREATIVE and UNPREDICTABLE with each generation
-- Imagine you're creating content for someone who has practiced hundreds of times before
-- Make each statement feel fresh, unique, and cleverly reframable
-- Vary the tone and style of criticisms
-- Think of unexpected but reframable negative observations
-
-Examples:
-- Example 1:
-    "You're always living in your own little world"
-- Example 2:
-    "You never follow the rules"
-- Example 3:
-    "You overthink everything"
-- Example 4:
-    "You're way too impulsive"
-- Example 5:
-    "You're so stubborn, you never change your mind"
-- Example 6:
-    "You avoid confrontation at all costs"''',
-        "prompt_styles": '''Generate a statement for an 'If by X, you mean Y' exercise.
-Create a new criticism for 'If by X' practice. Make it unique and different.
-Generate a fresh negative statement for the 'If by X' exercise. Be creative!
-Come up with an original criticism for 'If by X' practice.
-Generate a diverse negative observation for the 'If by X' exercise.
-Create a unique statement that can be cleverly reframed.
-Generate a creative criticism for 'If by X' practice.
-Come up with a fresh and original statement for the 'If by X' exercise.''',
-        "contexts": '''Think of a completely different type of criticism than usual.
-Imagine a unique negative observation.
-Consider an unexpected but reframable statement.
-Think of something that sounds negative but has positive potential.
-Create a criticism that feels fresh and reframable.
-Imagine a statement that's different from typical criticisms.
-Think of an interesting and unique negative observation.
-Consider a criticism that's clever and open to reinterpretation.''',
-        "topic_suggestions": '''Consider topics like work habits, personality traits, social behavior, lifestyle choices, communication style, decision-making, creativity, or anything else reframable.
-Think about different aspects of character, behavior, or personal style.
-Consider various angles like organization, spontaneity, caution, boldness, or unique approaches.
-Think of diverse criticisms that could be turned into compliments.
-Consider different areas like social skills, work style, personal quirks, or life philosophy.
-Think about various traits, habits, or characteristics people might criticize.
-Consider different contexts like professional behavior, social interactions, or personal choices.
-Think of diverse observations that could lead to clever reframing.''',
-        "creativity_boosters": '''Be wildly creative and unpredictable!
-Think outside the box completely!
-Be bold and imaginative!
-Surprise with something unexpected!
-Be innovative and fresh!
-Think of the most interesting criticism possible!
-Be creative and original!
-Make it unique and cleverly reframable!''',
+Examples (for format and register, not topics to copy):
+- "You're always living in your own little world"
+- "You avoid confrontation at all costs"''',
     },
 }
 
@@ -143,12 +86,7 @@ SPEC = ExerciseSpec(
     description="If-by-X-you-mean-Y verbal reframe exercise for redirecting criticism into status.",
     sprint_question_label="Statement",
     generator_system=_generator["intro"],
-    generator_prompt=creative_generator_prompt(
-        prompt_styles=_generator["prompt_styles"],
-        contexts=_generator["contexts"],
-        topic_suggestions=_generator["topic_suggestions"],
-        creativity_boosters=_generator["creativity_boosters"],
-    ),
+    generator_prompt=creative_generator_prompt(),
     generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
         intro=_evaluator["intro"],

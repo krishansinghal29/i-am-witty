@@ -65,70 +65,15 @@ Pick a side — LOVE or HATE — and go ALL IN. No fence-sitting, no "it depends
 4. **Specificity**: Specific details > generic statements. Always.''',
     },
     "generator": {
-        "intro": '''You are an improv partner generating creative topics for "Love/Hate" exercises.
+        "intro": '''You are an improv partner generating topics for "Love/Hate" exercises.
 
-Your role is to generate interesting and engaging topics that a person can express strong feelings about.
-The topics should be specific enough to evoke an emotional response but open-ended enough to allow for creative explanations.
-Topics can be everyday things, activities, concepts, or situations that people might have strong opinions about.
+Generate ONE everyday topic someone could have a strong opinion about — relatable, and open to both a passionate LOVE and a passionate HATE take. Phrase it as a short natural topic or statement. Output only the topic.
 
-When given a request, respond with a single topic formatted as a natural statement or topic.
-Keep your topics relatable but interesting, allowing for both positive and negative interpretations.
+Assume the user has seen hundreds of these — skip the obvious.
 
-CRITICAL INSTRUCTIONS FOR VARIETY:
-- NEVER repeat the same type of topic or theme
-- Think of DIFFERENT categories: food, weather, technology, social situations, daily activities, cultural phenomena, modern life, etc.
-- Use DIFFERENT contexts: everyday experiences, controversial topics, quirky situations, common annoyances, guilty pleasures, etc.
-- Be CREATIVE and UNPREDICTABLE with each generation
-- Imagine you're creating content for someone who has practiced hundreds of times before
-- Make each topic feel fresh, unique, and opinion-worthy
-- Vary the specificity and style of topics
-- Think of unexpected but relatable situations
-
-Examples:
-- Example 1:
-    "Getting caught in the rain while walking home"
-- Example 2:
-    "When restaurants put pineapple on pizza"
-- Example 3:
-    "Listening to people chew loudly in quiet spaces"
-- Example 4:
-    "When your phone autocorrects perfectly fine words"
-- Example 5:
-    "Finding money in old jacket pockets"
-- Example 6:
-    "People who clap when the airplane lands"''',
-        "prompt_styles": '''Generate a topic for a 'Love/Hate' exercise.
-Create a new topic for Love/Hate practice. Make it unique and different.
-Generate a fresh topic for the Love/Hate exercise. Be creative!
-Come up with an original topic for Love/Hate practice.
-Generate a diverse topic for the Love/Hate exercise.
-Create a unique topic that evokes strong opinions.
-Generate a creative topic for Love/Hate practice.
-Come up with a fresh and original topic for the Love/Hate exercise.''',
-        "contexts": '''Think of a completely different type of topic than usual.
-Imagine a unique situation people have strong feelings about.
-Consider an unexpected but relatable experience.
-Think of something that divides opinions.
-Create a topic that feels fresh and opinion-worthy.
-Imagine a situation that's different from typical topics.
-Think of an interesting and unique everyday scenario.
-Consider a topic that's relatable and conversation-worthy.''',
-        "topic_suggestions": '''Consider categories like food, weather, technology, social situations, daily activities, cultural phenomena, modern life, or anything else relatable.
-Think about different types of experiences, annoyances, or pleasures.
-Consider various aspects of daily life, social interactions, or personal preferences.
-Think of diverse topics that people might have strong opinions about.
-Consider different areas like habits, trends, quirks, or common experiences.
-Think about various situations, phenomena, or everyday occurrences people encounter.
-Consider different contexts like social norms, modern conveniences, or pet peeves.
-Think of diverse experiences that could spark interesting emotional responses.''',
-        "creativity_boosters": '''Be wildly creative and unpredictable!
-Think outside the box completely!
-Be bold and imaginative!
-Surprise with something unexpected!
-Be innovative and fresh!
-Think of the most interesting topic possible!
-Be creative and original!
-Make it unique and opinion-provoking!''',
+Examples (for format and register, not topics to copy):
+- "Getting caught in the rain while walking home"
+- "Finding money in old jacket pockets"''',
     },
 }
 
@@ -141,12 +86,7 @@ SPEC = ExerciseSpec(
     description="Love/Hate contrast exercise for expressing nuanced, opinionated takes with charm.",
     sprint_question_label="Topic",
     generator_system=_generator["intro"],
-    generator_prompt=creative_generator_prompt(
-        prompt_styles=_generator["prompt_styles"],
-        contexts=_generator["contexts"],
-        topic_suggestions=_generator["topic_suggestions"],
-        creativity_boosters=_generator["creativity_boosters"],
-    ),
+    generator_prompt=creative_generator_prompt(),
     generator_response_schema=SingleTopicQuestion,
     evaluator_system=build_evaluator_system(
         intro=_evaluator["intro"],

@@ -65,80 +65,17 @@ She answered a question. Your job: TEASE her about it. Not insult. Not agree. No
 4. **Brevity**: Great teases are punchy. If it's longer than 2 sentences, it's a speech.''',
     },
     "generator": {
-        "intro": '''You are helping me practice my flirting skills by generating question-answer pairs for the "Question, Answer and Tease" exercise.
+        "intro": '''You are generating question-answer pairs for the "Question, Answer and Tease" exercise: the user reads a question he asks and her answer, then practices teasing her about that answer.
 
-For example, in a real life scenario, if I ask you "What do you do?", a girl might respond with:
-"I am a doctor."
-Then, I might tease her about it by saying:
-"Oh shit, did you do everything else also your parents asked you to do."
+Generate both parts — a simple, common question from him and a natural, teasable answer from her. Keep them ordinary; the user supplies the wit.
 
-You have to generate both the question and answer to which I can then tease. Keep the question and answer simple and common.
+Format the pair as two elements in order:
+1. the question (from him)
+2. the answer (from her)
 
-CRITICAL INSTRUCTIONS FOR VARIETY:
-- NEVER repeat the same type of question or scenario
-- Think of DIFFERENT topics: work, hobbies, food, travel, music, pets, sports, movies, fashion, technology, etc.
-- Use DIFFERENT contexts: casual chat, first meeting, coffee shop, party, gym, local events, etc.
-- Be CREATIVE and UNPREDICTABLE with each generation
-- Imagine you're creating content for someone who has seen hundreds of these before
-- Make each question-answer pair feel fresh and unique
-- Vary the length and style of answers
-- Think of unexpected but realistic scenarios
-
-When given a request, respond with a question-answer pair formatted as two elements:
-1. The first element is the question from him
-2. The second element is the answer from her
-
-Examples:
-- Example 1:
-    Question: "What do you do?"
-    Answer: "I work in sales"
-- Example 2:
-    Question: "What colour is your living room?"
-    Answer: "White."
-- Example 3:
-    Question: "What do you do for fun?"
-    Answer: "I like to hangout with friends and go to restaurants."
-- Example 4:
-    Question: "Do you have any pets?"
-    Answer: "Yes, I have a cat named Luna."
-- Example 5:
-    Question: "What's your favorite type of music?"
-    Answer: "I love indie rock and electronic music."
-- Example 6:
-    Question: "Are you a coffee or tea person?"
-    Answer: "Definitely coffee, I can't start my day without it."''',
-        "prompt_styles": '''Generate a question-answer pair for a 'Question, Answer and Tease' exercise.
-Create a new question-answer pair for flirting practice. Make it unique and different.
-Generate a fresh question-answer scenario for the tease exercise. Be creative!
-Come up with an original question-answer pair for flirting practice.
-Generate a diverse question-answer pair for the tease exercise.
-Create a unique question-answer scenario that hasn't been used before.
-Generate a creative question-answer pair for flirting practice.
-Come up with a fresh and original question-answer for the tease exercise.''',
-        "contexts": '''Think of a completely different scenario than usual.
-Imagine you're in a unique setting or situation.
-Consider an unexpected but realistic context.
-Think of something that would surprise someone.
-Create a scenario that feels fresh and new.
-Imagine a situation that's different from typical conversations.
-Think of an interesting and unique context.
-Consider a scenario that's creative and unexpected.''',
-        "topic_suggestions": '''Consider topics like work, hobbies, food, travel, music, pets, sports, movies, fashion, technology, or anything else creative.
-Think about different life situations, interests, or experiences.
-Consider various aspects of daily life, entertainment, or personal interests.
-Think of diverse topics that people might discuss in casual conversation.
-Consider different areas of life like career, leisure, relationships, or personal preferences.
-Think about various interests, activities, or experiences people might have.
-Consider different contexts like social situations, personal interests, or life experiences.
-Think of diverse topics that could lead to interesting conversations.''',
-        "creativity_boosters": '''Be wildly creative and unpredictable!
-Think outside the box completely!
-Be bold and imaginative!
-Surprise with something unexpected!
-Be innovative and fresh!
-Think of the most interesting scenario possible!
-Be creative and original!
-Make it unique and memorable!''',
+Example (for format, not topic to copy):
+- Question: "What do you do?"
+  Answer: "I work in sales"''',
     },
 }
 
@@ -151,12 +88,7 @@ SPEC = ExerciseSpec(
     description="Question-Answer-Tease exercise for balancing direct answers with playful tension.",
     sprint_question_label="Question",
     generator_system=_generator["intro"],
-    generator_prompt=creative_generator_prompt(
-        prompt_styles=_generator["prompt_styles"],
-        contexts=_generator["contexts"],
-        topic_suggestions=_generator["topic_suggestions"],
-        creativity_boosters=_generator["creativity_boosters"],
-    ),
+    generator_prompt=creative_generator_prompt(),
     generator_response_schema=QuestionAnswerTeaseQuestion,
     evaluator_system=build_evaluator_system(
         intro=_evaluator["intro"],

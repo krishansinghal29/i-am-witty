@@ -24,16 +24,14 @@ SEED_SIMPLER_LANGUAGE_NOTE = (
 # the thing that stops it collapsing onto its in-context examples.
 _DEFAULT_SPARK_LISTS: tuple[str, ...] = ("verbs", "adjectives")
 
-
-def _as_options(value: str | Sequence[str], name: str) -> list[str]:
-    if isinstance(value, str):
-        options = [line.strip() for line in value.splitlines() if line.strip()]
-    else:
-        options = [str(item).strip() for item in value if str(item).strip()]
-
-    if not options:
-        raise ValueError(f"{name} must include at least one option")
-    return options
+# The whole user message for a creative generator: a neutral "go" instruction.
+# All the substance (role, rules, examples, format) lives in the system prompt,
+# and the spark word appended below supplies the per-call variety — so the user
+# turn needs nothing more than this.
+_DEFAULT_CREATIVE_ASK = (
+    "Generate one new output for this exercise now, strictly following the "
+    "system instructions above."
+)
 
 
 def _spark_clause(words: Sequence[str]) -> str:
@@ -71,17 +69,12 @@ def _spark_clause(words: Sequence[str]) -> str:
 
 def creative_generator_prompt(
     *,
-    prompt_styles: str | Sequence[str],
-    contexts: str | Sequence[str],
-    topic_suggestions: str | Sequence[str],
-    creativity_boosters: str | Sequence[str],
+    ask: str = _DEFAULT_CREATIVE_ASK,
     spark_lists: Sequence[str] = _DEFAULT_SPARK_LISTS,
     spark_count: int = 1,
 ) -> GeneratorPromptFactory:
-    styles = _as_options(prompt_styles, "prompt_styles")
-    context_options = _as_options(contexts, "contexts")
-    topics = _as_options(topic_suggestions, "topic_suggestions")
-    boosters = _as_options(creativity_boosters, "creativity_boosters")
+    if not ask.strip():
+        raise ValueError("creative generator ask must be non-empty")
     spark_sources = list(spark_lists)
     if not spark_sources:
         raise ValueError("creative generator requires at least one spark list")
@@ -89,19 +82,11 @@ def creative_generator_prompt(
         raise ValueError("spark_count must be at least 1")
 
     def build() -> str:
-        instruction = " ".join(
-            [
-                random.choice(styles),
-                random.choice(context_options),
-                random.choice(topics),
-                random.choice(boosters),
-            ]
-        )
         spark_words = [
             random.choice(word_list(random.choice(spark_sources)))
             for _ in range(spark_count)
         ]
-        return instruction + _spark_clause(spark_words)
+        return ask + _spark_clause(spark_words)
 
     return build
 
@@ -110,17 +95,32 @@ def archetype_generator_prompt(
     *,
     archetypes: Sequence[dict[str, str]],
     constraint: str,
+    spark_lists: Sequence[str] = _DEFAULT_SPARK_LISTS,
+    spark_count: int = 1,
 ) -> GeneratorPromptFactory:
     if not archetypes:
         raise ValueError("archetype generator must include at least one archetype")
+    spark_sources = list(spark_lists)
+    if not spark_sources:
+        raise ValueError("archetype generator requires at least one spark list")
+    if spark_count < 1:
+        raise ValueError("spark_count must be at least 1")
 
     def build() -> str:
         archetype = random.choice(list(archetypes))
         archetype_type = archetype.get("type", "")
         instruction = archetype.get("instruction", "")
+        # The archetype fixes the frame; the spark gives a fresh angle within it,
+        # the same entropy the creative generator gets (only 6 archetypes alone
+        # would collapse onto a handful of stock accusations).
+        spark_words = [
+            random.choice(word_list(random.choice(spark_sources)))
+            for _ in range(spark_count)
+        ]
         return (
             f"Generate a specific '{archetype_type}' statement. "
             f"Instruction: {instruction} {constraint}"
+            + _spark_clause(spark_words)
         )
 
     return build

@@ -10,6 +10,7 @@ from app.infrastructure.runtime.prompts.misinterpretation import SPEC as MISINTE
 from app.infrastructure.runtime.prompts.misinterpretation_techniques import SPEC as MISINTERPRETATION_TECHNIQUES
 from app.infrastructure.runtime.prompts.push_pull import SPEC as PUSH_PULL
 from app.infrastructure.runtime.prompts.question_answer_tease import SPEC as QUESTION_ANSWER_TEASE
+from app.infrastructure.runtime.prompts.shit_test import SPEC as SHIT_TEST
 from app.infrastructure.runtime.prompts.spec import ExerciseSpec
 from app.infrastructure.runtime.prompts.vibing import SPEC as VIBING
 from app.infrastructure.runtime.prompts.yes_and import SPEC as YES_AND
@@ -27,6 +28,7 @@ _EXERCISES: dict[str, ExerciseSpec] = {
         PUSH_PULL,
         HEIGHTENING,
         FIRST_UNUSUAL_THING,
+        SHIT_TEST,
     ]
 }
 
