@@ -12,6 +12,8 @@ from app.application.exceptions import (
 )
 from app.application.transcription_service import TranscriptionService
 from app.application.unit_of_work import UnitOfWork
+from app.domain.models.app_user import AppUser
+from app.domain.models.entitlement import AccessState
 from app.domain.models.task import Task
 from app.domain.models.task_attempt import (
     TaskAttempt,
@@ -140,20 +142,31 @@ class TaskAttemptService:
         self._engine = engine
         self._uow = uow
 
-    async def _free_limit_decision(self, app_user_id: uuid.UUID) -> FreeLimitDecision:
-        user = await self._users.find_by_id(app_user_id)
-        if user is None:
-            raise NotFoundError("user_not_found")
+    async def _free_limit_for(
+        self, user: AppUser, access: AccessState
+    ) -> FreeLimitDecision:
+        """Compute today's free-task gate from an already-loaded user + access.
 
-        access = await self._entitlements.get_access_state(app_user_id)
+        Callers that have just fetched the user and access state pass them in to
+        avoid re-querying them (see ``start_task``); ``_free_limit_decision``
+        loads them for standalone callers.
+        """
         today = local_today(user.timezone)
-        du = await self._usage.get_daily_usage(app_user_id, today)
+        du = await self._usage.get_daily_usage(user.id, today)
         limit = await self._config.get_free_task_limit()
         state = FreeLimitState(
             du.free_tasks_completed if du else 0,
             du.free_task_limit if du else limit,
         )
         return evaluate_free_limit(state, access)
+
+    async def _free_limit_decision(self, app_user_id: uuid.UUID) -> FreeLimitDecision:
+        user = await self._users.find_by_id(app_user_id)
+        if user is None:
+            raise NotFoundError("user_not_found")
+
+        access = await self._entitlements.get_access_state(app_user_id)
+        return await self._free_limit_for(user, access)
 
     async def get_free_limit(self, app_user_id: uuid.UUID) -> FreeLimitDecision:
         """Return today's free-task gate without starting an attempt."""
@@ -184,7 +197,7 @@ class TaskAttemptService:
         if not decision.allowed:
             raise AccessDeniedError(decision.reason or "premium_required")
 
-        fl = await self._free_limit_decision(app_user_id)
+        fl = await self._free_limit_for(user, access)
         if not fl.allowed:
             raise PaywallRequiredError(fl.reason or "free_limit_reached")
 
