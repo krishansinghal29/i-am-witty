@@ -9,6 +9,15 @@ from typing import Any
 from app.infrastructure.runtime.prompts.spec import GeneratorPromptFactory
 from app.infrastructure.runtime.prompts.word_lists import word_list
 
+# Appended to every word-list seed (verb / adjective / verb+adverb / vibe /
+# appearance) so an obscure seed word never leaks an unfamiliar term into the
+# generated content the learner has to read.
+SEED_SIMPLER_LANGUAGE_NOTE = (
+    " If the seed word is uncommon or one many people wouldn't immediately "
+    "understand, use a simpler, everyday word with the same meaning so the "
+    "result stays easy to understand."
+)
+
 
 def _as_options(value: str | Sequence[str], name: str) -> list[str]:
     if isinstance(value, str):
@@ -69,7 +78,10 @@ def archetype_generator_prompt(
 def verb_seed_generator_prompt() -> str:
     verb = random.choice(word_list("verbs"))
     pronoun = random.choice(["I", "you", "we"])
-    return f'Generate a sentence using the verb "{verb}" and the pronoun "{pronoun}".'
+    return (
+        f'Generate a sentence using the verb "{verb}" and the pronoun "{pronoun}".'
+        + SEED_SIMPLER_LANGUAGE_NOTE
+    )
 
 
 def _weighted_category_pick(categories: Sequence[dict[str, Any]]) -> str:
@@ -93,21 +105,23 @@ def weighted_seed_generator_prompt(
 
         if seed_type == "verb":
             verb = random.choice(word_list("verbs"))
-            return f'Seed type: verb. Value: "{verb}"'
-        if seed_type == "adjective":
+            seed_line = f'Seed type: verb. Value: "{verb}"'
+        elif seed_type == "adjective":
             adjective = random.choice(word_list("adjectives"))
-            return f'Seed type: adjective. Value: "{adjective}"'
-        if seed_type == "verb_adverb":
+            seed_line = f'Seed type: adjective. Value: "{adjective}"'
+        elif seed_type == "verb_adverb":
             verb = random.choice(word_list("verbs"))
             adverb = random.choice(word_list("adverbs"))
-            return f'Seed type: verb+adverb. Verb: "{verb}", Adverb: "{adverb}"'
-        if seed_type == "vibe":
+            seed_line = f'Seed type: verb+adverb. Verb: "{verb}", Adverb: "{adverb}"'
+        elif seed_type == "vibe":
             subject = _weighted_category_pick(vibe_categories)
             adjective = random.choice(word_list("adjectives"))
-            return f'Seed type: vibe. Subject: "{subject}", Adjective: "{adjective}"'
+            seed_line = f'Seed type: vibe. Subject: "{subject}", Adjective: "{adjective}"'
+        else:
+            subject = _weighted_category_pick(appearance_categories)
+            adjective = random.choice(word_list("adjectives"))
+            seed_line = f'Seed type: appearance. Subject: "{subject}", Adjective: "{adjective}"'
 
-        subject = _weighted_category_pick(appearance_categories)
-        adjective = random.choice(word_list("adjectives"))
-        return f'Seed type: appearance. Subject: "{subject}", Adjective: "{adjective}"'
+        return seed_line + SEED_SIMPLER_LANGUAGE_NOTE
 
     return build

@@ -131,7 +131,7 @@ A response FAILS if it:
 
 You receive a verb and a pronoun ("I", "you", or "we"). Write ONE short, deliberately ORDINARY scene — a slice of everyday base reality — spoken in the first person as something a person would casually say.
 
-Treat the verb as the everyday ACTIVITY at the center of the scene, and use the given pronoun naturally. If the verb is obscure or awkward, use a simpler everyday action that captures the same idea.
+Treat the verb as the everyday ACTIVITY at the center of the scene, and use the given pronoun naturally.
 
 CRITICAL RULES:
 - The scene must be completely NORMAL. Do NOT add anything weird, funny, quirky, or unusual — introducing the unusual thing is the user's job, not yours.
