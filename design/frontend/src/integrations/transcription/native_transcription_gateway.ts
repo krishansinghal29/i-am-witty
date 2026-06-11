@@ -7,6 +7,8 @@ import type {
   TranscriptionResult,
   TranscriptionSession,
   TranscriptionSessionStartOptions,
+  TranscriptionWarmup,
+  TranscriptionWarmupOptions,
 } from '@/integrations/ports/transcription_gateway';
 
 /**
@@ -24,6 +26,13 @@ import type {
 export class NativeTranscriptionGateway implements TranscriptionGateway {
   capabilities(): { streamingInterim: boolean } {
     return { streamingInterim: true };
+  }
+
+  warmup(_opts?: TranscriptionWarmupOptions): TranscriptionWarmup {
+    return {
+      ready: Promise.resolve(),
+      cancel: async (): Promise<void> => {},
+    };
   }
 
   async startSession(opts: TranscriptionSessionStartOptions): Promise<TranscriptionSession> {

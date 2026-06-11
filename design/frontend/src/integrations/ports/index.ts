@@ -22,5 +22,7 @@ export type {
   TranscriptionMetadata,
   TranscriptionResult,
   TranscriptionSession,
+  TranscriptionWarmup,
+  TranscriptionWarmupOptions,
   TranscriptionGateway,
 } from './transcription_gateway';

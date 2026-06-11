@@ -14,7 +14,10 @@ import { Button, RecordRing } from '@/components/ui';
 import { useIntegrations } from '@/app/providers';
 import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useRuntimeStore } from '@/state/stores/runtime_store';
-import type { TranscriptionSession } from '@/integrations/ports/transcription_gateway';
+import type {
+  TranscriptionSession,
+  TranscriptionWarmup,
+} from '@/integrations/ports/transcription_gateway';
 import type { ScaffoldStage, TaskRuntime } from '@/types/models';
 
 import type { AttemptController, VoiceCompleteBody } from '../../contract';
@@ -176,8 +179,10 @@ export function VoicePromptShell({
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [hasCapturedAudio, setHasCapturedAudio] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
+  const [isConnectingMic, setIsConnectingMic] = useState(false);
 
   const sessionRef = useRef<TranscriptionSession | null>(null);
+  const warmupRef = useRef<TranscriptionWarmup | null>(null);
   /** Textarea contents when the current speech session started (typed prefix to preserve). */
   const speechBaseRef = useRef('');
   const audioRef = useRef<{ audioBase64: string; contentType: string | null } | null>(null);
@@ -201,6 +206,11 @@ export function VoicePromptShell({
       timerRef.current = null;
     }
   }, []);
+
+  const beginWarmup = useCallback(() => {
+    void warmupRef.current?.cancel();
+    warmupRef.current = transcription.warmup({ language: 'en-US' });
+  }, [transcription]);
 
   const stopRecording = useCallback(async (): Promise<void> => {
     if (stoppingRef.current) {
@@ -227,6 +237,9 @@ export function VoicePromptShell({
         }
       }
       setInterim('');
+      if (phase === 'respond') {
+        beginWarmup();
+      }
     })();
 
     try {
@@ -235,30 +248,48 @@ export function VoicePromptShell({
       stopPromiseRef.current = null;
       stoppingRef.current = false;
     }
-  }, [setInterim, setRecording, setTranscript]);
+  }, [beginWarmup, phase, setInterim, setRecording, setTranscript]);
 
   const startRecording = useCallback(async (): Promise<void> => {
-    if (isRecording) return;
+    if (isRecording || isConnectingMic) return;
     setLocalError(null);
     setInterim('');
     speechBaseRef.current = useRuntimeStore.getState().transcript;
-    setRecording(true);
+    setIsConnectingMic(true);
+
+    const warmup = warmupRef.current;
+    warmupRef.current = null;
+
     try {
       const session = await transcription.startSession({
         recordingLimitSeconds: limit,
         language: 'en-US',
+        warmup: warmup ?? undefined,
         onInterim: (t) => {
           setInterim(t);
           setTranscript(liveSpeechText(speechBaseRef.current, t));
         },
       });
       sessionRef.current = session;
+      setRecording(true);
     } catch {
       // Mic/permission/setup failure — fall back to the always-on text entry.
       setRecording(false);
       sessionRef.current = null;
+      beginWarmup();
+    } finally {
+      setIsConnectingMic(false);
     }
-  }, [isRecording, limit, setInterim, setRecording, setTranscript, transcription]);
+  }, [
+    beginWarmup,
+    isConnectingMic,
+    isRecording,
+    limit,
+    setInterim,
+    setRecording,
+    setTranscript,
+    transcription,
+  ]);
 
   const playPrompt = useCallback(() => {
     const b64 = runtime.audio.audioBase64;
@@ -292,12 +323,28 @@ export function VoicePromptShell({
     }
   }, [phase, playPrompt, runtime.audio.audioBase64]);
 
+  // Pre-warm token + mic + Deepgram socket while the user reads the prompt.
+  useEffect(() => {
+    if (phase !== 'respond') {
+      void warmupRef.current?.cancel();
+      warmupRef.current = null;
+      return;
+    }
+    beginWarmup();
+    return () => {
+      void warmupRef.current?.cancel();
+      warmupRef.current = null;
+    };
+  }, [beginWarmup, phase]);
+
   // Teardown on unmount.
   useEffect(() => {
     return () => {
       clearTimer();
       void sessionRef.current?.cancel();
       sessionRef.current = null;
+      void warmupRef.current?.cancel();
+      warmupRef.current = null;
       ttsRef.current?.pause();
     };
   }, [clearTimer]);
@@ -320,12 +367,13 @@ export function VoicePromptShell({
   }, [attempt.paywallOnDone, attempt.result?.freeLimit, clearTimer, handleFreeLimit, history]);
 
   const handleRingPress = useCallback(() => {
+    if (isConnectingMic) return;
     if (isRecording) {
       void stopRecording();
     } else {
       void startRecording();
     }
-  }, [isRecording, startRecording, stopRecording]);
+  }, [isConnectingMic, isRecording, startRecording, stopRecording]);
 
   const saveTake = useCallback(async () => {
     if (actionInFlightRef.current) return;
@@ -501,6 +549,7 @@ export function VoicePromptShell({
 
             <RecordArea
               recording={isRecording}
+              connecting={isConnectingMic}
               progress={(limit - remainingSeconds) / limit}
               remaining={remainingSeconds}
               error={localError}
@@ -824,20 +873,49 @@ function ScaffoldStepper({
 
 function RecordArea({
   recording,
+  connecting,
   progress,
   remaining,
   error,
   onPress,
 }: {
   recording: boolean;
+  connecting?: boolean;
   progress: number;
   remaining: number;
   error: string | null;
   onPress: () => void;
 }) {
+  const statusLine = connecting
+    ? 'Connecting mic…'
+    : recording
+      ? 'tap to stop speaking'
+      : 'tap to speak or type';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 18 }}>
-      {recording && (
+      {connecting && (
+        <span
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 7,
+            fontSize: 11,
+            fontWeight: 800,
+            letterSpacing: 0.5,
+            color: colors.active,
+            textTransform: 'uppercase',
+          }}
+        >
+          <span
+            className="riffy-ring-pulse"
+            style={{ width: 8, height: 8, borderRadius: '50%', background: colors.active, display: 'inline-block' }}
+          />
+          Connecting mic
+        </span>
+      )}
+
+      {recording && !connecting && (
         <span
           style={{
             display: 'inline-flex',
@@ -858,12 +936,17 @@ function RecordArea({
         </span>
       )}
 
-      <RecordRing recording={recording} progress={progress} onPress={onPress} />
+      <RecordRing
+        recording={recording}
+        progress={progress}
+        onPress={onPress}
+        disabled={connecting}
+      />
 
       <div style={{ fontWeight: 800, fontSize: 16, color: colors.accent }}>
         {formatRemaining(remaining)}{' '}
         <span style={{ color: colors.faint, fontWeight: 600, fontSize: 13 }}>
-          left · {recording ? 'tap to stop speaking' : 'tap to speak or type'}
+          left · {statusLine}
         </span>
       </div>
 
