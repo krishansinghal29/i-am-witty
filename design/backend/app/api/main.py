@@ -58,12 +58,19 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="i-am-witty backend", lifespan=lifespan)
 
-# Dev CORS: allow the Vite dev server and Capacitor app origins to call the API
-# from a browser. Native Capacitor requests are not subject to CORS; this is for
-# web/dev. Tighten allow_origins for production.
+# CORS: allow the web frontend (prod + dev) and the Capacitor app to call the
+# API from a browser. Native Capacitor requests are not subject to CORS; the
+# capacitor:// + localhost origins cover the dev/native webview cases. With
+# allow_credentials=True an explicit origin list is required (no wildcard).
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        # Production web (Firebase Hosting + custom domain).
+        "https://riffy.pro",
+        "https://www.riffy.pro",
+        "https://i-am-witty.web.app",
+        "https://i-am-witty.firebaseapp.com",
+        # Dev (Vite dev server) + Capacitor app origins.
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "capacitor://localhost",
