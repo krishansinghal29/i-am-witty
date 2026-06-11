@@ -43,7 +43,7 @@ Per-integration platform support (today):
 |---|---|---|---|---|
 | Auth (Firebase) | ✓ native plugin | ✓ native plugin | ✓ popup/redirect | works on all three |
 | Analytics/flags (PostHog) | ✓ | ✓ | ✓ | `posthog-js` works in webview + browser |
-| STT (Deepgram WS + mic) | ✓ | ✓ | ✓ | browser/webview `getUserMedia`; `NativeTranscriptionGateway` is the native fallback |
+| STT (Deepgram WS + mic) | ✓ | ✓ | ✓ | `getUserMedia` + Web Audio PCM → Deepgram (`linear16`, nova-3); one path, no native fallback; text entry always available |
 | Secure storage | ✓ keychain/keystore | ✓ | ✓ IndexedDB/localStorage fallback | web functional, less secure |
 | Push notifications | ✓ | ✓ | ✗ today | web needs Web Push (not wired); reminder pref still persists server-side, OS push degrades |
 | Subscriptions (RevenueCat) | ✓ purchases-capacitor | ✓ | ✗ today | `purchases-capacitor` has **no web purchase** path — see decision below |
@@ -167,8 +167,8 @@ convert DTO→`@/types/models`). Vendors are reached only through `@/integration
 - **Integration ports** (`src/integrations/ports/`): `AuthGateway, SubscriptionGateway, AnalyticsGateway,
   DeviceServices, SecureStore, TranscriptionGateway` (+ `index.ts` barrel).
 - **Real vendor adapters**: `firebase/firebase_auth_gateway.ts` (+ `firebase_app.ts`), `revenuecat/…`, `posthog/…`,
-  `capacitor/capacitor_secure_store.ts` + `capacitor_device_services.ts`, `transcription/deepgram_transcription_gateway.ts`
-  + `native_transcription_gateway.ts`, `capgo/capgo_updater.ts`. All degrade gracefully on web / without keys.
+  `capacitor/capacitor_secure_store.ts` + `capacitor_device_services.ts`, `transcription/deepgram_transcription_gateway.ts`,
+  `capgo/capgo_updater.ts`. All degrade gracefully on web / without keys.
 - **State** (`src/state/`): `query_keys.ts` (`session, config, onboarding, home, catalog, taskRuntime(id), access,
   reminder, offerings`), `query_client.ts` (no-retry on 4xx), `stores/{ui_store, onboarding_store, runtime_store}.ts`.
 - **Composition root** (`src/app/providers.tsx`): builds adapters, `TokenProvider` → `http` → `RiffyApi`, `queryClient`,

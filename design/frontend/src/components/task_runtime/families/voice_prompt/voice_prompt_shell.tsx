@@ -177,7 +177,6 @@ export function VoicePromptShell({
   const recordStageResponse = useRuntimeStore((s) => s.recordStageResponse);
 
   const [remainingSeconds, setRemainingSeconds] = useState(0);
-  const [hasCapturedAudio, setHasCapturedAudio] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isConnectingMic, setIsConnectingMic] = useState(false);
 
@@ -185,7 +184,6 @@ export function VoicePromptShell({
   const warmupRef = useRef<TranscriptionWarmup | null>(null);
   /** Textarea contents when the current speech session started (typed prefix to preserve). */
   const speechBaseRef = useRef('');
-  const audioRef = useRef<{ audioBase64: string; contentType: string | null } | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const ttsRef = useRef<HTMLAudioElement | null>(null);
   const autoplayedRef = useRef(false);
@@ -227,13 +225,6 @@ export function VoicePromptShell({
         const text = result.transcript.trim();
         if (text) {
           setTranscript(liveSpeechText(speechBaseRef.current, text));
-        }
-        if (result.audioBase64) {
-          audioRef.current = {
-            audioBase64: result.audioBase64,
-            contentType: result.contentType,
-          };
-          setHasCapturedAudio(true);
         }
       }
       setInterim('');
@@ -307,11 +298,9 @@ export function VoicePromptShell({
   // Reset the machine whenever a new attempt loads.
   useEffect(() => {
     startAttempt(payload.attemptId);
-    audioRef.current = null;
     actionInFlightRef.current = false;
     autoplayedRef.current = false;
     setRemainingSeconds(0);
-    setHasCapturedAudio(false);
     setLocalError(null);
   }, [payload.attemptId, startAttempt]);
 
@@ -389,8 +378,6 @@ export function VoicePromptShell({
       setScaffoldStageIndex(nextStageIndex(stages, state.scaffoldStageIndex));
       setTranscript('');
       setInterim('');
-      audioRef.current = null;
-      setHasCapturedAudio(false);
       setRemainingSeconds(limit);
     } finally {
       actionInFlightRef.current = false;
@@ -406,11 +393,7 @@ export function VoicePromptShell({
       await stopRecording();
       const state = useRuntimeStore.getState();
       const typedTranscript = state.transcript.trim();
-      const capturedAudio = audioRef.current;
-      const clientTranscript =
-        typedTranscript ||
-        (capturedAudio?.audioBase64 ? '' : NO_RESPONSE_PLACEHOLDER);
-      const fallbackAudio = !typedTranscript ? capturedAudio : null;
+      const clientTranscript = typedTranscript || NO_RESPONSE_PLACEHOLDER;
 
       let stageResponses: { position: number; transcript: string }[] | undefined;
       if (scaffolded) {
@@ -425,14 +408,7 @@ export function VoicePromptShell({
       }
 
       const body: VoiceCompleteBody = {
-        ...(clientTranscript ? { clientTranscript } : {}),
-        ...(fallbackAudio?.audioBase64
-          ? { audioBase64: fallbackAudio.audioBase64 }
-          : {}),
-        ...(fallbackAudio?.contentType
-          ? { contentType: fallbackAudio.contentType }
-          : {}),
-        language: 'en',
+        clientTranscript,
         ...(stageResponses ? { stageResponses } : {}),
       };
 
@@ -490,7 +466,7 @@ export function VoicePromptShell({
     [phase, setPhase],
   );
 
-  const canSubmit = isRecording || transcript.trim().length > 0 || hasCapturedAudio;
+  const canSubmit = isRecording || transcript.trim().length > 0;
   const answerText =
     isRecording && interimTranscript.trim()
       ? liveSpeechText(speechBaseRef.current, interimTranscript)

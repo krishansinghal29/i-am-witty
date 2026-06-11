@@ -8,18 +8,46 @@ import type {
 } from '@/integrations/ports/transcription_gateway';
 import type { TranscriptionToken } from '@/types/models';
 
-/** MediaRecorder timeslice — smaller first chunk for faster live STT. */
-const CHUNK_TIMESLICE_MS = 100;
-/** Nudge interval for browsers that buffer MediaRecorder output until stop. */
-const CHUNK_PUMP_MS = 100;
+/** Deepgram streaming model. nova-3 has a lower WER than nova-2. */
+const DEEPGRAM_MODEL = 'nova-3';
+
+/** How long to wait for Deepgram's trailing results after `CloseStream`. */
+const FLUSH_TIMEOUT_MS = 1200;
+
+/**
+ * AudioWorklet that converts mic audio (Float32 at the context's native sample
+ * rate) to 16-bit little-endian PCM and posts each render quantum to the main
+ * thread. Loaded from a Blob URL so it needs no separately-bundled asset.
+ */
+const PCM_WORKLET_SRC = `
+class PcmWorklet extends AudioWorkletProcessor {
+  process(inputs) {
+    const channel = inputs[0] && inputs[0][0];
+    if (channel && channel.length) {
+      const pcm = new Int16Array(channel.length);
+      for (let i = 0; i < channel.length; i++) {
+        let s = channel[i];
+        s = s < -1 ? -1 : s > 1 ? 1 : s;
+        pcm[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      }
+      this.port.postMessage(pcm.buffer, [pcm.buffer]);
+    }
+    return true;
+  }
+}
+registerProcessor('pcm-worklet', PcmWorklet);
+`;
 
 /**
  * Real Deepgram-backed implementation of {@link TranscriptionGateway}.
  *
- * Streams microphone audio to Deepgram over a raw browser `WebSocket`
- * (no SDK) using a short-lived ephemeral token minted backend-side. The
- * live interim transcript is best-effort and cosmetic; the authoritative
- * final transcript is produced backend-side from the uploaded answer audio.
+ * Streams microphone audio to Deepgram over a raw browser `WebSocket` (no SDK)
+ * using a short-lived ephemeral token minted backend-side. Audio is captured as
+ * raw 16-bit PCM via the Web Audio API — never a `MediaRecorder` container — so
+ * a single `linear16` path works identically across web, iOS (WKWebView) and
+ * Android, with no codec/container fallback. The streamed transcript is
+ * authoritative: the backend trusts it and never re-transcribes, so no answer
+ * audio is retained or uploaded.
  *
  * The composition root injects {@link mintToken}, which calls the backend
  * `POST /v1/transcription-tokens`; the API client is intentionally not
@@ -41,7 +69,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     const ready = (async (): Promise<WarmedConnection> => {
       const connection = await openConnection(this.deps.mintToken, language);
       if (disposed) {
-        releaseConnection(connection);
+        await releaseConnection(connection);
         throw new Error('transcription_warmup_cancelled');
       }
       return connection;
@@ -50,8 +78,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     const cancel = async (): Promise<void> => {
       disposed = true;
       try {
-        const connection = await ready;
-        releaseConnection(connection);
+        await releaseConnection(await ready);
       } catch {
         // Setup failed or was already torn down.
       }
@@ -83,44 +110,19 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
   ): Promise<TranscriptionSession> {
     const { recordingLimitSeconds, language, onInterim, warmup } = opts;
 
-    try {
-      const entry = warmup ? this.warmupEntries.get(warmup) : undefined;
-      const connection = entry
-        ? await entry.take()
-        : await openConnection(this.deps.mintToken, language ?? 'en-US');
+    const entry = warmup ? this.warmupEntries.get(warmup) : undefined;
+    const connection = entry
+      ? await entry.take()
+      : await openConnection(this.deps.mintToken, language ?? 'en-US');
 
-      return buildSession({
-        connection,
-        recordingLimitSeconds,
-        onInterim,
-        blobToBase64: (blob) => this.blobToBase64(blob),
-      });
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  private blobToBase64(blob: Blob): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = (): void => {
-        const result = reader.result;
-        if (typeof result !== 'string') {
-          reject(new Error('Unexpected FileReader result'));
-          return;
-        }
-        const comma = result.indexOf(',');
-        resolve(comma >= 0 ? result.slice(comma + 1) : result);
-      };
-      reader.onerror = (): void => reject(reader.error ?? new Error('read error'));
-      reader.readAsDataURL(blob);
-    });
+    return buildSession({ connection, recordingLimitSeconds, onInterim });
   }
 }
 
 interface WarmedConnection {
   stream: MediaStream;
   ws: WebSocket;
+  audioContext: AudioContext;
 }
 
 interface WarmupEntry {
@@ -133,15 +135,11 @@ interface BuildSessionDeps {
   connection: WarmedConnection;
   recordingLimitSeconds: number;
   onInterim?: (partialTranscript: string) => void;
-  blobToBase64: (blob: Blob) => Promise<string>;
 }
 
 function buildSession(deps: BuildSessionDeps): TranscriptionSession {
-  const { connection, recordingLimitSeconds, onInterim, blobToBase64 } = deps;
-  const { stream, ws } = connection;
-
-  const chunks: Blob[] = [];
-  const { recorder, contentType } = createAudioRecorder(stream);
+  const { connection, recordingLimitSeconds, onInterim } = deps;
+  const { stream, ws, audioContext } = connection;
 
   let finalTranscript = '';
   let interimCb: ((t: string) => void) | undefined = onInterim;
@@ -157,18 +155,6 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
       pendingInterim = text;
     }
   };
-
-  const sendChunk = (chunk: Blob): void => {
-    if (!chunk.size || ws.readyState !== WebSocket.OPEN) return;
-    chunks.push(chunk);
-    ws.send(chunk);
-  };
-
-  recorder.addEventListener('dataavailable', (event: BlobEvent) => {
-    if (event.data?.size) {
-      sendChunk(event.data);
-    }
-  });
 
   const handleWsMessage = async (payload: unknown): Promise<void> => {
     try {
@@ -195,60 +181,44 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
     void handleWsMessage(event.data);
   };
 
-  recorder.start(CHUNK_TIMESLICE_MS);
-  queueFirstChunk(recorder);
-
-  const pumpTimer = setInterval(() => {
-    if (recorder.state !== 'recording') return;
-    try {
-      recorder.requestData();
-    } catch {
-      // requestData is not available on every platform.
+  // Pipe mic PCM straight to the socket. The worklet's silent output keeps the
+  // graph pulled when connected to the destination (no echo, since it writes no
+  // samples).
+  const source = audioContext.createMediaStreamSource(stream);
+  const pcmNode = new AudioWorkletNode(audioContext, 'pcm-worklet');
+  pcmNode.port.onmessage = (event: MessageEvent): void => {
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(event.data as ArrayBuffer);
     }
-  }, CHUNK_PUMP_MS);
+  };
+  source.connect(pcmNode);
+  pcmNode.connect(audioContext.destination);
+  if (audioContext.state === 'suspended') {
+    void audioContext.resume();
+  }
 
-  let limitTimer: ReturnType<typeof setTimeout> | undefined = setTimeout(
-    () => {
-      void session.stop();
-    },
-    recordingLimitSeconds * 1000,
-  );
+  const stopCapture = (): void => {
+    pcmNode.port.onmessage = null;
+    try {
+      source.disconnect();
+    } catch {
+      // ignore
+    }
+    try {
+      pcmNode.disconnect();
+    } catch {
+      // ignore
+    }
+  };
+
+  let limitTimer: ReturnType<typeof setTimeout> | undefined = setTimeout(() => {
+    void session.stop();
+  }, recordingLimitSeconds * 1000);
 
   const clearLimit = (): void => {
     if (limitTimer !== undefined) {
       clearTimeout(limitTimer);
       limitTimer = undefined;
-    }
-  };
-
-  const clearPump = (): void => {
-    clearInterval(pumpTimer);
-  };
-
-  const teardown = (): void => {
-    clearLimit();
-    clearPump();
-    try {
-      if (recorder.state !== 'inactive') {
-        recorder.stop();
-      }
-    } catch {
-      // ignore
-    }
-    try {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'CloseStream' }));
-      }
-      ws.close();
-    } catch {
-      // ignore
-    }
-    for (const track of stream.getTracks()) {
-      try {
-        track.stop();
-      } catch {
-        // ignore
-      }
     }
   };
 
@@ -262,35 +232,29 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
     },
     stop: async (): Promise<TranscriptionResult> => {
       if (settled) {
-        return {
-          transcript: finalTranscript.trim(),
-          audioBase64: null,
-          contentType: null,
-          durationSeconds: 0,
-        };
+        return { transcript: finalTranscript.trim(), durationSeconds: 0 };
       }
       settled = true;
       clearLimit();
-      clearPump();
+      stopCapture();
 
-      try {
-        if (recorder.state !== 'inactive') {
-          recorder.stop();
-        }
-      } catch {
-        // ignore
-      }
-      await delay(300);
-
+      // Ask Deepgram to finalize, then wait briefly for the trailing results
+      // (which still arrive on `ws.onmessage`) before closing the socket.
       try {
         if (ws.readyState === WebSocket.OPEN) {
           ws.send(JSON.stringify({ type: 'CloseStream' }));
         }
+      } catch {
+        // ignore
+      }
+      await waitForClose(ws, FLUSH_TIMEOUT_MS);
+      try {
         ws.close();
       } catch {
         // ignore
       }
 
+      await closeAudio(audioContext);
       for (const track of stream.getTracks()) {
         try {
           track.stop();
@@ -299,30 +263,18 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
         }
       }
 
-      let audioBase64: string | null = null;
-      try {
-        if (chunks.length > 0) {
-          audioBase64 = await blobToBase64(new Blob(chunks, { type: contentType }));
-        }
-      } catch {
-        audioBase64 = null;
-      }
-
       const transcript = finalTranscript.trim();
-      const wordCount = transcript.split(/\s+/).filter(Boolean).length;
-
       return {
         transcript,
-        audioBase64,
-        contentType,
         durationSeconds: (Date.now() - startedAt) / 1000,
-        metadata: { wordCount },
+        metadata: { wordCount: countWords(transcript) },
       };
     },
     cancel: async (): Promise<void> => {
       settled = true;
-      chunks.length = 0;
-      teardown();
+      clearLimit();
+      stopCapture();
+      await releaseConnection(connection);
     },
   };
 
@@ -336,17 +288,57 @@ async function openConnection(
   const cred = await mintToken();
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-  const ws = new WebSocket(
-    'wss://api.deepgram.com/v1/listen?model=nova-2&smart_format=true&interim_results=true&language=' +
-      encodeURIComponent(language),
-    deepgramWsProtocols(cred),
-  );
+  const AudioCtx: typeof AudioContext =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext: typeof AudioContext })
+      .webkitAudioContext;
+  const audioContext = new AudioCtx();
 
-  await waitForWsOpen(ws);
-  return { stream, ws };
+  try {
+    await audioContext.audioWorklet.addModule(workletModuleUrl());
+
+    // Deepgram must be told the exact PCM rate; we send the context's native
+    // rate rather than resampling, which keeps the audio path lossless.
+    const params = new URLSearchParams({
+      model: DEEPGRAM_MODEL,
+      smart_format: 'true',
+      interim_results: 'true',
+      encoding: 'linear16',
+      sample_rate: String(Math.round(audioContext.sampleRate)),
+      channels: '1',
+      language,
+    });
+    const ws = new WebSocket(
+      'wss://api.deepgram.com/v1/listen?' + params.toString(),
+      deepgramWsProtocols(cred),
+    );
+
+    try {
+      await waitForWsOpen(ws);
+    } catch (err) {
+      try {
+        ws.close();
+      } catch {
+        // ignore
+      }
+      throw err;
+    }
+
+    return { stream, ws, audioContext };
+  } catch (err) {
+    await closeAudio(audioContext);
+    for (const track of stream.getTracks()) {
+      try {
+        track.stop();
+      } catch {
+        // ignore
+      }
+    }
+    throw err;
+  }
 }
 
-function releaseConnection(connection: WarmedConnection): void {
+async function releaseConnection(connection: WarmedConnection): Promise<void> {
   try {
     if (connection.ws.readyState === WebSocket.OPEN) {
       connection.ws.send(JSON.stringify({ type: 'CloseStream' }));
@@ -355,6 +347,7 @@ function releaseConnection(connection: WarmedConnection): void {
   } catch {
     // ignore
   }
+  await closeAudio(connection.audioContext);
   for (const track of connection.stream.getTracks()) {
     try {
       track.stop();
@@ -364,19 +357,45 @@ function releaseConnection(connection: WarmedConnection): void {
   }
 }
 
-function queueFirstChunk(recorder: MediaRecorder): void {
-  queueMicrotask(() => {
-    if (recorder.state !== 'recording') return;
-    try {
-      recorder.requestData();
-    } catch {
-      // requestData is not available on every platform.
+let cachedWorkletUrl: string | null = null;
+
+/** Lazily build (and cache) the Blob URL for the PCM worklet module. */
+function workletModuleUrl(): string {
+  if (cachedWorkletUrl === null) {
+    const blob = new Blob([PCM_WORKLET_SRC], { type: 'application/javascript' });
+    cachedWorkletUrl = URL.createObjectURL(blob);
+  }
+  return cachedWorkletUrl;
+}
+
+async function closeAudio(ctx: AudioContext): Promise<void> {
+  try {
+    if (ctx.state !== 'closed') {
+      await ctx.close();
     }
+  } catch {
+    // ignore
+  }
+}
+
+/** Resolve when the socket closes, or after `timeoutMs` — whichever is first. */
+function waitForClose(ws: WebSocket, timeoutMs: number): Promise<void> {
+  if (ws.readyState === WebSocket.CLOSED) {
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve) => {
+    const done = (): void => {
+      clearTimeout(timer);
+      ws.removeEventListener('close', done);
+      resolve();
+    };
+    const timer = setTimeout(done, timeoutMs);
+    ws.addEventListener('close', done);
   });
 }
 
-function delay(ms: number): Promise<void> {
-  return new Promise<void>((resolve) => setTimeout(resolve, ms));
+function countWords(text: string): number {
+  return text.split(/\s+/).filter(Boolean).length;
 }
 
 interface DeepgramMessage {
@@ -388,19 +407,10 @@ interface DeepgramMessage {
       transcript?: string;
     }[];
   };
-  results?: {
-    channels?: {
-      alternatives?: {
-        transcript?: string;
-      }[];
-    }[];
-  };
 }
 
 function extractTranscript(message: DeepgramMessage): string {
-  const live = message.channel?.alternatives?.[0]?.transcript;
-  if (live?.trim()) return live;
-  return message.results?.channels?.[0]?.alternatives?.[0]?.transcript?.trim() ?? '';
+  return message.channel?.alternatives?.[0]?.transcript?.trim() ?? '';
 }
 
 function isBearerToken(cred: TranscriptionToken): boolean {
@@ -455,28 +465,6 @@ function waitForWsOpen(ws: WebSocket, timeoutMs = 10_000): Promise<void> {
     ws.addEventListener('error', onError);
     ws.addEventListener('close', onClose);
   });
-}
-
-function createAudioRecorder(stream: MediaStream): {
-  recorder: MediaRecorder;
-  contentType: string;
-} {
-  const candidates = [
-    'audio/webm;codecs=opus',
-    'audio/webm',
-    'audio/mp4',
-    'audio/ogg;codecs=opus',
-  ];
-  for (const mimeType of candidates) {
-    if (typeof MediaRecorder !== 'undefined' && MediaRecorder.isTypeSupported(mimeType)) {
-      try {
-        return { recorder: new MediaRecorder(stream, { mimeType }), contentType: mimeType };
-      } catch {
-        // isTypeSupported can lie on some mobile browsers; try the next candidate.
-      }
-    }
-  }
-  return { recorder: new MediaRecorder(stream), contentType: 'audio/webm' };
 }
 
 async function readWsPayload(data: unknown): Promise<string> {

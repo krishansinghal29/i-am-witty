@@ -93,9 +93,6 @@ export interface RiffyApi {
     attemptId: string,
     body: {
       clientTranscript?: string;
-      audioBase64?: string;
-      contentType?: string;
-      language?: string;
       stageResponses?: { position: number; transcript: string }[];
     },
   ): Promise<CompleteTaskResult>;
@@ -190,13 +187,6 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
           ...(body.clientTranscript != null
             ? { client_transcript: body.clientTranscript }
             : {}),
-          ...(body.audioBase64 != null
-            ? { audio_base64: body.audioBase64 }
-            : {}),
-          ...(body.contentType != null
-            ? { content_type: body.contentType }
-            : {}),
-          ...(body.language != null ? { language: body.language } : {}),
           stage_responses: body.stageResponses ?? [],
         },
       );

@@ -10,9 +10,9 @@ class EphemeralCredential:
     """Short-lived client credential for the live-transcript path.
 
     The backend holds the real provider key; this narrowly-scoped token lets
-    the client stream directly to the provider for low latency. A
-    non-streaming provider may return a no-op credential (empty token); the
-    client then falls back to typed input without losing correctness.
+    the client stream microphone audio directly to the provider for low
+    latency. The transcript the client streams back is authoritative — the
+    backend does not re-transcribe.
     """
 
     token: str
@@ -22,50 +22,19 @@ class EphemeralCredential:
 
 
 @dataclass(frozen=True)
-class TranscribeInput:
-    audio_base64: str
-    content_type: str
-    language: str | None = None
-
-
-@dataclass(frozen=True)
-class ProsodyMetadata:
-    """Optional, provider-dependent prosody signals.
-
-    Evaluation must NOT depend on these; they are informational only and may
-    be absent for providers that do not report them.
-    """
-
-    word_count: int | None = None
-    pause_count: int | None = None
-
-
-@dataclass(frozen=True)
 class Transcript:
     text: str
-    metadata: ProsodyMetadata | None = None
 
 
 class TranscriptionProvider(Protocol):
     """Swappable speech-to-text provider (Deepgram today).
 
-    The backend is the authority for the transcript that gets evaluated and
-    stored, and the provider key lives only on the backend. Two
-    responsibilities: mint a short-lived client credential for the live path,
-    and produce the authoritative final transcript from submitted audio.
+    The provider key lives only on the backend. Its sole responsibility is to
+    mint a short-lived client credential so the client can stream audio
+    directly to the provider; the client-streamed transcript is authoritative,
+    so the backend never transcribes audio itself.
     """
 
     async def create_ephemeral_credential(self) -> EphemeralCredential:
-        """Mint a short-lived, narrowly-scoped client credential.
-
-        A non-streaming provider can return a no-op credential.
-        """
-        ...
-
-    async def transcribe(self, input: TranscribeInput) -> Transcript:
-        """Batch-transcribe submitted answer audio into the final transcript.
-
-        Returns text plus optional prosody metadata when the provider supports
-        it; callers must treat that metadata as optional.
-        """
+        """Mint a short-lived, narrowly-scoped client credential."""
         ...

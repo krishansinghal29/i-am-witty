@@ -230,9 +230,6 @@ class StageResponseBody(BaseModel):
 
 class CompleteRequest(BaseModel):
     client_transcript: str | None = None
-    audio_base64: str | None = None
-    content_type: str | None = None
-    language: str | None = None
     stage_responses: list[StageResponseBody] = Field(default_factory=list)
 
 
@@ -319,9 +316,6 @@ async def complete_task(
         user.id,
         attempt_id,
         client_transcript=body.client_transcript,
-        audio_base64=body.audio_base64,
-        content_type=body.content_type,
-        language=body.language,
         stage_responses=tuple(
             StageResponse(position=s.position, transcript=s.transcript)
             for s in body.stage_responses

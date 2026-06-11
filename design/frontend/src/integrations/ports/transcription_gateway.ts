@@ -5,8 +5,6 @@ export interface TranscriptionMetadata {
 
 export interface TranscriptionResult {
   transcript: string;
-  audioBase64: string | null; // the USER's answer audio (optional upload for backend confirmation)
-  contentType: string | null;
   durationSeconds: number;
   metadata?: TranscriptionMetadata;
 }

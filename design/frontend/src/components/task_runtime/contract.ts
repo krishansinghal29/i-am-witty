@@ -14,9 +14,6 @@ import type { CompleteTaskResult, TaskRuntime } from '@/types/models';
 /** Completion body shape used by the voice family (maps to `completeTask`). */
 export interface VoiceCompleteBody {
   clientTranscript?: string;
-  audioBase64?: string;
-  contentType?: string;
-  language?: string;
   stageResponses?: { position: number; transcript: string }[];
 }
 

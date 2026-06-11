@@ -214,9 +214,6 @@ class TaskAttemptService:
         attempt_id: uuid.UUID,
         *,
         client_transcript: str | None = None,
-        audio_base64: str | None = None,
-        content_type: str | None = None,
-        language: str | None = None,
         prompt_messages: tuple[PromptMessage, ...] = (),
         assigned_technique: AssignedTechnique | None = None,
         stage_responses: tuple[StageResponse, ...] = (),
@@ -246,12 +243,10 @@ class TaskAttemptService:
             attempt.runtime_state, tuple(prompt_messages), assigned_technique
         )
 
-        # PHASE 2 — external work (no transaction held).
-        transcript = await self._transcription.resolve_final_transcript(
+        # PHASE 2 — external work (no transaction held). The client streamed the
+        # transcript directly from the provider; the backend trusts it as-is.
+        transcript = self._transcription.resolve_final_transcript(
             client_transcript=client_transcript,
-            audio_base64=audio_base64,
-            content_type=content_type,
-            language=language,
         )
         runtime_result = await self._engine.complete(
             CompleteTaskRuntimeInput(
