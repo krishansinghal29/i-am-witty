@@ -167,6 +167,10 @@ SPEC = ExerciseSpec(
         contexts=_generator["contexts"],
         topic_suggestions=_generator["topic_suggestions"],
         creativity_boosters=_generator["creativity_boosters"],
+        # Heightening's target space ("mundane scene + one odd detail") is the
+        # narrowest of the creative exercises and collapses onto its examples the
+        # hardest, so give it two spark words for a richer, more surprising nudge.
+        spark_count=2,
     ),
     generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(

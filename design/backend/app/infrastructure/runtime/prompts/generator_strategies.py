@@ -18,6 +18,12 @@ SEED_SIMPLER_LANGUAGE_NOTE = (
     "result stays easy to understand."
 )
 
+# Word lists a creative generator draws its spark word(s) from. They are large
+# (8k+ verbs, 17k+ adjectives), so the spark is genuinely different every call —
+# that diversity is the content entropy the creative generator otherwise lacks,
+# the thing that stops it collapsing onto its in-context examples.
+_DEFAULT_SPARK_LISTS: tuple[str, ...] = ("verbs", "adjectives")
+
 
 def _as_options(value: str | Sequence[str], name: str) -> list[str]:
     if isinstance(value, str):
@@ -30,20 +36,60 @@ def _as_options(value: str | Sequence[str], name: str) -> list[str]:
     return options
 
 
+def _spark_clause(words: Sequence[str]) -> str:
+    """Frame random spark word(s) as loose inspiration — never a constraint.
+
+    The words guarantee a different nudge every call (the entropy the creative
+    generator otherwise lacks), while the framing keeps the model free to follow
+    the system prompt or invent a different direction entirely.
+    """
+    quoted = " and ".join(f'"{word}"' for word in words)
+    if len(words) == 1:
+        lead, evokes, label, pronoun, obscure = (
+            "here is a random spark word",
+            "whatever it evokes",
+            "word",
+            "it",
+            "if it is obscure",
+        )
+    else:
+        lead, evokes, label, pronoun, obscure = (
+            "here are random spark words",
+            "whatever they evoke",
+            "words",
+            "them",
+            "if they are obscure",
+        )
+    return (
+        f" For fresh inspiration only, {lead}: {quoted}. Let {evokes} nudge you "
+        f"toward an unexpected angle. You do NOT have to use the {label}, reference "
+        f"{pronoun}, or stay literal — {obscure}, just use the vibe. Always follow "
+        "the system prompt's rules and format above; if a more creative direction "
+        "comes to mind, take it."
+    )
+
+
 def creative_generator_prompt(
     *,
     prompt_styles: str | Sequence[str],
     contexts: str | Sequence[str],
     topic_suggestions: str | Sequence[str],
     creativity_boosters: str | Sequence[str],
+    spark_lists: Sequence[str] = _DEFAULT_SPARK_LISTS,
+    spark_count: int = 1,
 ) -> GeneratorPromptFactory:
     styles = _as_options(prompt_styles, "prompt_styles")
     context_options = _as_options(contexts, "contexts")
     topics = _as_options(topic_suggestions, "topic_suggestions")
     boosters = _as_options(creativity_boosters, "creativity_boosters")
+    spark_sources = list(spark_lists)
+    if not spark_sources:
+        raise ValueError("creative generator requires at least one spark list")
+    if spark_count < 1:
+        raise ValueError("spark_count must be at least 1")
 
     def build() -> str:
-        return " ".join(
+        instruction = " ".join(
             [
                 random.choice(styles),
                 random.choice(context_options),
@@ -51,6 +97,11 @@ def creative_generator_prompt(
                 random.choice(boosters),
             ]
         )
+        spark_words = [
+            random.choice(word_list(random.choice(spark_sources)))
+            for _ in range(spark_count)
+        ]
+        return instruction + _spark_clause(spark_words)
 
     return build
 
