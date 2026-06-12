@@ -4,20 +4,25 @@ import { chatbubbleEllipsesOutline, paperPlaneOutline } from 'ionicons/icons';
 import { colors } from '@/theme/tokens';
 import { useUiStore } from '@/state/stores/ui_store';
 import { useAppConfig } from '@/features/config/use_app_config';
+import { useProgressSummary } from '@/features/progress/use_progress_summary';
+import { StreakChip } from './streak_chip';
 import './ui.css';
 
-export interface TopClusterProps {
+export interface TopBarProps {
   /** Overrides the Telegram URL from app config; falls back to config, then hides. */
   telegramUrl?: string;
   /** Source-screen tag passed to the support sheet. */
   supportSource?: string;
 }
 
-const CLUSTER: CSSProperties = {
-  position: 'fixed',
-  top: 'calc(env(safe-area-inset-top, 0px) + 10px)',
-  right: 16,
-  zIndex: 50,
+const ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 10,
+};
+
+const ACTIONS: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
@@ -62,13 +67,17 @@ const DOT: CSSProperties = {
 };
 
 /**
- * Persistent top-right cluster: a Telegram community link and a "Chat with us"
- * support bubble (with attention dot). Rendered once by the tab shell.
+ * Inline page top bar: the streak chip on the left, a Telegram community link
+ * and a "Chat with us" support bubble (with attention dot) on the right.
+ * Rendered at the top of each tab page (Home, Practice, Role play) for one
+ * consistent header. The streak is read from the shared `/v1/home` query, so it
+ * stays in sync with the home screen without an extra fetch.
  */
-export function TopCluster({ telegramUrl, supportSource = 'top_cluster' }: TopClusterProps) {
+export function TopBar({ telegramUrl, supportSource = 'top_bar' }: TopBarProps) {
   const attentionDot = useUiStore((state) => state.attentionDot);
   const openSupport = useUiStore((state) => state.openSupport);
   const { values } = useAppConfig();
+  const { currentStreak } = useProgressSummary();
 
   const configUrl = values['telegram_community_url'];
   const tgUrl =
@@ -80,29 +89,33 @@ export function TopCluster({ telegramUrl, supportSource = 'top_cluster' }: TopCl
   };
 
   return (
-    <div style={CLUSTER}>
-      {tgUrl && (
+    <div style={ROW}>
+      <StreakChip count={currentStreak} />
+
+      <div style={ACTIONS}>
+        {tgUrl && (
+          <button
+            type="button"
+            aria-label="Join our Telegram community"
+            className="riffy-pressable"
+            style={TG_BUTTON}
+            onClick={openTelegram}
+          >
+            <IonIcon icon={paperPlaneOutline} style={{ fontSize: 22 }} aria-hidden />
+          </button>
+        )}
+
         <button
           type="button"
-          aria-label="Join our Telegram community"
+          aria-label="Chat with us"
           className="riffy-pressable"
-          style={TG_BUTTON}
-          onClick={openTelegram}
+          style={CHAT_BUTTON}
+          onClick={() => openSupport(supportSource)}
         >
-          <IonIcon icon={paperPlaneOutline} style={{ fontSize: 22 }} aria-hidden />
+          {attentionDot && <span style={DOT} />}
+          <IonIcon icon={chatbubbleEllipsesOutline} style={{ fontSize: 22 }} aria-hidden />
         </button>
-      )}
-
-      <button
-        type="button"
-        aria-label="Chat with us"
-        className="riffy-pressable"
-        style={CHAT_BUTTON}
-        onClick={() => openSupport(supportSource)}
-      >
-        {attentionDot && <span style={DOT} />}
-        <IonIcon icon={chatbubbleEllipsesOutline} style={{ fontSize: 22 }} aria-hidden />
-      </button>
+      </div>
     </div>
   );
 }

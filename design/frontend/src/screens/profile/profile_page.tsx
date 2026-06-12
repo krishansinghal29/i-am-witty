@@ -4,11 +4,9 @@ import {
   barbellOutline,
   checkmarkCircle,
   chevronForwardOutline,
-  documentTextOutline,
   logOutOutline,
   paperPlaneOutline,
   personOutline,
-  shieldCheckmarkOutline,
   sparkles,
   trashOutline,
 } from 'ionicons/icons';
@@ -237,8 +235,6 @@ function asUrl(value: unknown): string | undefined {
   return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
-const CANONICAL_TERMS_URL = 'https://riffy.pro/legal#terms';
-const CANONICAL_PRIVACY_URL = 'https://riffy.pro/legal#privacy';
 const CANONICAL_ACCOUNT_DELETION_URL =
   'https://riffy.pro/legal#account-deletion';
 
@@ -293,8 +289,6 @@ export function ProfilePage() {
   const openSupport = useUiStore((state) => state.openSupport);
 
   const telegramUrl = asUrl(values['telegram_community_url']);
-  const termsUrl = asUrl(values['terms_url']) ?? CANONICAL_TERMS_URL;
-  const privacyUrl = asUrl(values['privacy_url']) ?? CANONICAL_PRIVACY_URL;
   const accountDeletionUrl =
     asUrl(values['account_deletion_url']) ?? CANONICAL_ACCOUNT_DELETION_URL;
 
@@ -395,16 +389,6 @@ export function ProfilePage() {
             }}
             label="Chat with us"
             onClick={() => openSupport('profile')}
-          />
-          <MenuRow
-            icon={documentTextOutline}
-            label="Terms of Service"
-            onClick={() => openExternal(termsUrl)}
-          />
-          <MenuRow
-            icon={shieldCheckmarkOutline}
-            label="Privacy Policy"
-            onClick={() => openExternal(privacyUrl)}
           />
           <MenuRow
             icon={trashOutline}

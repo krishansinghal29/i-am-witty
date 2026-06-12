@@ -201,7 +201,7 @@ export function SupportSheet() {
 
             <div style={TAG}>
               <IonIcon icon={lockClosedOutline} style={{ fontSize: 13 }} aria-hidden />
-              Private · always here, on every screen
+              Private
             </div>
           </>
         )}

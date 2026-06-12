@@ -5,7 +5,7 @@ import {
   ErrorView,
   LoadingView,
   PlanPath,
-  StreakChip,
+  TopBar,
   WeekStrip,
 } from '@/components/ui';
 import type { PlanNode, PlanNodeStatus } from '@/components/ui';
@@ -92,15 +92,7 @@ export function HomePage() {
     content = (
       <>
         <div style={HEADER}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-            }}
-          >
-            <StreakChip count={progress.currentStreak} />
-          </div>
+          <TopBar supportSource="home" />
 
           <div style={{ marginTop: 16 }}>
             <WeekStrip days={progress.week} />

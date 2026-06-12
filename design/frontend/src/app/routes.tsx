@@ -20,7 +20,7 @@ import {
 import { OnboardingGuard } from '@/app/guards/onboarding_guard';
 import { ErrorBoundary } from '@/app/error_boundary';
 import { useIntegrations } from '@/app/providers';
-import { TopCluster, EmptyView } from '@/components/ui';
+import { TopBar, EmptyView } from '@/components/ui';
 import { HomePage } from '@/screens/home/home_page';
 import { PracticePage } from '@/screens/practice/practice_page';
 import { ProfilePage } from '@/screens/profile/profile_page';
@@ -35,6 +35,9 @@ function RolePlayPlaceholder() {
   return (
     <IonPage>
       <IonContent>
+        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 14px) 20px 0' }}>
+          <TopBar supportSource="roleplay" />
+        </div>
         <EmptyView
           title="Role play"
           message="This space is warming up. Check back soon."
@@ -117,7 +120,6 @@ export function AppTabs() {
           </IonTabButton>
         </IonTabBar>
       </IonTabs>
-      <TopCluster />
       <PaywallSheet />
       <SupportSheet />
     </>

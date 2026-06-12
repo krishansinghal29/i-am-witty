@@ -18,6 +18,9 @@ class OnboardingTrigger(str, enum.Enum):
     work = "work"
     friends = "friends"
     stage = "stage"
+    other = "other"
+    # Legacy value, no longer offered in onboarding; kept so existing rows and
+    # older app builds remain valid.
     teased = "teased"
 
 

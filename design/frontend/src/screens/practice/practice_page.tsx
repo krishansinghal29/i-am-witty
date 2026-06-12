@@ -9,6 +9,7 @@ import {
   ErrorView,
   LoadingView,
   TintedThumbnail,
+  TopBar,
 } from '@/components/ui';
 import { colors, gradients } from '@/theme/tokens';
 import { useFreeLimit } from '@/features/entitlement/use_free_limit';
@@ -221,7 +222,8 @@ export function PracticePage() {
     <IonPage>
       <IonContent>
         <div style={HEADER}>
-          <h1 style={TITLE}>Practice</h1>
+          <TopBar supportSource="practice" />
+          <h1 style={{ ...TITLE, marginTop: 16 }}>Practice</h1>
           <p style={SUBTITLE}>
             Pick anything, any time. No one’s listening — just you warming up.
           </p>

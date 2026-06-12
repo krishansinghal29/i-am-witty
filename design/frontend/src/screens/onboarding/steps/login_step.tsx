@@ -1,12 +1,11 @@
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { IonIcon, IonSpinner } from '@ionic/react';
-import { lockClosedOutline, logoApple, logoGoogle, sparkles } from 'ionicons/icons';
+import { logoApple, logoGoogle, sparkles } from 'ionicons/icons';
 import { colors, gradients, radius } from '@/theme/tokens';
 import { AppError } from '@/data/errors/app_error';
 import {
   CENTER_HERO,
   ERROR_LINE,
-  PRIVACY,
   PUSH_DOWN,
   STEP_BODY,
 } from '@/screens/onboarding/onboarding_styles';
@@ -265,10 +264,10 @@ export function LoginStep({
         <div style={SPARK} aria-hidden>
           <IonIcon icon={sparkles} style={{ fontSize: 40 }} />
         </div>
-        <h2 style={HEADING}>Save your progress</h2>
+        <h2 style={HEADING}>You’ve taken the first step</h2>
         <p style={SUB}>
-          Sign in to keep your streak and pick up right where you left off on any
-          device.
+          That’s the hardest part. Sign in to lock it in and keep the momentum
+          going — your reps will be right here whenever you come back.
         </p>
       </div>
 
@@ -401,11 +400,6 @@ export function LoginStep({
         )}
 
         {shownError != null && <p style={ERROR_LINE}>{shownError}</p>}
-
-        <div style={PRIVACY}>
-          <IonIcon icon={lockClosedOutline} aria-hidden />
-          We never post anything. Your practice stays yours.
-        </div>
       </div>
     </div>
   );

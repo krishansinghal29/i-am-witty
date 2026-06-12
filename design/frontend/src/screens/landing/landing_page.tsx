@@ -92,8 +92,7 @@ export function LandingPage() {
             <nav className="nav-links">
               <a className="lk" href="#how" onClick={scrollTo('how')}>How it works</a>
               <a className="lk" href="#why" onClick={scrollTo('why')}>Why Riffy</a>
-              <a className="lk" href="#reps" onClick={scrollTo('reps')}>Reps</a>
-              <a className="btn btn-primary btn-sm" href="/app" onClick={goApp}>Open app <span className="arr">→</span></a>
+              <a className="btn btn-primary btn-sm" href="/app" onClick={goApp}>Start practicing <span className="arr">→</span></a>
             </nav>
           </div>
         </header>
@@ -102,22 +101,22 @@ export function LandingPage() {
         <section className="hero">
           <div className="wrap hero-grid">
             <div className="hero-copy">
-              <span className="eyebrow reveal" style={{ animationDelay: '.05s' }}>✨ Practice in private</span>
+              <span className="eyebrow reveal" style={{ animationDelay: '.05s' }}>✨ A little gym for your social spark</span>
               <h1 className="head reveal" style={{ animationDelay: '.12s' }}>
-                Get wittier —<br /><span className="grad">without the audience.</span>
+                Get wittier,<br /><span className="grad">one tiny rep at a time.</span>
               </h1>
               <p className="sub reveal" style={{ animationDelay: '.2s' }}>
-                Riffy is a calm little gym for your social spark. Short, playful voice reps that build
-                real-time humour, storytelling, and confidence — no stage, no stakes.
+                Riffy turns getting funnier into a habit — short, playful voice reps that build
+                real-time humour, storytelling, and confidence.
               </p>
               <div className="cta-row reveal" style={{ animationDelay: '.28s' }}>
                 <a className="btn btn-primary" href="/app" onClick={goApp}>Start practicing — it's free <span className="arr">→</span></a>
                 <a className="btn btn-ghost" href="#how" onClick={scrollTo('how')}>See how it works</a>
               </div>
               <div className="trust reveal" style={{ animationDelay: '.36s' }}>
-                <span><span className="ic">🔒</span> Private by default</span>
-                <span><span className="ic">🎧</span> 2-minute reps</span>
-                <span><span className="ic">🧡</span> No leaderboards</span>
+                <span><span className="ic">🎙️</span> Speak your answers</span>
+                <span><span className="ic">🎧</span> Two-minute reps</span>
+                <span><span className="ic">🔥</span> Gentle daily streaks</span>
               </div>
             </div>
 
@@ -138,10 +137,18 @@ export function LandingPage() {
                   <div className="notch" />
                   <div className="s-top">
                     <span className="s-flame">🔥 5</span>
-                    <span className="s-chat">
-                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z" />
-                      </svg>
+                    <span className="s-actions">
+                      <span className="s-tg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="m22 2-7 20-4-9-9-4 20-7Z" />
+                          <path d="M22 2 11 13" />
+                        </svg>
+                      </span>
+                      <span className="s-chat">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M21 11.5a8.4 8.4 0 0 1-12.7 7.2L3 21l2.3-4A8.4 8.4 0 1 1 21 11.5Z" />
+                        </svg>
+                      </span>
                     </span>
                   </div>
                   <div className="s-week">
@@ -189,7 +196,7 @@ export function LandingPage() {
         {/* ====================== EMPATHY ====================== */}
         <section className="wrap empathy">
           <span className="lead">For the quietly funny ones</span>
-          <p>Most "be funnier" advice means <em>perform, right now.</em> Riffy is the opposite — a safe room to fumble, retry, and actually get the reps in.</p>
+          <p>Most "be funnier" advice means <em>perform, right now.</em> Riffy flips it — you get the reps in first, so the funny starts showing up on its own.</p>
         </section>
 
         {/* ====================== HOW IT WORKS ====================== */}
@@ -231,7 +238,7 @@ export function LandingPage() {
             <div className="sec-head">
               <span className="kicker">Why Riffy</span>
               <h2>Built for the anxious introvert</h2>
-              <p>No cringe, no crowd. Just tiny wins that stack into a quicker, more confident you.</p>
+              <p>Tiny wins that stack into a quicker, more confident you.</p>
             </div>
             <div className="feat-grid">
               <div className="feat">
@@ -247,48 +254,8 @@ export function LandingPage() {
                 <div><h3>Real voice reps</h3><p>You speak your answers out loud — the muscle you actually use in conversation, trained where nobody's watching.</p></div>
               </div>
               <div className="feat">
-                <div className="badge g">🔒</div>
-                <div><h3>Truly private</h3><p>A safe room to be bad at first. Nothing performed, nothing public — just you, practicing until it clicks.</p></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ====================== REP TYPES ====================== */}
-        <section className="sec reps" id="reps">
-          <div className="wrap">
-            <div className="sec-head">
-              <span className="kicker">The reps</span>
-              <h2>Three ways to find the funny</h2>
-              <p>Short, varied exercises so practice never feels like a worksheet.</p>
-            </div>
-            <div className="rep-grid">
-              <div className="rep r1">
-                <span className="tag">QUICK COMEBACK</span>
-                <h3>One line, one shot</h3>
-                <p>A single setup with a technique to try. React fast and land the turn.</p>
-                <div className="demo">
-                  <div className="bub she"><b>She</b>You're late… again.</div>
-                  <div className="bub you"><b>You</b>Building suspense. You're welcome.</div>
-                </div>
-              </div>
-              <div className="rep r2">
-                <span className="tag">DIALOGUE</span>
-                <h3>Read the back-and-forth</h3>
-                <p>A short exchange sets the scene, then you answer the last beat in character.</p>
-                <div className="demo">
-                  <div className="bub you"><b>You</b>Pick a movie?</div>
-                  <div className="bub she"><b>She</b>Surprise me.</div>
-                  <div className="bub you"><b>You</b>Bold. Hope you like documentaries about cheese.</div>
-                </div>
-              </div>
-              <div className="rep r3">
-                <span className="tag">SCAFFOLDED</span>
-                <h3>Build it in steps</h3>
-                <p>Rehearse a move across a few small steps — only the final combine is scored.</p>
-                <div className="demo">
-                  <div className="bub she" style={{ maxWidth: '100%' }}><b>Push → Pull → Combine</b>Practice the tease, then the warmth, then weave both into one easy line.</div>
-                </div>
+                <div className="badge g">🎭</div>
+                <div><h3>A growing library</h3><p>Quick comebacks, dialogues, and step-by-step builds — varied reps so practice never feels like a worksheet.</p></div>
               </div>
             </div>
           </div>
@@ -300,9 +267,9 @@ export function LandingPage() {
             <div className="cta-card">
               <span className="spark">✨</span>
               <h2>Ready to find your spark?</h2>
-              <p>Two minutes today. A quicker, funnier you — quietly.</p>
-              <a className="btn" href="/app" onClick={goApp}>Open Riffy <span className="arr">→</span></a>
-              <p className="fine">Free to start · No audience required</p>
+              <p>Two minutes today. A quicker, funnier you.</p>
+              <a className="btn" href="/app" onClick={goApp}>Start practicing <span className="arr">→</span></a>
+              <p className="fine">Free to start · Two minutes a day</p>
             </div>
           </div>
         </section>
@@ -318,8 +285,7 @@ export function LandingPage() {
               <div className="foot-links">
                 <a href="#how" onClick={scrollTo('how')}>How it works</a>
                 <a href="#why" onClick={scrollTo('why')}>Why Riffy</a>
-                <a href="#reps" onClick={scrollTo('reps')}>Reps</a>
-                <a href="/app" onClick={goApp}>Open app</a>
+                <a href="/app" onClick={goApp}>Start practicing</a>
                 <a href="/legal#privacy">Privacy</a>
                 <a href="/legal#terms">Terms</a>
                 <a href="/legal#account-deletion">Account deletion</a>

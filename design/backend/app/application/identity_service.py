@@ -8,9 +8,10 @@ from app.ports.repositories.onboarding_repository import OnboardingRepository
 from app.ports.repositories.user_repository import UserRepository
 
 # Allowed onboarding triggers (mirrors OnboardingTrigger.value strings); kept
-# inline so the application layer stays free of infrastructure imports.
+# inline so the application layer stays free of infrastructure imports. The
+# legacy "teased" value is still accepted so older app builds keep working.
 _ALLOWED_TRIGGERS = frozenset(
-    {"group_chats", "dates", "work", "friends", "stage", "teased"}
+    {"group_chats", "dates", "work", "friends", "stage", "other", "teased"}
 )
 
 

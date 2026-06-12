@@ -4,6 +4,7 @@ import './legal.css';
 
 const LAST_UPDATED = 'June 9, 2026';
 const CONTACT_EMAIL = 'privacy@riffy.pro';
+const SUPPORT_EMAIL = 'support@riffy.pro';
 
 function scrollToHash() {
   const id = window.location.hash.replace('#', '');
@@ -247,8 +248,8 @@ export function LegalPage() {
               <li>
                 Open Profile, then Chat with us, and send the message
                 "Delete my Riffy account"; or email{' '}
-                <a href={`mailto:${CONTACT_EMAIL}?subject=Delete%20my%20Riffy%20account`}>
-                  {CONTACT_EMAIL}
+                <a href={`mailto:${SUPPORT_EMAIL}?subject=Delete%20my%20Riffy%20account`}>
+                  {SUPPORT_EMAIL}
                 </a>{' '}
                 with the subject "Delete my Riffy account".
               </li>

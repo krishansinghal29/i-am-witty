@@ -1,7 +1,8 @@
 /**
  * The six onboarding trigger options. `value` mirrors the backend
- * `OnboardingTrigger` enum exactly (group_chats | dates | work | friends |
- * stage | teased); the rest is presentation copy for the trigger step.
+ * `OnboardingTrigger` enum (group_chats | dates | work | friends | stage |
+ * other). The legacy `teased` value is retained server-side for older clients
+ * but is no longer offered here. The rest is presentation copy for the step.
  */
 
 export type TriggerValue =
@@ -10,7 +11,7 @@ export type TriggerValue =
   | 'work'
   | 'friends'
   | 'stage'
-  | 'teased';
+  | 'other';
 
 export interface TriggerOption {
   value: TriggerValue;
@@ -24,7 +25,7 @@ export const TRIGGER_OPTIONS: readonly TriggerOption[] = [
   { value: 'work', label: 'Work', emoji: '💼' },
   { value: 'friends', label: 'With friends', emoji: '👥' },
   { value: 'stage', label: 'On stage', emoji: '🎤' },
-  { value: 'teased', label: 'When someone teases me', emoji: '😏' },
+  { value: 'other', label: 'Something else', emoji: '✨' },
 ] as const;
 
 /** Look up a trigger option by its backend value. */
