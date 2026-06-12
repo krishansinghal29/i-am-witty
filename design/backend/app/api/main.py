@@ -75,6 +75,9 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "capacitor://localhost",
         "http://localhost",
+        # Android Capacitor webview uses the https scheme by default
+        # (server.androidScheme), so its origin is https://localhost.
+        "https://localhost",
     ],
     allow_credentials=True,
     allow_methods=["*"],

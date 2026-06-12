@@ -28,6 +28,13 @@ const config: CapacitorConfig = {
       channelUrl: '',
       appReadyTimeout: 10000,
     },
+    // @capacitor-firebase/authentication loads no providers by default, so
+    // native signInWithGoogle/Apple reject with "provider is not enabled"
+    // until they're listed here. Google also needs rgcfaIncludeGoogle=true in
+    // android/variables.gradle to pull in its native Credential Manager libs.
+    FirebaseAuthentication: {
+      providers: ['google.com', 'apple.com'],
+    },
   },
 };
 

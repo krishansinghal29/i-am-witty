@@ -13,4 +13,8 @@ ext {
     androidxJunitVersion = '1.3.0'
     androidxEspressoCoreVersion = '3.7.0'
     cordovaAndroidVersion = '14.0.1'
+    // Pull in the native Google Sign-In (Credential Manager) libraries that
+    // @capacitor-firebase/authentication keeps compileOnly by default. Without
+    // this, signInWithGoogle crashes with NoClassDefFoundError at runtime.
+    rgcfaIncludeGoogle = true
 }
