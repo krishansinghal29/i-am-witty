@@ -178,14 +178,6 @@
 @media (max-width:920px){.rl .chip-a{left:2%}.rl .chip-b{right:2%}}
 @media (max-width:440px){.rl .chip-f{display:none}}
 
-/* ====================== EMPATHY ====================== */
-.rl .empathy{text-align:center;padding:18px 0 8px}
-.rl .empathy p{max-width:30ch;margin:0 auto;font-family:var(--display);font-weight:500;
-  font-size:clamp(22px,2.7vw,30px);line-height:1.32;letter-spacing:-.4px;color:var(--text)}
-.rl .empathy p em{font-style:normal;color:var(--accent)}
-.rl .empathy .lead{display:block;font-family:var(--body);font-weight:600;font-size:13px;letter-spacing:1.6px;
-  text-transform:uppercase;color:var(--faint);margin-bottom:18px}
-
 /* ====================== SECTIONS ====================== */
 .rl .sec{padding:84px 0;position:relative}
 .rl .sec-head{text-align:center;max-width:640px;margin:0 auto 52px}
@@ -208,20 +200,6 @@
 .rl .step p em{font-style:normal;color:var(--accent);font-weight:600}
 .rl .step .arrline{position:absolute;top:54px;right:-26px;z-index:4;color:var(--line-2)}
 @media (max-width:840px){.rl .step .arrline{display:none}}
-
-/* ---------- features ---------- */
-.rl .feat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
-@media (max-width:760px){.rl .feat-grid{grid-template-columns:1fr}}
-.rl .feat{display:flex;gap:18px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-  padding:26px;box-shadow:var(--shadow-card);transition:transform .25s,border-color .25s}
-.rl .feat:hover{transform:translateY(-4px);border-color:var(--line-2)}
-.rl .feat .badge{width:54px;height:54px;border-radius:16px;flex:none;display:grid;place-items:center;font-size:26px}
-.rl .feat .badge.o{background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.24)}
-.rl .feat .badge.b{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.24)}
-.rl .feat .badge.g{background:rgba(22,163,74,.12);border:1px solid rgba(22,163,74,.24)}
-.rl .feat .badge.a{background:rgba(245,163,10,.12);border:1px solid rgba(245,163,10,.26)}
-.rl .feat h3{font-family:var(--display);font-weight:600;font-size:19px;letter-spacing:-.2px}
-.rl .feat p{color:var(--muted);font-size:14.5px;margin-top:7px;line-height:1.55}
 
 /* ====================== FINAL CTA ====================== */
 .rl .final{padding:30px 0 96px}
@@ -246,8 +224,8 @@
 .rl footer{border-top:1px solid var(--line);padding:40px 0 56px}
 .rl .foot{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .rl .foot .brand .tile{width:34px;height:34px;border-radius:10px}
-.rl .foot-links{display:flex;gap:26px;flex-wrap:wrap}
-.rl .foot-links a{font-size:14px;font-weight:600;color:var(--muted);transition:color .2s}
+.rl .foot-links{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.rl .foot-links a{font-size:12.5px;font-weight:600;color:var(--faint);transition:color .2s}
 .rl .foot-links a:hover{color:var(--accent)}
 .rl .copy{margin-top:22px;font-size:13px;color:var(--faint);font-weight:500}
 .rl .copy b{color:var(--muted);font-weight:700}

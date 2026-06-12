@@ -91,7 +91,6 @@ export function LandingPage() {
             </a>
             <nav className="nav-links">
               <a className="lk" href="#how" onClick={scrollTo('how')}>How it works</a>
-              <a className="lk" href="#why" onClick={scrollTo('why')}>Why Riffy</a>
               <a className="btn btn-primary btn-sm" href="/app" onClick={goApp}>Start practicing <span className="arr">→</span></a>
             </nav>
           </div>
@@ -161,21 +160,21 @@ export function LandingPage() {
                     <div className="s-card next">
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <span className="s-badge">NEXT UP</span>
-                        <h4>Yes, And…</h4>
+                        <h4>Misinterpretation</h4>
                         <div className="s-meta">⏱ 2 min · Practice</div>
                       </div>
                       <div className="s-thumb p">🎭</div>
                     </div>
                     <div className="s-card">
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4>Warm-up riff</h4>
+                        <h4>Yes, And</h4>
                         <div className="s-meta">⏱ 1 min · Sprint</div>
                       </div>
                       <div className="s-thumb g">⚡</div>
                     </div>
                     <div className="s-card">
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4>The Peak–End story</h4>
+                        <h4>Heightening</h4>
                         <div className="s-meta">⏱ 1 min · Radio</div>
                       </div>
                       <div className="s-thumb o">🎙️</div>
@@ -191,12 +190,6 @@ export function LandingPage() {
               </div>
             </div>
           </div>
-        </section>
-
-        {/* ====================== EMPATHY ====================== */}
-        <section className="wrap empathy">
-          <span className="lead">For the quietly funny ones</span>
-          <p>Most "be funnier" advice means <em>perform, right now.</em> Riffy flips it — you get the reps in first, so the funny starts showing up on its own.</p>
         </section>
 
         {/* ====================== HOW IT WORKS ====================== */}
@@ -232,35 +225,6 @@ export function LandingPage() {
           </div>
         </section>
 
-        {/* ====================== WHY / FEATURES ====================== */}
-        <section className="sec" id="why" style={{ paddingTop: 24 }}>
-          <div className="wrap">
-            <div className="sec-head">
-              <span className="kicker">Why Riffy</span>
-              <h2>Built for the anxious introvert</h2>
-              <p>Tiny wins that stack into a quicker, more confident you.</p>
-            </div>
-            <div className="feat-grid">
-              <div className="feat">
-                <div className="badge o">🧡</div>
-                <div><h3>Gentle, honest feedback</h3><p>A real read on what worked and what to try — kind, never harsh. You grow against yesterday's you, not a scoreboard.</p></div>
-              </div>
-              <div className="feat">
-                <div className="badge a">🔥</div>
-                <div><h3>Tiny daily wins</h3><p>A few two-minute reps a day. Forgiving streaks keep the momentum playful instead of punishing.</p></div>
-              </div>
-              <div className="feat">
-                <div className="badge b">🎙️</div>
-                <div><h3>Real voice reps</h3><p>You speak your answers out loud — the muscle you actually use in conversation, trained where nobody's watching.</p></div>
-              </div>
-              <div className="feat">
-                <div className="badge g">🎭</div>
-                <div><h3>A growing library</h3><p>Quick comebacks, dialogues, and step-by-step builds — varied reps so practice never feels like a worksheet.</p></div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ====================== FINAL CTA ====================== */}
         <section className="final">
           <div className="wrap">
@@ -283,9 +247,6 @@ export function LandingPage() {
                 <Wordmark />
               </a>
               <div className="foot-links">
-                <a href="#how" onClick={scrollTo('how')}>How it works</a>
-                <a href="#why" onClick={scrollTo('why')}>Why Riffy</a>
-                <a href="/app" onClick={goApp}>Start practicing</a>
                 <a href="/legal#privacy">Privacy</a>
                 <a href="/legal#terms">Terms</a>
                 <a href="/legal#account-deletion">Account deletion</a>

@@ -265,10 +265,7 @@ export function LoginStep({
           <IonIcon icon={sparkles} style={{ fontSize: 40 }} />
         </div>
         <h2 style={HEADING}>You’ve taken the first step</h2>
-        <p style={SUB}>
-          That’s the hardest part. Sign in to lock it in and keep the momentum
-          going — your reps will be right here whenever you come back.
-        </p>
+        <p style={SUB}>Sign in to continue</p>
       </div>
 
       <div style={{ ...AUTH_GROUP, ...PUSH_DOWN }}>
