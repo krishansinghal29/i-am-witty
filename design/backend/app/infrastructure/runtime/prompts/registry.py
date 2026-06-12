@@ -10,6 +10,8 @@ from app.infrastructure.runtime.prompts.misinterpretation import SPEC as MISINTE
 from app.infrastructure.runtime.prompts.misinterpretation_techniques import SPEC as MISINTERPRETATION_TECHNIQUES
 from app.infrastructure.runtime.prompts.push_pull import SPEC as PUSH_PULL
 from app.infrastructure.runtime.prompts.question_answer_tease import SPEC as QUESTION_ANSWER_TEASE
+from app.infrastructure.runtime.prompts.sex_with_me import SPEC as SEX_WITH_ME_IS_LIKE
+from app.infrastructure.runtime.prompts.sexual_misinterpretation import SPEC as SEXUAL_MISINTERPRETATION
 from app.infrastructure.runtime.prompts.shit_test import SPEC as SHIT_TEST
 from app.infrastructure.runtime.prompts.spec import ExerciseSpec
 from app.infrastructure.runtime.prompts.vibing import SPEC as VIBING
@@ -29,6 +31,8 @@ _EXERCISES: dict[str, ExerciseSpec] = {
         HEIGHTENING,
         FIRST_UNUSUAL_THING,
         SHIT_TEST,
+        SEXUAL_MISINTERPRETATION,
+        SEX_WITH_ME_IS_LIKE,
     ]
 }
 
