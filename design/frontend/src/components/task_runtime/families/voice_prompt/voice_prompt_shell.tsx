@@ -179,6 +179,9 @@ export function VoicePromptShell({
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [localError, setLocalError] = useState<string | null>(null);
   const [isConnectingMic, setIsConnectingMic] = useState(false);
+  /** True once the prompt TTS has finished speaking (or there is none). Gates
+   * the response timer so the countdown starts after the prompt, not during. */
+  const [promptDone, setPromptDone] = useState(false);
 
   const sessionRef = useRef<TranscriptionSession | null>(null);
   const warmupRef = useRef<TranscriptionWarmup | null>(null);
@@ -243,6 +246,10 @@ export function VoicePromptShell({
 
   const startRecording = useCallback(async (): Promise<void> => {
     if (isRecording || isConnectingMic) return;
+    // Tapping record commits to answering now: silence the prompt and start the
+    // response window even if the TTS hasn't finished playing.
+    ttsRef.current?.pause();
+    setPromptDone(true);
     setLocalError(null);
     setInterim('');
     speechBaseRef.current = useRuntimeStore.getState().transcript;
@@ -284,14 +291,22 @@ export function VoicePromptShell({
 
   const playPrompt = useCallback(() => {
     const b64 = runtime.audio.audioBase64;
-    if (!b64) return;
+    if (!b64) {
+      setPromptDone(true);
+      return;
+    }
     try {
       const type = runtime.audio.contentType ?? 'audio/mpeg';
       const el = new Audio(`data:${type};base64,${b64}`);
       ttsRef.current = el;
-      void el.play().catch(() => {});
+      // Start the response window when the prompt finishes — or right away if
+      // playback fails (e.g. autoplay blocked) so the timer never hangs.
+      el.onended = () => setPromptDone(true);
+      el.onerror = () => setPromptDone(true);
+      void el.play().catch(() => setPromptDone(true));
     } catch {
       // Best-effort playback; the prompt text is always visible.
+      setPromptDone(true);
     }
   }, [runtime.audio.audioBase64, runtime.audio.contentType]);
 
@@ -302,17 +317,23 @@ export function VoicePromptShell({
     autoplayedRef.current = false;
     setRemainingSeconds(0);
     setLocalError(null);
+    setPromptDone(false);
   }, [payload.attemptId, startAttempt]);
 
   // Auto-voice the prompt once when entering Respond (user gesture from Start).
+  // With no prompt audio there is nothing to wait for, so release the timer.
   useEffect(() => {
-    if (phase === 'respond' && !autoplayedRef.current && runtime.audio.audioBase64) {
-      autoplayedRef.current = true;
+    if (phase !== 'respond' || autoplayedRef.current) return;
+    autoplayedRef.current = true;
+    if (runtime.audio.audioBase64) {
       playPrompt();
+    } else {
+      setPromptDone(true);
     }
   }, [phase, playPrompt, runtime.audio.audioBase64]);
 
-  // Pre-warm token + mic + Deepgram socket while the user reads the prompt.
+  // Pre-warm the token + mic while the user reads the prompt (the AudioContext
+  // and socket are created on tap, inside the gesture — see startSession).
   useEffect(() => {
     if (phase !== 'respond') {
       void warmupRef.current?.cancel();
@@ -429,8 +450,14 @@ export function VoicePromptShell({
       return;
     }
 
-    const startedAt = Date.now();
+    // Show the full window, but hold the countdown until the prompt has finished
+    // speaking (or the user taps record to answer early — see startRecording).
     setRemainingSeconds(limit);
+    if (!promptDone) {
+      return;
+    }
+
+    const startedAt = Date.now();
     timerRef.current = setInterval(() => {
       const elapsed = (Date.now() - startedAt) / 1000;
       const nextRemaining = Math.max(0, limit - elapsed);
@@ -452,6 +479,7 @@ export function VoicePromptShell({
     finalStage,
     limit,
     phase,
+    promptDone,
     saveTake,
     scaffolded,
     stageIndex,

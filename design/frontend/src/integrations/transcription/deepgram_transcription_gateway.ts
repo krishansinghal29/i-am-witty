@@ -4,7 +4,6 @@ import type {
   TranscriptionSession,
   TranscriptionSessionStartOptions,
   TranscriptionWarmup,
-  TranscriptionWarmupOptions,
 } from '@/integrations/ports/transcription_gateway';
 import type { TranscriptionToken } from '@/types/models';
 
@@ -49,6 +48,12 @@ registerProcessor('pcm-worklet', PcmWorklet);
  * authoritative: the backend trusts it and never re-transcribes, so no answer
  * audio is retained or uploaded.
  *
+ * `warmup` only prefetches the slow/interactive resources (token + mic); the
+ * `AudioContext` and socket are created in `startSession`, which runs inside the
+ * record tap. The context's `resume()` is therefore issued *synchronously
+ * within the user gesture* (required by WebKit) and the socket opens
+ * immediately before audio flows (so it can't hit Deepgram's idle timeout).
+ *
  * The composition root injects {@link mintToken}, which calls the backend
  * `POST /v1/transcription-tokens`; the API client is intentionally not
  * imported here.
@@ -62,30 +67,29 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
     return { streamingInterim: true };
   }
 
-  warmup(opts?: TranscriptionWarmupOptions): TranscriptionWarmup {
-    const language = opts?.language ?? 'en-US';
-    // `cancelled`: warmup was abandoned before use, so release the connection
-    // once it opens. `taken`: a session has claimed the connection, so neither
-    // the pending open nor a late cancel() may tear it down underneath it.
-    // These must stay distinct — folding them into one flag makes a tap that
-    // beats the open finish poison its own connection.
+  warmup(): TranscriptionWarmup {
+    // `cancelled`: warmup was abandoned before use, so release the resources
+    // once they're acquired. `taken`: a session has claimed them, so neither the
+    // pending fetch nor a late cancel() may tear them down underneath it. These
+    // must stay distinct — folding them into one flag makes a tap that beats the
+    // fetch finish poison its own resources.
     let cancelled = false;
     let taken = false;
 
-    const ready = (async (): Promise<WarmedConnection> => {
-      const connection = await openConnection(this.deps.mintToken, language);
+    const ready = (async (): Promise<WarmupResources> => {
+      const resources = await prefetchResources(this.deps.mintToken);
       if (cancelled) {
-        await releaseConnection(connection);
+        releaseResources(resources);
         throw new Error('transcription_warmup_cancelled');
       }
-      return connection;
+      return resources;
     })();
 
     const cancel = async (): Promise<void> => {
       if (taken) return;
       cancelled = true;
       try {
-        await releaseConnection(await ready);
+        releaseResources(await ready);
       } catch {
         // Setup failed or was already torn down.
       }
@@ -101,7 +105,7 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
 
     this.warmupEntries.set(handle, {
       ready,
-      take: async (): Promise<WarmedConnection> => {
+      take: async (): Promise<WarmupResources> => {
         taken = true;
         this.warmupEntries.delete(handle);
         return ready;
@@ -117,36 +121,87 @@ export class DeepgramTranscriptionGateway implements TranscriptionGateway {
   ): Promise<TranscriptionSession> {
     const { recordingLimitSeconds, language, onInterim, warmup } = opts;
 
-    const entry = warmup ? this.warmupEntries.get(warmup) : undefined;
-    const connection = entry
-      ? await entry.take()
-      : await openConnection(this.deps.mintToken, language ?? 'en-US');
+    // Create + resume the AudioContext SYNCHRONOUSLY, before any await, so the
+    // resume is bound to the tap gesture. A context resumed off-gesture (e.g.
+    // after awaiting the socket) silently stays suspended on WebKit — its
+    // worklet never runs and Deepgram receives zero audio.
+    const AudioCtx: typeof AudioContext =
+      window.AudioContext ??
+      (window as unknown as { webkitAudioContext: typeof AudioContext })
+        .webkitAudioContext;
+    const audioContext = new AudioCtx();
+    const resumed = audioContext.resume();
 
-    return buildSession({ connection, recordingLimitSeconds, onInterim });
+    let resources: WarmupResources | undefined;
+    let ws: WebSocket | undefined;
+    try {
+      await audioContext.audioWorklet.addModule(workletModuleUrl());
+
+      await resumed.catch(() => {});
+      if (audioContext.state !== 'running') {
+        await audioContext.resume().catch(() => {});
+      }
+      if (audioContext.state !== 'running') {
+        // Surface instead of recording over a dead pipeline.
+        throw new Error('audio_context_not_running');
+      }
+
+      const entry = warmup ? this.warmupEntries.get(warmup) : undefined;
+      resources = entry
+        ? await entry.take()
+        : await prefetchResources(this.deps.mintToken);
+
+      // Open the socket now — right before audio flows — so there's no
+      // no-audio window for Deepgram's ~10s idle timeout to close.
+      ws = openSocket(resources.cred, audioContext.sampleRate, language ?? 'en-US');
+      await waitForWsOpen(ws);
+
+      return buildSession({
+        audioContext,
+        stream: resources.stream,
+        ws,
+        recordingLimitSeconds,
+        onInterim,
+      });
+    } catch (err) {
+      if (ws) {
+        try {
+          ws.close();
+        } catch {
+          // ignore
+        }
+      }
+      if (resources) {
+        releaseResources(resources);
+      }
+      await closeAudio(audioContext);
+      throw err;
+    }
   }
 }
 
-interface WarmedConnection {
+/** Slow/interactive resources prefetched by {@link DeepgramTranscriptionGateway.warmup}. */
+interface WarmupResources {
   stream: MediaStream;
-  ws: WebSocket;
-  audioContext: AudioContext;
+  cred: TranscriptionToken;
 }
 
 interface WarmupEntry {
-  ready: Promise<WarmedConnection>;
-  take: () => Promise<WarmedConnection>;
+  ready: Promise<WarmupResources>;
+  take: () => Promise<WarmupResources>;
   cancel: () => Promise<void>;
 }
 
 interface BuildSessionDeps {
-  connection: WarmedConnection;
+  audioContext: AudioContext;
+  stream: MediaStream;
+  ws: WebSocket;
   recordingLimitSeconds: number;
   onInterim?: (partialTranscript: string) => void;
 }
 
 function buildSession(deps: BuildSessionDeps): TranscriptionSession {
-  const { connection, recordingLimitSeconds, onInterim } = deps;
-  const { stream, ws, audioContext } = connection;
+  const { audioContext, stream, ws, recordingLimitSeconds, onInterim } = deps;
 
   let finalTranscript = '';
   let interimCb: ((t: string) => void) | undefined = onInterim;
@@ -188,9 +243,10 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
     void handleWsMessage(event.data);
   };
 
-  // Pipe mic PCM straight to the socket. The worklet's silent output keeps the
-  // graph pulled when connected to the destination (no echo, since it writes no
-  // samples).
+  // Pipe mic PCM straight to the socket. The context is already 'running' (the
+  // gesture-bound resume in startSession guaranteed it). The worklet's silent
+  // output keeps the graph pulled when connected to the destination (no echo,
+  // since it writes no samples).
   const source = audioContext.createMediaStreamSource(stream);
   const pcmNode = new AudioWorkletNode(audioContext, 'pcm-worklet');
   pcmNode.port.onmessage = (event: MessageEvent): void => {
@@ -200,9 +256,6 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
   };
   source.connect(pcmNode);
   pcmNode.connect(audioContext.destination);
-  if (audioContext.state === 'suspended') {
-    void audioContext.resume();
-  }
 
   const stopCapture = (): void => {
     pcmNode.port.onmessage = null;
@@ -215,6 +268,16 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
       pcmNode.disconnect();
     } catch {
       // ignore
+    }
+  };
+
+  const stopTracks = (): void => {
+    for (const track of stream.getTracks()) {
+      try {
+        track.stop();
+      } catch {
+        // ignore
+      }
     }
   };
 
@@ -262,13 +325,7 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
       }
 
       await closeAudio(audioContext);
-      for (const track of stream.getTracks()) {
-        try {
-          track.stop();
-        } catch {
-          // ignore
-        }
-      }
+      stopTracks();
 
       const transcript = finalTranscript.trim();
       return {
@@ -281,87 +338,60 @@ function buildSession(deps: BuildSessionDeps): TranscriptionSession {
       settled = true;
       clearLimit();
       stopCapture();
-      await releaseConnection(connection);
+      try {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: 'CloseStream' }));
+        }
+        ws.close();
+      } catch {
+        // ignore
+      }
+      await closeAudio(audioContext);
+      stopTracks();
     },
   };
 
   return session;
 }
 
-async function openConnection(
+async function prefetchResources(
   mintToken: () => Promise<TranscriptionToken>,
-  language: string,
-): Promise<WarmedConnection> {
+): Promise<WarmupResources> {
   const cred = await mintToken();
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-  const AudioCtx: typeof AudioContext =
-    window.AudioContext ??
-    (window as unknown as { webkitAudioContext: typeof AudioContext })
-      .webkitAudioContext;
-  const audioContext = new AudioCtx();
-
-  try {
-    await audioContext.audioWorklet.addModule(workletModuleUrl());
-
-    // Deepgram must be told the exact PCM rate; we send the context's native
-    // rate rather than resampling, which keeps the audio path lossless.
-    const params = new URLSearchParams({
-      model: DEEPGRAM_MODEL,
-      smart_format: 'true',
-      interim_results: 'true',
-      encoding: 'linear16',
-      sample_rate: String(Math.round(audioContext.sampleRate)),
-      channels: '1',
-      language,
-    });
-    const ws = new WebSocket(
-      'wss://api.deepgram.com/v1/listen?' + params.toString(),
-      deepgramWsProtocols(cred),
-    );
-
-    try {
-      await waitForWsOpen(ws);
-    } catch (err) {
-      try {
-        ws.close();
-      } catch {
-        // ignore
-      }
-      throw err;
-    }
-
-    return { stream, ws, audioContext };
-  } catch (err) {
-    await closeAudio(audioContext);
-    for (const track of stream.getTracks()) {
-      try {
-        track.stop();
-      } catch {
-        // ignore
-      }
-    }
-    throw err;
-  }
+  return { stream, cred };
 }
 
-async function releaseConnection(connection: WarmedConnection): Promise<void> {
-  try {
-    if (connection.ws.readyState === WebSocket.OPEN) {
-      connection.ws.send(JSON.stringify({ type: 'CloseStream' }));
-    }
-    connection.ws.close();
-  } catch {
-    // ignore
-  }
-  await closeAudio(connection.audioContext);
-  for (const track of connection.stream.getTracks()) {
+function releaseResources(resources: WarmupResources): void {
+  for (const track of resources.stream.getTracks()) {
     try {
       track.stop();
     } catch {
       // ignore
     }
   }
+}
+
+function openSocket(
+  cred: TranscriptionToken,
+  sampleRate: number,
+  language: string,
+): WebSocket {
+  // Deepgram must be told the exact PCM rate; we send the context's native
+  // rate rather than resampling, which keeps the audio path lossless.
+  const params = new URLSearchParams({
+    model: DEEPGRAM_MODEL,
+    smart_format: 'true',
+    interim_results: 'true',
+    encoding: 'linear16',
+    sample_rate: String(Math.round(sampleRate)),
+    channels: '1',
+    language,
+  });
+  return new WebSocket(
+    'wss://api.deepgram.com/v1/listen?' + params.toString(),
+    deepgramWsProtocols(cred),
+  );
 }
 
 let cachedWorkletUrl: string | null = null;
