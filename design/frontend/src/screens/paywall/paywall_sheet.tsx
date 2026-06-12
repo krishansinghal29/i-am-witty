@@ -270,10 +270,22 @@ function PlanCard({ pkg, selected, best, onSelect }: PlanCardProps) {
   );
 }
 
+type StorePlatform = 'ios' | 'android' | 'other';
+
+/** Best-effort device detection so we can lead with the visitor's own store. */
+function detectStorePlatform(): StorePlatform {
+  if (typeof navigator === 'undefined') return 'other';
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'other';
+}
+
 export function PaywallSheet() {
   const paywallOpen = useUiStore((state) => state.paywallOpen);
   const paywallReason = useUiStore((state) => state.paywallReason);
   const closePaywall = useUiStore((state) => state.closePaywall);
+  const openSupport = useUiStore((state) => state.openSupport);
 
   const { values } = useAppConfig();
   // In-app purchases run natively (StoreKit/Play Billing). On the web there is
@@ -313,6 +325,13 @@ export function PaywallSheet() {
     closePaywall();
   };
 
+  // "Contact us" hands off to the same chat panel used elsewhere. Close the
+  // paywall first so we don't stack two bottom sheets.
+  const handleContact = () => {
+    handleDismiss();
+    openSupport('paywall');
+  };
+
   const handlePurchase = async () => {
     if (!selected) return;
     try {
@@ -346,6 +365,29 @@ export function PaywallSheet() {
 
   const iosUrl = configUrl('ios_app_store_url');
   const androidUrl = configUrl('android_play_store_url');
+
+  // Equal-weight store buttons, ordered so the visitor's own platform leads.
+  const platform = useMemo(detectStorePlatform, []);
+  const storeButtons = useMemo(() => {
+    const list: { configKey: string; label: string; platform: StorePlatform }[] = [];
+    if (iosUrl) {
+      list.push({
+        configKey: 'ios_app_store_url',
+        label: 'Download on the App Store',
+        platform: 'ios',
+      });
+    }
+    if (androidUrl) {
+      list.push({
+        configKey: 'android_play_store_url',
+        label: 'Get it on Google Play',
+        platform: 'android',
+      });
+    }
+    return list.sort(
+      (a, b) => Number(b.platform === platform) - Number(a.platform === platform),
+    );
+  }, [iosUrl, androidUrl, platform]);
 
   const busy = isPurchasing || isRestoring;
 
@@ -390,25 +432,18 @@ export function PaywallSheet() {
               Riffy+ is purchased in the app. Download Riffy to subscribe, then
               sign in here to unlock it everywhere.
             </p>
-            {iosUrl && (
-              <Button
-                variant="accent"
-                block
-                onClick={() => openUrl('ios_app_store_url')}
-              >
-                Download on the App Store
-              </Button>
-            )}
-            {androidUrl && (
-              <Button
-                variant={iosUrl ? 'ghost' : 'accent'}
-                block
-                onClick={() => openUrl('android_play_store_url')}
-              >
-                Get it on Google Play
-              </Button>
-            )}
-            {!iosUrl && !androidUrl && (
+            {storeButtons.length > 0 ? (
+              storeButtons.map((store) => (
+                <Button
+                  key={store.configKey}
+                  variant="accent"
+                  block
+                  onClick={() => openUrl(store.configKey)}
+                >
+                  {store.label}
+                </Button>
+              ))
+            ) : (
               <p style={{ ...HERO_SUB, marginTop: 4 }}>
                 The app is coming soon — hang tight.
               </p>
@@ -477,6 +512,10 @@ export function PaywallSheet() {
           <span aria-hidden>·</span>
           <span style={FINE_LINK} role="button" tabIndex={0} onClick={() => openUrl('privacy_url')}>
             Privacy
+          </span>
+          <span aria-hidden>·</span>
+          <span style={FINE_LINK} role="button" tabIndex={0} onClick={handleContact}>
+            Contact us
           </span>
         </div>
 

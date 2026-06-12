@@ -5,8 +5,8 @@
  * redirects straight to the app, so this never mounts there.
  *
  * Styles live in `landing.css`, fully scoped under `.rl` so nothing leaks into
- * the Ionic app chrome. "Open app" CTAs use the router for a smooth in-SPA
- * transition into `/app`; section links scroll within the page.
+ * the Ionic app chrome. "Start practicing" CTAs use the router for a smooth
+ * in-SPA transition into `/app`; section links scroll within the page.
  */
 
 import { useEffect, useRef } from 'react';
