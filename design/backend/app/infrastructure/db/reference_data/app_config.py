@@ -9,9 +9,9 @@ APP_CONFIG: list[dict] = [
     },
     {
         "key": "telegram_community_url",
-        "value": "https://t.me/iamwitty",
+        "value": "https://t.me/+coeCFQk8Xs9jNmM1",
         "is_public": True,
-        "description": "Telegram community link (placeholder - update with real URL).",
+        "description": "Telegram community group invite link.",
     },
     {
         "key": "terms_url",
