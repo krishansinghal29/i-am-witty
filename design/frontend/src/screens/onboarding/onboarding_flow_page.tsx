@@ -57,7 +57,7 @@ function segmentStyle(on: boolean): CSSProperties {
 export function OnboardingFlowPage() {
   const { session, isLoading } = useSession();
   const onboarding = useOnboarding();
-  const { step, selectedTrigger, isCompleting, completingProvider, error } =
+  const { step, selectedTrigger, isCompleting, activeAction, error, forgotPasswordState } =
     onboarding;
 
   // A returning (already-onboarded) user has no business re-onboarding.
@@ -73,8 +73,18 @@ export function OnboardingFlowPage() {
       <LoginStep
         onApple={() => onboarding.signInWithApple().catch(() => {})}
         onGoogle={() => onboarding.signInWithGoogle().catch(() => {})}
-        completingProvider={completingProvider}
+        onSignUpEmail={(email, password) =>
+          onboarding.signUpWithEmail(email, password).catch(() => {})
+        }
+        onLogInEmail={(email, password) =>
+          onboarding.logInWithEmail(email, password).catch(() => {})
+        }
+        onForgotPassword={(email) =>
+          onboarding.forgotPassword(email).catch(() => {})
+        }
+        activeAction={activeAction}
         error={error}
+        forgotPasswordState={forgotPasswordState}
       />
     ) : (
       <TriggerStep

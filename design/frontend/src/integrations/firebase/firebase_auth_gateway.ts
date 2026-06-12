@@ -8,10 +8,14 @@
 
 import { Capacitor } from '@capacitor/core';
 import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { FirebaseError } from 'firebase/app';
 import {
   GoogleAuthProvider,
   OAuthProvider,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithCredential,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signOut as fbSignOut,
 } from 'firebase/auth';
@@ -86,6 +90,41 @@ export class FirebaseAuthGateway implements AuthGateway {
     return (await this.getSession())!;
   }
 
+  /**
+   * Email/password sign-up. Unlike OAuth, email/password runs entirely through
+   * the JS SDK on every platform (no native UI to bridge): the SDK persists the
+   * session in the Capacitor webview, which is exactly what `getSession` /
+   * `getIdToken` read.
+   */
+  async signUpWithEmail(email: string, password: string): Promise<Session> {
+    this.assertConfigured();
+    try {
+      await createUserWithEmailAndPassword(getFirebaseAuth(), email, password);
+    } catch (e) {
+      throw mapFirebaseAuthError(e);
+    }
+    return (await this.getSession())!;
+  }
+
+  async signInWithEmail(email: string, password: string): Promise<Session> {
+    this.assertConfigured();
+    try {
+      await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+    } catch (e) {
+      throw mapFirebaseAuthError(e);
+    }
+    return (await this.getSession())!;
+  }
+
+  async sendPasswordReset(email: string): Promise<void> {
+    this.assertConfigured();
+    try {
+      await sendPasswordResetEmail(getFirebaseAuth(), email);
+    } catch (e) {
+      throw mapFirebaseAuthError(e);
+    }
+  }
+
   async signOut(): Promise<void> {
     if (Capacitor.isNativePlatform()) {
       await FirebaseAuthentication.signOut();
@@ -102,5 +141,68 @@ export class FirebaseAuthGateway implements AuthGateway {
         reason: 'auth_unconfigured',
       });
     }
+  }
+}
+
+/**
+ * Translate a Firebase auth error into a user-facing {@link AppError}.
+ *
+ * Firebase reports failures as `FirebaseError` with an `auth/*` code; we map the
+ * handful users actually hit to friendly copy and pass everything else through
+ * `AppError.from` as a generic error.
+ */
+function mapFirebaseAuthError(e: unknown): AppError {
+  const code = e instanceof FirebaseError ? e.code : '';
+  switch (code) {
+    case 'auth/email-already-in-use':
+      return new AppError({
+        code: 'conflict',
+        userMessage: 'That email is already registered — try logging in.',
+        reason: code,
+        cause: e,
+      });
+    case 'auth/invalid-email':
+      return new AppError({
+        code: 'validation',
+        userMessage: 'Enter a valid email address.',
+        reason: code,
+        cause: e,
+      });
+    case 'auth/weak-password':
+      return new AppError({
+        code: 'validation',
+        userMessage: 'Use at least 6 characters for your password.',
+        reason: code,
+        cause: e,
+      });
+    // Email-enumeration protection collapses wrong-password / no-account into
+    // one generic code; the legacy codes are kept for older SDK behaviour.
+    case 'auth/invalid-credential':
+    case 'auth/wrong-password':
+    case 'auth/user-not-found':
+      return new AppError({
+        code: 'unauthorized',
+        userMessage: 'Email or password is incorrect.',
+        reason: code,
+        cause: e,
+      });
+    case 'auth/user-disabled':
+      return new AppError({
+        code: 'forbidden',
+        userMessage: 'This account has been disabled.',
+        reason: code,
+        cause: e,
+      });
+    case 'auth/too-many-requests':
+      return new AppError({
+        code: 'unknown',
+        userMessage: 'Too many attempts — please try again shortly.',
+        reason: code,
+        cause: e,
+      });
+    case 'auth/network-request-failed':
+      return new AppError({ code: 'network', reason: code, cause: e });
+    default:
+      return AppError.from(e);
   }
 }
