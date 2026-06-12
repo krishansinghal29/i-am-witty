@@ -3,7 +3,7 @@
 APP_CONFIG: list[dict] = [
     {
         "key": "free_task_limit",
-        "value": 3,
+        "value": 10,
         "is_public": True,
         "description": "Authoritative daily free-task limit for non-subscribers.",
     },

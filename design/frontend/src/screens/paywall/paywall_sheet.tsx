@@ -179,6 +179,10 @@ const LEGAL_FALLBACKS: Record<string, string> = {
   privacy_url: 'https://riffy.pro/legal#privacy',
 };
 
+// The native apps aren't published yet — show the store buttons disabled with a
+// "coming soon" hint. Flip to true once the App Store / Play listings are live.
+const STORES_LIVE: boolean = false;
+
 function bannerText(reason: string | null): string {
   switch (reason) {
     case 'catalog_locked':
@@ -398,27 +402,31 @@ export function PaywallSheet() {
               Riffy+ is purchased in the app. Download Riffy to subscribe, then
               sign in here to unlock it everywhere.
             </p>
-            {iosUrl && (
-              <Button
-                variant="accent"
-                block
-                onClick={() => openUrl('ios_app_store_url')}
-              >
-                Download on the App Store
-              </Button>
-            )}
-            {androidUrl && (
-              <Button
-                variant="accent"
-                block
-                onClick={() => openUrl('android_play_store_url')}
-              >
-                Get it on Google Play
-              </Button>
-            )}
-            {!iosUrl && !androidUrl && (
+            <Button
+              variant="accent"
+              block
+              disabled={!STORES_LIVE || !iosUrl}
+              onClick={
+                STORES_LIVE && iosUrl ? () => openUrl('ios_app_store_url') : undefined
+              }
+            >
+              Download on the App Store
+            </Button>
+            <Button
+              variant="accent"
+              block
+              disabled={!STORES_LIVE || !androidUrl}
+              onClick={
+                STORES_LIVE && androidUrl
+                  ? () => openUrl('android_play_store_url')
+                  : undefined
+              }
+            >
+              Get it on Google Play
+            </Button>
+            {!STORES_LIVE && (
               <p style={{ ...HERO_SUB, marginTop: 4 }}>
-                The app is coming soon — hang tight.
+                iOS &amp; Android apps are coming soon.
               </p>
             )}
           </div>

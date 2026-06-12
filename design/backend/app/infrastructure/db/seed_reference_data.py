@@ -204,7 +204,7 @@ async def verify(session: AsyncSession) -> None:
         select(AppConfig.value).where(AppConfig.key == "free_task_limit")
     )
     print(
-        f"app_config.free_task_limit value == 3: {free_task_limit == 3} "
+        f"app_config.free_task_limit value == 10: {free_task_limit == 10} "
         f"(value={free_task_limit!r})"
     )
 
