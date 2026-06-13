@@ -109,10 +109,13 @@ Avoid premises that are already fully absurd (nowhere left to climb) and premise
 
 Output ONLY the statement — one sentence, nothing else.
 
-Examples (for register, not topics to copy):
-- "My cat ignores me all day, then screams for food at exactly 6am."
-- "My grandma still mails me printed-out emails."
-- "He claps every time the plane lands, even on the small ones."''',
+Vary the framing every time — first-person habits, strangers in public, objects, tech, animals, routines. Don't lean on one frame: not always "My neighbor/roommate…", and not always "The [place] only lets you… / only works if…".
+
+Examples (for register and frame variety, not topics to copy):
+- "I won't leave an elevator until the floor number lands on an even one."
+- "I've started giving my houseplants weekly performance reviews."
+- "There's a woman on my train who announces each stop like she's calling a horse race."
+- "My phone keeps autocorrecting my landlord's name to just 'ugh.'"''',
     },
 }
 

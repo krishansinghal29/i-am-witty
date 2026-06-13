@@ -27,6 +27,10 @@ export interface LoginStepProps {
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD = 6;
 
+// Apple sign-in isn't wired up yet — hide the button until it works. Flip to
+// true to restore it.
+const APPLE_SIGN_IN_ENABLED: boolean = false;
+
 const SPARK: CSSProperties = {
   width: 92,
   height: 92,
@@ -269,23 +273,25 @@ export function LoginStep({
       </div>
 
       <div style={{ ...AUTH_GROUP, ...PUSH_DOWN }}>
-        <button
-          type="button"
-          className="riffy-pressable"
-          style={authBtnStyle(APPLE_BTN, 'apple', active)}
-          onClick={() => runOAuth('apple', onApple)}
-          disabled={isBusy}
-          aria-busy={active === 'apple'}
-        >
-          {active === 'apple' ? (
-            <IonSpinner name="crescent" />
-          ) : (
-            <>
-              <IonIcon icon={logoApple} style={{ fontSize: 20 }} aria-hidden />
-              Continue with Apple
-            </>
-          )}
-        </button>
+        {APPLE_SIGN_IN_ENABLED && (
+          <button
+            type="button"
+            className="riffy-pressable"
+            style={authBtnStyle(APPLE_BTN, 'apple', active)}
+            onClick={() => runOAuth('apple', onApple)}
+            disabled={isBusy}
+            aria-busy={active === 'apple'}
+          >
+            {active === 'apple' ? (
+              <IonSpinner name="crescent" />
+            ) : (
+              <>
+                <IonIcon icon={logoApple} style={{ fontSize: 20 }} aria-hidden />
+                Continue with Apple
+              </>
+            )}
+          </button>
+        )}
 
         <button
           type="button"

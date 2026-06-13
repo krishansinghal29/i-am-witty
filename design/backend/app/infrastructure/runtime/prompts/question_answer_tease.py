@@ -73,9 +73,13 @@ Format the pair as two elements in order:
 1. the question (from him)
 2. the answer (from her)
 
-Example (for format, not topic to copy):
-- Question: "What do you do?"
-  Answer: "I work in sales"''',
+Vary the question topic — hobbies, food, travel, music, pets, opinions, hidden talents, recent plans — don't default to "what do you do" or "what do you do on weekends".
+
+Examples (for format, not topics to copy):
+- Question: "What's your go-to comfort food?"
+  Answer: "Honestly? Cereal at midnight."
+- Question: "Got any hidden talents?"
+  Answer: "I can name almost any song in three seconds."''',
     },
 }
 

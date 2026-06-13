@@ -85,7 +85,12 @@ SPEC = ExerciseSpec(
     description="Vibing exercise focused on emotional attunement, connection, and conversational momentum.",
     sprint_question_label="Story",
     generator_system=_generator["intro"],
-    generator_prompt=creative_generator_prompt(),
+    generator_prompt=creative_generator_prompt(
+        # vibing collapses onto one favourite anecdote (the windowsill-plant story)
+        # when a single spark word lands on a theme; two words force odd pairings
+        # that break the attractor.
+        spark_count=2,
+    ),
     generator_response_schema=SingleStorytellerQuestion,
     evaluator_system=build_evaluator_system(
         intro=_evaluator["intro"],
