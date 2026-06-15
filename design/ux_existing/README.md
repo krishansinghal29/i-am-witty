@@ -85,6 +85,7 @@ HTML sources live in [`mockups/html/`](mockups/html/); rendered PNGs in [`mockup
 | Profile | [`mockups/html/profile.html`](mockups/html/profile.html) · [`mockups/images/profile.png`](mockups/images/profile.png) |
 | Witty+ paywall | [`mockups/html/paywall.html`](mockups/html/paywall.html) · [`mockups/images/paywall.png`](mockups/images/paywall.png) |
 | **Loading states** *(Spark loader)* | [`mockups/html/loading.html`](mockups/html/loading.html) · [`mockups/images/loading.png`](mockups/images/loading.png) |
+| **Role play** | [`mockups/html/roleplay.html`](mockups/html/roleplay.html) · [`mockups/images/roleplay.png`](mockups/images/roleplay.png) · [`roleplay-listen.png`](mockups/images/roleplay-listen.png) |
 
 ### Task runtime *(the three task types)*
 A new, focused **in-exercise** design (a calm full-screen runtime — not a tab). Each
@@ -124,6 +125,21 @@ through all six steps (one trigger question → tiny practice → variable rewar
 reminder → today's plan). Preview a stage with a hash, e.g. `html/onboarding.html#3` or
 `html/onboarding.html#5perm`.
 
+### Role play *(live spoken conversation)*
+A full-screen **role-play runtime** — a live, voiced conversation with an AI persona
+(*Maya*) over an **illustrated avatar background** (a warm, softly-lit rooftop-party scene,
+all inline SVG so the file is self-contained). The top pins a close (✕), the persona name,
+an options button, the **task progress** (`Land a push-pull · 1 / 5`, 5-segment bar) and a
+**hint** — the *scenario itself* is set once, in the chat thread (a narration line), so it
+isn't duplicated up top.
+
+Below is a scrollable chat thread where every **AI (Maya) line carries a ▶ play button**;
+roles follow the runtime role table — **Maya (She)** = rosy/coral accent on a frosted-white
+bubble, **You** = blue cool-gradient bubble — over a warm bottom **scrim** so the thread
+reads. The bottom **text bar** has **Send** + **Speak**: tapping **Speak** opens the mic
+with a live *Listening…* state — the field morphs into a red dot + waveform and the mic
+glows/ripples. Preview that state via hash: `roleplay.html#listen`.
+
 ### Loading states — "Spark loader"
 Replaces the plain `IonSpinner` crescent with a calm, branded loader: the **riffy mark**
 breathes inside a chasing **blue→orange ring**, three orbiting accent dots, and gentle
@@ -143,12 +159,16 @@ a static mark with an opacity pulse — no spinning. Preview all variants in
 Open any file in [`mockups/html/`](mockups/html/) in a browser (static preview). Regenerate
 the PNGs into [`mockups/images/`](mockups/images/) (one per screen):
 ```bash
-for p in onboarding home practice profile paywall loading \
+for p in onboarding home practice profile paywall loading roleplay \
          task-single-prompt task-dialogue-prompt task-scaffolded-prompt; do
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
     --force-device-scale-factor=2 --window-size=560,940 --virtual-time-budget=3500 \
     --screenshot="mockups/images/$p.png" "file://$PWD/mockups/html/$p.html"
 done
+# Role play has an extra "mic open" state (note: the #fragment goes AFTER .html):
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new \
+  --force-device-scale-factor=2 --window-size=560,940 --virtual-time-budget=3500 \
+  --screenshot="mockups/images/roleplay-listen.png" "file://$PWD/mockups/html/roleplay.html#listen"
 ```
 > **Window width must stay wider than the phone.** The mockups center a 392px `.phone`
 > (plus a ~12px `box-shadow` bezel and a soft drop shadow) inside the page, so headless

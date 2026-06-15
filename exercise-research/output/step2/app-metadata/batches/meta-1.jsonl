@@ -1,0 +1,9 @@
+{"name": "Yoodli", "type": "ai-tool", "url": "https://yoodli.ai/", "notes": "Seed. Roleplay scenario library + game-like impromptu prompts; strong reference for AI feedback metrics."}
+{"name": "Vocal Image", "type": "mobile-app", "url": "https://www.vocalimage.app/en/", "notes": "Seed. Daily drill plans; app store screenshots show exercise types (breathing, pitch slides, tongue twisters)."}
+{"name": "SmartyMe", "type": "mobile-app", "url": "https://www.smartymeapp.com/", "notes": "Seed — verified: it's lesson-content microlearning, not drill-based; users report applying tips but few interactive exercises."}
+{"name": "Orai", "type": "mobile-app", "url": "https://orai.com/", "notes": "Lesson-based curriculum with daily exercises; good model of gamified speaking drills."}
+{"name": "Speeko", "type": "mobile-app", "url": "https://www.speeko.co/", "notes": "Has skill 'courses' inside app; app store listing details exercise categories."}
+{"name": "Ummo", "type": "mobile-app", "url": "https://ummoapp.com/", "notes": "Measurement tool more than exercise library."}
+{"name": "Poised", "type": "ai-tool", "url": "https://www.poised.com/", "notes": "Feedback-in-context model; lessons exist but exercises are secondary."}
+{"name": "Ultraspeaking", "type": "web-app", "url": "https://ultraspeaking.com/", "notes": "Best-in-class example of speaking-as-games; game mechanics directly relevant to wit training. speaking.games is a free clone-ish resource."}
+{"name": "VirtualSpeech", "type": "web-app", "url": "https://virtualspeech.com/", "notes": "Course catalog public; exercise = simulation scenarios with AI scoring."}

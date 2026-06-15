@@ -1,0 +1,162 @@
+[
+  {
+    "batch": "apps-1",
+    "count": 7,
+    "providers": [
+      "Yoodli",
+      "Vocal Image",
+      "Orai",
+      "Speeko",
+      "Ultraspeaking",
+      "VirtualSpeech",
+      "Rejecto"
+    ]
+  },
+  {
+    "batch": "apps-2",
+    "count": 7,
+    "providers": [
+      "Social Challenge App",
+      "Wellspoken — Articulation Coach",
+      "Convo — Social Skills Builder",
+      "Speaking.games (Storylab)",
+      "Blush — AI Dating Simulator",
+      "Yes, And! App",
+      "VirtualSpeech — AI Roleplays product line"
+    ]
+  },
+  {
+    "batch": "apps-3",
+    "count": 7,
+    "providers": [
+      "SmartyMe",
+      "Poised",
+      "BoldVoice",
+      "Astound — Voice & Speech Coach",
+      "TalkTune",
+      "YourMove AI",
+      "Cues"
+    ]
+  },
+  {
+    "batch": "apps-4",
+    "count": 4,
+    "providers": [
+      "TED Masterclass",
+      "Ovation VR",
+      "LikeSo",
+      "Charisma Virtual Social Coaching (Center for BrainHealth, UT Dallas)"
+    ]
+  },
+  {
+    "batch": "coaches-1",
+    "count": 5,
+    "providers": [
+      "Todd V Dating — The System",
+      "Matthew Dicks — Storyworthy / Storyworthy Workshops",
+      "Greg Dean — Stand-Up Comedy Classes",
+      "The Art of Charm",
+      "Judy Carter — Comedy Bible workshops"
+    ]
+  },
+  {
+    "batch": "coaches-2",
+    "count": 5,
+    "providers": [
+      "Improvement Pill",
+      "Matthew Hussey — Get The Guy / Love Life Club",
+      "Hayley Quinn",
+      "Introverted Alpha (Sarah Jones)",
+      "Logan Murray — Comedy Course (UK)"
+    ]
+  },
+  {
+    "batch": "community-1",
+    "count": 6,
+    "providers": [
+      "Toastmasters International",
+      "The Moth",
+      "Stanford GSB / Matt Abrahams — Think Fast Talk Smart",
+      "Improv Encyclopedia / Improwiki",
+      "Speak Up Storytelling podcast (Matthew & Elysha Dicks)",
+      "Radical Agreement Project"
+    ]
+  },
+  {
+    "batch": "community-2",
+    "count": 6,
+    "providers": [
+      "Ditch the Label — 28 Days of Rejection Therapy",
+      "Hot Breath! Comedy Network",
+      "Story District (Washington DC)",
+      "Business of Story (Park Howell)",
+      "Agora Speakers International",
+      "PSDA — Professional Speech & Debate Association"
+    ]
+  },
+  {
+    "batch": "courses-1",
+    "count": 8,
+    "providers": [
+      "Vinh Giang — STAGE Academy",
+      "Gotham Writers Workshop — Stand-Up Comedy Writing",
+      "Udemy — Ultimate Joke Writing Guide",
+      "Udemy — How to Be Funny in 14 Days",
+      "A Funnier You (David Nihill ecosystem)",
+      "Charisma on Command — Charisma University",
+      "Science of People — People School (Vanessa Van Edwards)",
+      "Patrick King (books: The Art of Witty Banter, Improve Your Conversations)"
+    ]
+  },
+  {
+    "batch": "courses-2",
+    "count": 8,
+    "providers": [
+      "SocialSelf (David Morin)",
+      "Roger Love — The Perfect Voice / Voice of Influence",
+      "Udemy charisma/communication catalog (topic page)",
+      "SocialSelf — Conversation Confidence program",
+      "Killer Stand-up (Steve Roye)",
+      "Online Comedy Training",
+      "Skillshare — Level Up Your Humor (Felipe Yanez)",
+      "The Power Moves — Power University"
+    ]
+  },
+  {
+    "batch": "courses-3",
+    "count": 7,
+    "providers": [
+      "Duarte — Story Skills / Presentation Training",
+      "MasterClass — Communication cluster (Robin Roberts, Chris Voss, LeVar Burton, George Stephanopoulos, Matthew McConaughey)",
+      "Kindra Hall — Stories That Stick courses",
+      "Mindvalley — Speak & Inspire (Lisa Nichols)",
+      "Coursera — Introduction to Public Speaking (Univ. of Washington, Matt McGarrity)",
+      "Improve Your Social Skills (Daniel Wendler)",
+      "Conversation Skills Core (Paul Sanders)"
+    ]
+  },
+  {
+    "batch": "schools-1",
+    "count": 6,
+    "providers": [
+      "Second City Training Center",
+      "Upright Citizens Brigade (UCB) Training Center",
+      "Stand Up Comedy Clinic (Jerry Corley)",
+      "The Groundlings School",
+      "iO Theater (Improv Olympic)",
+      "World's Greatest Improv School (WGIS)"
+    ]
+  },
+  {
+    "batch": "schools-2",
+    "count": 6,
+    "providers": [
+      "Hoopla Impro",
+      "Gotham Writers Workshop (broader storytelling/humor catalog)",
+      "Heroic Public Speaking (Michael & Amy Port)",
+      "Moxie Institute",
+      "Dale Carnegie Course",
+      "American Comedy Institute (Stephen Rosenfield)"
+    ]
+  }
+]

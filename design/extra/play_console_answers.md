@@ -4,7 +4,7 @@ A running record of every answer entered (or decided) for the Riffy Play Console
 listing, so the setup can be resumed/audited without re-deriving anything.
 Each question is an expandable dropdown — click to view the answer.
 
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-12
 
 ### Legend
 - ✅ **Entered & saved** in Play Console
@@ -124,12 +124,20 @@ unchecked). No regional requirements. Avoids Google's Health Apps policy. "Chang
 </details>
 
 <details>
-<summary>Target audience — <b>18 and over</b> ✅ saved</summary>
+<summary>Target audience — <b>18 and over + restrict minors ON</b> ✅ saved</summary>
 
-Checked **"18 and over"** only. Optional "Restrict minors (block from download/
-purchase)" → **left unchecked** (that's for adult-content apps; Riffy is just
-adult-targeted, rated Everyone — forcing it risks false-positives hurting reach).
-Selecting 18+ auto-skipped the child-related steps. "Change saved."
+**Age groups:** ☑ 18 and over (only — 5&under/6-8/9-12/13-15/16-17 all unchecked;
+under-13 buckets were greyed out because ESRB rating is Teen).
+**☑ "Restrict users that Google has determined to be minors from my app"** → **ENABLED**
+(updated 2026-06-12). This actively blocks Google-determined under-18 accounts from
+searching/downloading/purchasing — the real enforcement of the 18+ intent, appropriate
+for the sexual-innuendo/dating content. Summary reads "Your app restricted users who
+are determined to be minors." Selecting 18+ auto-skips the child-related steps. "Change saved."
+
+> **How the 3 age controls relate** (for reference):
+> - **Content rating** (Teen/12+) = the *content label*; feeds parental controls (Family Link); not freely chosen.
+> - **Target audience** (18+) = *who you design for*; declaration that drives which Google policies apply.
+> - **Restrict-minors toggle** (ON) = the *hard block* of Google-determined under-18s. Only meaningful for 18+ apps.
 </details>
 
 <details>
@@ -146,20 +154,26 @@ are billing, not a "financial feature".) No documentation required. "Change save
 </details>
 
 <details>
-<summary>Content rating — <b>in progress</b> ⏳ paused — answers REVISED to MATURE (sexual/crude content found)</summary>
+<summary>Content rating — <b>SUBMITTED</b> ✅ Teen / 12+ / 14 (IARC)</summary>
 
-Category selected: **"All other app types"** (still correct — content type, not theme).
+Submitted 2026-06-12 with email **krishan@riffy.pro**. IARC ToS accepted.
+**Result: Teen (ESRB) / IARC 12+ / PEGI 14 / USK 12 / ClassInd 12.**
 
-⚠️ **REVISED after finding mature exercises** (`sex_with_me`, `sexual_misinterpretation`,
-`shit_test`, `if_by_x`): Riffy is flirting/dating/charisma practice with **sexual
-innuendo + crude humor/profanity** (deliberately suggestive, NOT graphic — code guards
-against explicit). So the questionnaire is **NOT "all No"**:
-- Sexual content → **Yes (suggestive/innuendo themes)**, NOT explicit/graphic/nudity
-- Crude humor / profanity → **Yes (mild)**
-- Violence / drugs / gambling → No · user-to-user interaction → No · digital purchases → Yes
-→ Expected rating **Mature ~17+ (Teen+)**, NOT Everyone/3+. (18+ target audience is now
-clearly correct.) **Submitting "all No"/Everyone would be a FALSE declaration → suspension
-risk** — caught before submit. Needs your email + OK. Re-doable later.
+Answers (honest — Riffy is flirting/dating/charisma practice with sexual innuendo,
+deliberately suggestive NOT graphic; exercises `sex_with_me`, `sexual_misinterpretation`,
+`shit_test`):
+- Category: **All other app types**
+- Downloaded app has ratings-relevant content → **Yes**
+- Sexuality → **Yes → "Suggestive references and innuendo in text"** only
+  (no overt/visual/explicit, no nudity, no sexual violence, nothing under-18)
+- Language → **Yes → minor profanities, Rarely** (no moderate/discriminatory/sexual expletives)
+- Violence / Fear / Gambling / Controlled substance / Crude humour (bodily) → **No**
+- User content sharing → No · Online content → No (AI content is first-party, declared
+  under Downloaded app) · Promotion of age-restricted → No
+- Miscellaneous: digital purchases → **Yes** (subscriptions; not loot boxes) · everything else No
+
+NB: rating is **Teen/12+, not Mature 17+** — suggestive (non-explicit) content rates Teen.
+This means the *content rating* permits 13+, even though **Target audience is set to 18+**.
 </details>
 
 <details>
@@ -185,21 +199,38 @@ App activity/analytics → not selected (PostHog parked/off in prod).
 
 ---
 
-## Store presence (not started — needs your assets/copy)
+## Store presence — 📝 assets ready (in `extra/play_store_listing/`), not yet entered
+
+All publishable content + images are prepared under
+**`extra/play_store_listing/`** (`listing.md` has the copy; `icon-512.png`,
+`feature-graphic-1024x500.png`, and `screenshots/01..06-*.png` are the images).
 
 <details>
-<summary>Select app category & contact details — ⏳ not started</summary>
+<summary>Select app category & contact details — ✅ saved in console (2026-06-12)</summary>
 
-Needs: app category (e.g. Education / Lifestyle / Communication), contact email,
-optional phone/website (riffy.pro).
+Store settings → saved ("Change saved"):
+- **App type:** App · **Category:** Lifestyle (self-improvement / social-skills practice).
+- **Contact email:** support@riffy.pro (working Workspace alias; public on listing).
+- **Website:** https://riffy.pro · **Phone:** left blank (optional).
+- External marketing: left at default (on).
 </details>
 
 <details>
-<summary>Main store listing — ⏳ not started (needs assets)</summary>
+<summary>Main store listing — ✅ text saved as draft / ⏳ images need manual upload</summary>
 
-Needs from you: short description (80 chars), full description (4000 chars),
-app icon (512×512), feature graphic (1024×500), and **phone screenshots**
-(onboarding, home, practice, task runtime, profile, paywall).
+Default store listing (en-US) created; **Save as draft** done ("Change saved. Send for review
+in Publishing overview"):
+- **Short description (73 chars):** "A little gym for your social spark. Quick voice reps to sharpen your wit." ✅ entered
+- **Full description:** the Read→Respond→Reflect writeup (1502 chars, no Riffy+ line) ✅ entered
+
+⏳ **Graphics still to upload (manual — drag & drop):** the Play Console upload tool can't be
+driven by automation here (the controller no longer accepts host file paths), so these must be
+dragged in from `extra/play_store_listing/`:
+- **App icon** → `icon-512.png` (512×512) — *required*
+- **Feature graphic** → `feature-graphic-1024x500.png` (1024×500)
+- **Phone screenshots** (≥2 required) → `screenshots/01..06-*.png` (1120×1760)
+
+All files are ready and validated; just open Store listings → Graphics → "Add assets" for each.
 </details>
 
 ---
@@ -207,27 +238,50 @@ app icon (512×512), feature graphic (1024×500), and **phone screenshots**
 ## Release / testing (later)
 
 <details>
-<summary>Closed testing — ⏳ required before production</summary>
+<summary>Closed testing — Alpha track ready · AAB rebuilt w/ Firebase ✅ · ⏳ needs manual upload + 12 testers</summary>
 
-Personal account ⇒ need **12+ testers for 14 consecutive days**, then apply for
-production access. Upload the signed `app-release.aab`. App signing key choice
-(Play App Signing) happens at first release — **irreversible**, will confirm with you.
+Track **"Closed testing – Alpha"** exists (Test and release → Testing → Closed testing), no release yet.
+Personal account ⇒ need **12+ testers for 14 consecutive days**, then apply for production access.
+
+✅ **Firebase sign-in fix done (2026-06-12).** `frontend/android/app/google-services.json` added (project
+`i-am-witty`, package `com.iamwitty.app`, `oauth_client` types `[1,3]` → Android Sign-In client present).
+Signed AAB **rebuilt** — `processReleaseGoogleServices` embedded `1:756792002130:android`; "jar verified".
+Fresh AAB at `frontend/android/app/build/outputs/bundle/release/app-release.aab` (17:06).
+SHA fingerprints registered in Firebase — upload key SHA-1 `04:B7:A5:83:5F:AA:1D:E8:42:0F:97:3A:BD:DD:29:9B:FF:9F:BB:08`,
+SHA-256 `E6:3A:C6:A6:D6:EF:22:23:3E:DD:CF:B6:CA:16:4B:94:54:B0:96:9E:AA:39:3B:20:A1:B3:43:89:72:F8:D5:64`
+(+ Play App Signing key SHA from Play Console → App integrity).
+
+**Remaining (manual — needs you):**
+1. **Upload the AAB** — Closed testing – Alpha → Create release → drag in `app-release.aab`
+   (automation can't upload bundles here). App signing key choice (Play App Signing) offered at
+   first release — **irreversible**.
+2. Add release name + notes.
+3. Add **12 tester emails** (Closed testing → Testers → create email list), have them opt in,
+   keep them for **14 consecutive days**, then apply for production.
 </details>
 
 ---
 
-## Open blockers / waiting on you
-1. **Content rating** — needs your **email** + explicit OK to submit (agrees to IARC ToS).
-   Category "All other app types" already chosen; answers ready (Everyone/3+ + IAP label).
-2. **Store listing assets** — short/full description, icon (512×512), feature graphic
-   (1024×500), phone screenshots. + app category + contact details.
-3. **Firebase config files** — `google-services.json` (Android) + `GoogleService-Info.plist`
-   (iOS) needed for Google sign-in + push to actually work; then rebuild AAB.
-4. **riffy.pro** must be publicly live (privacy/terms/account-deletion) at review time.
-5. **Keep 2-Step Verification OFF** on test@riffy.pro (reviewer account).
+## Resolved decisions
+- **Age / who can use it → 18+ adults only, minors actively blocked.** Decided to keep
+  Target audience at 18 and over and **enable the "restrict minors" toggle** (the hard
+  under-18 block), the coherent adults-only config for the sexual-innuendo/dating content.
+  (Content rating Teen/12+ stays as the honest content label.)
 
-### Declaration completion status (10 of 11 actioned)
+## Waiting on you (for store listing + launch)
+1. ~~Store listing assets~~ — ✅ **done**, all in `extra/play_store_listing/` (copy + icon +
+   feature graphic + 6 screenshots + category/contact decided). Just needs your OK on the copy,
+   then entering into Play Console.
+2. **Firebase config files** — `google-services.json` (Android) + `GoogleService-Info.plist`
+   (iOS) needed for Google sign-in + push to actually work; then rebuild AAB.
+3. **riffy.pro** must be publicly live (privacy/terms/account-deletion) at review time.
+4. **Keep 2-Step Verification OFF** on test@riffy.pro (reviewer account).
+
+### Declaration completion status — ✅ 11 of 11 ACTIONED (App content done!)
 ✅ Privacy policy · Ads · Advertising ID · Government apps · Financial features · Health
-✅ Sign-in details (App access) · Target audience (18+) · Data safety (submitted)
-🟡 Content rating — category set; needs your email + OK to submit
-⏳ Store: app category + contact details, Main store listing — need assets
+✅ Sign-in details (App access) · Target audience (18+) · Data safety
+✅ **Content rating — submitted (Teen/12+)**
+✅ Store: app category (Lifestyle) + contact details (support@riffy.pro, riffy.pro) **saved**
+✅ Main store listing: short + full description **saved as draft**
+⏳ Main store listing graphics: icon + feature graphic + 6 screenshots — **drag-drop manually**
+   from `extra/play_store_listing/` (automation can't upload files here).

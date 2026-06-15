@@ -1,0 +1,41 @@
+# Step 2b Provider Summaries — Batch: schools-2
+
+Batch of 6 schools (improv, humor writing, performance/oratory, stand-up). Source: `output/step2/batches/schools-2.jsonl`.
+
+---
+
+## Hoopla Impro
+- **Methodology**: Reps-in-a-room improv pedagogy built on three principles — Listen, Yes And, Commit. Skill builds through an 8-week-per-level ladder (Beginners -> Performance -> Scenes -> Long-Form -> Advanced), each themed around one core skill per week, warm-ups -> games -> scenes, and most levels end in a live show. Learning-by-playing, low-stakes, group-based.
+- **Exercises found**: 10. Course-level granularity is fully confirmed; specific named warm-up drills are not individually published (the catalog is "course as the unit," not "drill as the unit").
+- **Evidence quality**: Mostly confirmed at course level (their site lists every level + the Advanced specializations: Harolds, deconstruction, commedia, clown, etc.). Individual in-class games are inferred — improv games are generic and well-documented elsewhere.
+- **2c deep scrape**: LOW priority. The structured program is a class ladder, not a drill catalog; the public pages are already fully mined and won't yield discrete exercises. If pursued, start from https://www.hooplaimpro.com/improv-classes-london.html but expect diminishing returns. Better source for actual improv drills is a games database (improv games are standardized across schools).
+
+## Gotham Writers Workshop (broader storytelling/humor catalog)
+- **Methodology**: Cohort writing-workshop model — 10-week courses = lectures + weekly writing exercises + peer critique (each student workshopped twice). Humor Writing teaches a "secret formula" + named techniques (rule of three, snowballing, exaggeration, juxtaposition, wordplay). Stand-Up course is a parallel 10-week build culminating in a 5-minute set performed at an NYC club.
+- **Exercises found**: 11 (Humor Writing + Stand-Up Comedy Writing; both are explicitly week-by-week public curricula).
+- **Evidence quality**: HIGH / mostly confirmed — full week-by-week syllabi are published on writingclasses.com / wp.writingclasses.com (note: writingclasses.com returns 403 to automated fetch, but the syllabus text is fully visible via search excerpts and the wp.writingclasses.com mirror).
+- **2c deep scrape**: YES (high value, cheap). The most exercise-dense provider in this batch — every week maps to a discrete, namable writing drill. Start from https://wp.writingclasses.com/courses/humor-writing/ and https://wp.writingclasses.com/courses/stand-up-comedy-writing/ and walk the full course catalogue at https://wp.writingclasses.com/courses/ (memoir, storytelling, screenwriting, sketch all follow the same week-by-week format = dozens of mineable prompts).
+
+## Heroic Public Speaking (Michael & Amy Port)
+- **Methodology**: Acting-derived, rehearsal-centric "speech as performance." Pipeline = build voice/body (breathing, vocal build, non-verbal) -> find/sort the Big Idea + promise -> three-act story outline -> rehearse via content mapping, beats & operative words, contrast, blocking/staging. Heavy on hot-seat coaching and rehearsing small sections to mastery. Flagship GRAD programs (Speech Writing / Stage Performance / Speaking Business Mastery) plus the 2-day CORE event; mostly aspiring/pro speakers, high-ticket.
+- **Exercises found**: 11. The CreativeLive class exposes a clean lesson-by-lesson list of named drills; GRAD program pages confirm blocking/rehearsal-lab work.
+- **Evidence quality**: HIGH / mostly confirmed for the named techniques (CreativeLive lesson titles are public and specific: "Beats & Operative Words," "Content Mapping," "Developing Different Contrasts"). The proprietary in-person GRAD drills are inferred at the mechanism level.
+- **2c deep scrape**: YES (medium-high value). The rehearsal-technique vocabulary (operative words, content mapping, contrast, blocking) is distinctive and directly translatable to a voice-exercise app. Start from https://www.creativelive.com/classes/heroic-public-speaking-michael-port-amy-port (full lesson list) and https://www.heroicpublicspeaking.com/program-details.
+
+## Moxie Institute
+- **Methodology**: Performance-based public speaking blending acting technique + neuroscience/psychology. Daily-practiceable vocal/body micro-drills (lion-mouse, humming on a scale, move-your-mouth, silent pauses, projection) plus the "Speak With Moxie" Masterclass structured around 10 core speaker skills (write the speech outline-to-draft, the 5 keys to fear(less) + pre-show ritual, whole-body authority). Corporate workshops + self-paced masterclass + 1:1 coaching.
+- **Exercises found**: 9. Strong because Moxie publishes free, named, do-it-now drills on its blog/YouTube — unusually concrete for a corporate trainer.
+- **Evidence quality**: Mostly confirmed for the individual vocal/articulation drills (named on their "7 daily exercises" and vocal-mastery blog posts). The 10-skill masterclass module list is confirmed at theme level via search excerpts; the masterclass sales page (moxieinstitute.com) returns 403 to automated fetch, so exact module ordering is partly inferred.
+- **2c deep scrape**: YES (high value, cheap). Best free source of discrete, namable, app-ready micro-drills in this batch. Start from https://www.moxieinstitute.com/public-speaking-tips-7-daily-public-speaking-exercises-you-can-try-right-now/ and their blog index + YouTube channel; the masterclass module list at https://www.moxieinstitute.com/moxie-masterclass/ (use a headless/JS fetch to bypass the 403).
+
+## Dale Carnegie Course
+- **Methodology**: 12-session (3.5 hr each) repeated-low-stakes-talk model. The engine = every session each participant prepares and delivers a short 60-120s talk applying that week's principle (many via the "Magic Formula": incident-action-benefit), then gets immediate coaching. Wrapped around named experiential exercises (Name Game, Box Factory, Duke of York/Kroy, Safari, Think on Our Feet, Two Speaking at Once, Awake Alert Alive) and the Human Relations Principles from "How to Win Friends." Confidence + people-skills + speaking blended.
+- **Exercises found**: 14 — the richest, most explicitly-named exercise set in the batch.
+- **Evidence quality**: HIGHEST / fully confirmed. The official Dale Carnegie Course Syllabus V6.3 PDF (extracted in full) names every session's exercises, the prep talk for each, and the recurring two-minute-talk mechanic.
+- **2c deep scrape**: ALREADY ESSENTIALLY DONE via the syllabus PDF — additional scraping is low priority. The full 12-session structure with named exercises is captured here. If anything, the only gap is the exact in-room mechanics of the named exercises (Box Factory, Safari, etc.), which are proprietary and not published. Source of record: https://d2b3qk12wfl0ga.cloudfront.net/e/pdf/450-dale-carnegie-course-syllabus-v6-3.pdf
+
+## American Comedy Institute (Stephen Rosenfield)
+- **Methodology**: Write -> rehearse -> perform stand-up pipeline. Group classes teach writing+performing technique tied to discovering each student's authentic comic voice (explicitly NOT formula-based), backed by 1:1 private writing sessions with Rosenfield to punch up material, culminating in a graduation performance at Gotham/West Side Comedy Club. Offered as multi-week or 5-day intensive; specialty workshops (Turning Stories into Stand-Up, Sketch, Comedic Acting) + private coaching.
+- **Exercises found**: 8 (program/format level + specialty workshops + private sessions + club performance).
+- **Evidence quality**: Mostly confirmed at the program/format level (site + class pages describe the 3-group-class / 2-private-session / club-show structure). The actual joke-craft techniques are codified in Rosenfield's book "Mastering Stand-Up" rather than on the site, so per-drill detail is inferred unless the book is mined.
+- **2c deep scrape**: PARTIAL YES — site scraping is exhausted (format is captured), but the real exercise/curriculum gold is in the book "Mastering Stand-Up" (the joke-writing craft taxonomy). If per-drill stand-up technique is wanted, source from the book rather than the site. Start URL if continuing online: https://www.americancomedyinstitute.com/ — but expect format-only, not new drills.
