@@ -13,9 +13,8 @@
    A live, spoken conversation with an AI persona (Maya) over an
    illustrated avatar background.
 
-   Top:  close (✕) · persona name · options · task progress
-         (e.g. "Land a push-pull · 1/5") · a hint.  The scenario
-         itself is set in the chat thread (narration), not up top.
+   Top:  close (✕) · persona name · task progress
+         (e.g. "Land a push-pull · 1/5") · a hint.
    Chat: AI (Maya) lines carry a ▶ play button; you reply in blue.
    Bar:  text field + Send + Speak. Tapping Speak opens the mic
          with a live "Listening…" waveform animation.
@@ -81,8 +80,6 @@ body{font-family:var(--body);background:radial-gradient(80% 50% at 50% 0%, #ffff
 /* ---------- chat thread (normal) ---------- */
 .chat{position:relative;z-index:2;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;justify-content:flex-end;gap:11px;padding:16px 16px 8px;scrollbar-width:none}
 .chat::-webkit-scrollbar{display:none}
-
-.narrate{align-self:center;text-align:center;max-width:30ch;font-size:12px;font-style:italic;color:var(--muted);line-height:1.45;background:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);padding:7px 13px;border-radius:13px}
 
 .msg{display:flex;align-items:flex-end;gap:8px;max-width:84%;animation:rise .4s cubic-bezier(.2,.7,.2,1) both}
 .msg .av{width:30px;height:30px;border-radius:50%;flex:none;background-size:cover;background-position:center top;box-shadow:0 3px 8px rgba(17,24,39,.18);border:2px solid #fff}
@@ -264,10 +261,8 @@ body.listening .mic{color:#fff;background:var(--cool);border-color:transparent;b
       <div class="hint">💡 <span><b>Tease, then pull her back in</b> — one line. A jab she'd be disappointed not to get.</span></div>
     </div>
 
-    <!-- ============ CHAT THREAD (normal mode) ============ -->
+    <!-- ============ CHAT THREAD ============ -->
     <main class="chat">
-      <div class="narrate">🌆 Rooftop party. Maya's leaning on the railing, drink in hand — and she just caught you looking.</div>
-
       <div class="msg she">
         <span class="av" style="background-image:radial-gradient(circle at 50% 35%, #FBD9BC, #6A4634)"></span>
         <div class="bub">
@@ -312,7 +307,7 @@ body.listening .mic{color:#fff;background:var(--cool);border-color:transparent;b
   </div>
 </div>
 
-<p class="caption"><b>Role play</b> — task progress &amp; hints up top, scenario set in the chat. AI lines carry a ▶ play button. Tap <b>Speak</b> to open the mic (live <i>Listening…</i> waveform). Preview that state: <b>roleplay.html#listen</b>.</p>
+<p class="caption"><b>Role play</b> — task progress &amp; hints up top; AI lines carry a ▶ play button. Tap <b>Speak</b> to open the mic (live <i>Listening…</i> waveform). Preview that state: <b>roleplay.html#listen</b>.</p>
 
 <script>
   // tapping Speak opens / closes the mic (live "Listening…" state)

@@ -69,6 +69,19 @@ class QuestionAnswerTeaseQuestion(BaseModel):
         return self
 
 
+class RenderedCharacter(BaseModel):
+    persona: str = Field(
+        ...,
+        min_length=1,
+        description="Who she is: personality, background, interests, what she's looking for, and the scenario woven into a natural description.",
+    )
+    appearance: str = Field(
+        ...,
+        min_length=1,
+        description="How she looks right now: physical features and what she's wearing.",
+    )
+
+
 class EvaluationResult(BaseModel):
     feedback: str = Field(
         ...,

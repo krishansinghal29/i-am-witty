@@ -129,9 +129,7 @@ reminder → today's plan). Preview a stage with a hash, e.g. `html/onboarding.h
 A full-screen **role-play runtime** — a live, voiced conversation with an AI persona
 (*Maya*) over an **illustrated avatar background** (a warm, softly-lit rooftop-party scene,
 all inline SVG so the file is self-contained). The top pins a close (✕), the persona name,
-an options button, the **task progress** (`Land a push-pull · 1 / 5`, 5-segment bar) and a
-**hint** — the *scenario itself* is set once, in the chat thread (a narration line), so it
-isn't duplicated up top.
+the **task progress** (`Land a push-pull · 1 / 5`, 5-segment bar) and a **hint**.
 
 Below is a scrollable chat thread where every **AI (Maya) line carries a ▶ play button**;
 roles follow the runtime role table — **Maya (She)** = rosy/coral accent on a frosted-white

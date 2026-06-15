@@ -8,11 +8,11 @@ from app.application.unit_of_work import UnitOfWork
 from app.domain.models.task import Task
 from app.domain.models.task_attempt import TaskAttempt, TaskAttemptSource
 from app.domain.models.task_type import TaskType
+from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
 from app.ports.repositories.task_attempt_repository import TaskAttemptRepository
 from app.ports.task_runtime_engine import (
     GeneratedTaskPayload,
     GenerateTaskInput,
-    TaskRuntimeEngine,
 )
 
 
@@ -32,7 +32,7 @@ def serialize_runtime_state(payload: GeneratedTaskPayload) -> dict:
     and reproducible.
     """
     technique = payload.assigned_technique
-    return {
+    state: dict = {
         "prompt": {
             "messages": [
                 {"role": m.role, "content": m.content}
@@ -50,6 +50,11 @@ def serialize_runtime_state(payload: GeneratedTaskPayload) -> dict:
             else None
         ),
     }
+    # Conversational (roleplay) tasks carry the full turn state to persist so the
+    # `turn` endpoint can advance the conversation against it.
+    if payload.roleplay is not None:
+        state.update(payload.roleplay.runtime_state)
+    return state
 
 
 class TaskRuntimeService:
@@ -66,12 +71,12 @@ class TaskRuntimeService:
     def __init__(
         self,
         attempt_service: TaskAttemptService,
-        engine: TaskRuntimeEngine,
+        engines: TaskRuntimeEngineResolver,
         attempts: TaskAttemptRepository,
         uow: UnitOfWork,
     ) -> None:
         self._attempt_service = attempt_service
-        self._engine = engine
+        self._engines = engines
         self._attempts = attempts
         self._uow = uow
 
@@ -85,7 +90,8 @@ class TaskRuntimeService:
         started = await self._attempt_service.start_task(
             app_user_id, task_id, source, daily_plan_item_id
         )
-        payload = await self._engine.generate(
+        engine = self._engines.for_task_type(started.task_type)
+        payload = await engine.generate(
             GenerateTaskInput(
                 task=started.task,
                 task_type=started.task_type,

@@ -9,9 +9,11 @@ from app.application.exceptions import (
     ConflictError,
     NotFoundError,
     PaywallRequiredError,
+    ValidationError,
 )
 from app.application.transcription_service import TranscriptionService
 from app.application.unit_of_work import UnitOfWork
+from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
 from app.domain.models.app_user import AppUser
 from app.domain.models.entitlement import AccessState
 from app.domain.models.task import Task
@@ -53,8 +55,9 @@ from app.ports.task_runtime_engine import (
     CompleteTaskRuntimeInput,
     PromptMessage,
     StageResponse,
-    TaskRuntimeEngine,
     TaskRuntimeResult,
+    TurnResult,
+    TurnTaskRuntimeInput,
 )
 
 def _runtime_context_from_state(
@@ -107,6 +110,21 @@ class CompleteTaskResult:
     streak: StreakUpdate
 
 
+@dataclass(frozen=True)
+class TurnTaskResult:
+    """Result of advancing a multi-turn attempt by one turn.
+
+    ``streak`` is populated only on the turn that completes the attempt (when
+    the shared completion side-effects run); it is ``None`` for intermediate
+    turns.
+    """
+
+    attempt: TaskAttempt
+    turn: TurnResult
+    free_limit: FreeLimitDecision
+    streak: StreakUpdate | None
+
+
 class TaskAttemptService:
     """Owns the start/complete lifecycle of a task attempt.
 
@@ -127,7 +145,7 @@ class TaskAttemptService:
         entitlements: EntitlementRepository,
         config: ConfigRepository,
         transcription: TranscriptionService,
-        engine: TaskRuntimeEngine,
+        engines: TaskRuntimeEngineResolver,
         uow: UnitOfWork,
     ) -> None:
         self._users = users
@@ -139,7 +157,7 @@ class TaskAttemptService:
         self._entitlements = entitlements
         self._config = config
         self._transcription = transcription
-        self._engine = engine
+        self._engines = engines
         self._uow = uow
 
     async def _free_limit_for(
@@ -261,7 +279,8 @@ class TaskAttemptService:
         transcript = self._transcription.resolve_final_transcript(
             client_transcript=client_transcript,
         )
-        runtime_result = await self._engine.complete(
+        engine = self._engines.for_task_type(task_type)
+        runtime_result = await engine.complete(
             CompleteTaskRuntimeInput(
                 task=task,
                 task_type=task_type,
@@ -273,39 +292,62 @@ class TaskAttemptService:
             )
         )
 
-        # PHASE 3 — atomic multi-table write.
+        # PHASE 3 — atomic multi-table write (shared with the roleplay turn path).
+        completion_meta = {
+            **runtime_result.completion_metadata,
+            "style_label": runtime_result.style_label,
+            "feedback_html": runtime_result.feedback_html,
+            "sample_answer_html": runtime_result.sample_answer_html,
+        }
+        completed, fl, streak = await self.finalize_completion(
+            user=user,
+            attempt=attempt,
+            access=access,
+            completion_metadata=completion_meta,
+        )
+        return CompleteTaskResult(completed, runtime_result, fl, streak)
+
+    async def finalize_completion(
+        self,
+        *,
+        user: AppUser,
+        attempt: TaskAttempt,
+        access: AccessState,
+        completion_metadata: dict,
+    ) -> tuple[TaskAttempt, FreeLimitDecision, StreakUpdate]:
+        """Run the shared completion side-effects for a finished attempt.
+
+        Marks the attempt completed, advances the daily plan item, increments
+        free-tier usage (non-plus only), and updates streak + day activity — all
+        in one transaction. Shared by single-shot ``complete_task`` and the
+        multi-turn ``turn_task`` (when its goal-reaching turn completes).
+        """
         today = local_today(user.timezone)
         limit = await self._config.get_free_task_limit()
         du = None
         async with self._uow.transaction():
-            completion_meta = {
-                **runtime_result.completion_metadata,
-                "style_label": runtime_result.style_label,
-                "feedback_html": runtime_result.feedback_html,
-                "sample_answer_html": runtime_result.sample_answer_html,
-            }
             completed = await self._attempts.complete_attempt(
                 CompleteAttemptInput(
-                    attempt_id=attempt_id,
-                    completion_metadata=completion_meta,
+                    attempt_id=attempt.id,
+                    completion_metadata=completion_metadata,
                 )
             )
 
             if attempt.daily_plan_item_id is not None:
                 await self._plans.mark_item_completed(
                     MarkPlanItemCompletedInput(
-                        app_user_id=app_user_id,
+                        app_user_id=attempt.app_user_id,
                         plan_item_id=attempt.daily_plan_item_id,
-                        attempt_id=attempt_id,
+                        attempt_id=attempt.id,
                     )
                 )
 
             if not access.is_riffy_plus:
                 du = await self._usage.increment_daily_usage(
-                    app_user_id, today, user.timezone, limit
+                    attempt.app_user_id, today, user.timezone, limit
                 )
 
-            summary = await self._progress.get_summary(app_user_id)
+            summary = await self._progress.get_summary(attempt.app_user_id)
             prev_completed = summary.completed_task_count if summary else 0
             prev_current = summary.current_streak_count if summary else 0
             prev_longest = summary.longest_streak_count if summary else 0
@@ -314,7 +356,7 @@ class TaskAttemptService:
                 prev_current, prev_longest, prev_qualified, today
             )
             await self._progress.update_after_completion(
-                app_user_id,
+                attempt.app_user_id,
                 ProgressSummary(
                     completed_task_count=prev_completed + 1,
                     current_streak_count=streak.current_streak,
@@ -325,13 +367,13 @@ class TaskAttemptService:
             )
 
             ws = week_start(today)
-            acts = await self._progress.get_week_activity(app_user_id, ws)
+            acts = await self._progress.get_week_activity(attempt.app_user_id, ws)
             existing = next(
                 (a for a in acts if a.activity_date == today), None
             )
             day_count = (existing.completed_task_count if existing else 0) + 1
             await self._progress.record_day_activity(
-                app_user_id,
+                attempt.app_user_id,
                 DayActivity(
                     activity_date=today,
                     timezone=user.timezone,
@@ -351,4 +393,68 @@ class TaskAttemptService:
             du.free_task_limit if du else limit,
         )
         fl = evaluate_free_limit(state2, access)
-        return CompleteTaskResult(completed, runtime_result, fl, streak)
+        return completed, fl, streak
+
+    async def turn_task(
+        self,
+        app_user_id: uuid.UUID,
+        attempt_id: uuid.UUID,
+        *,
+        client_transcript: str | None = None,
+    ) -> TurnTaskResult:
+        """Advance a multi-turn (conversational) attempt by one turn.
+
+        Runs ONE combined LLM call (grade + react + generate next line) against
+        the attempt's persisted conversation state, persists the new state, and —
+        when the turn completes the goal — runs the shared completion
+        side-effects (streak/usage), mirroring ``complete_task``.
+        """
+        # PHASE 1 — reads (inside the request's open read transaction).
+        user = await self._users.find_by_id(app_user_id)
+        if user is None:
+            raise NotFoundError("user_not_found")
+
+        attempt = await self._attempts.find_by_id(attempt_id)
+        if attempt is None or attempt.app_user_id != app_user_id:
+            raise NotFoundError("attempt_not_found")
+        if attempt.status == TaskAttemptStatus.completed:
+            raise ConflictError("already_completed")
+
+        task = await self._tasks.find_by_id(attempt.task_id)
+        task_type = await self._tasks.get_task_type(task.task_type_id)
+        if not self._engines.supports_turns(task_type):
+            raise ValidationError("task_type_not_conversational")
+        access = await self._entitlements.get_access_state(app_user_id)
+
+        # Release the read transaction before any network call.
+        await self._uow.rollback()
+
+        transcript = self._transcription.resolve_final_transcript(
+            client_transcript=client_transcript,
+        )
+        engine = self._engines.for_task_type(task_type)
+        turn = await engine.turn(
+            TurnTaskRuntimeInput(
+                task=task,
+                task_type=task_type,
+                attempt_id=attempt_id,
+                runtime_state=attempt.runtime_state or {},
+                user_transcript=transcript.text,
+            )
+        )
+
+        # Persist the advanced conversation state.
+        async with self._uow.transaction():
+            await self._attempts.attach_runtime_state(attempt_id, turn.runtime_state)
+
+        if turn.is_complete:
+            completed, fl, streak = await self.finalize_completion(
+                user=user,
+                attempt=attempt,
+                access=access,
+                completion_metadata=dict(turn.completion_metadata),
+            )
+            return TurnTaskResult(completed, turn, fl, streak)
+
+        fl = await self._free_limit_for(user, access)
+        return TurnTaskResult(attempt, turn, fl, None)

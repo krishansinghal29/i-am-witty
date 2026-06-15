@@ -91,6 +91,21 @@ class TechniqueResponse(BaseModel):
     example: str
 
 
+class RolePlayOpeningResponse(BaseModel):
+    """Opening turn of a multi-turn roleplay attempt.
+
+    `narration` is shown but not spoken; `dialogue` is her first spoken line
+    (also carried in `prompt`/`audio_base64`). Progress counts seed the UI.
+    """
+
+    brief_heading: str
+    narration: str
+    dialogue: str
+    target_count: int
+    landed_count: int
+    appearance: str
+
+
 class GeneratedPayloadResponse(BaseModel):
     """Generated runtime payload for a freshly started attempt."""
 
@@ -100,10 +115,12 @@ class GeneratedPayloadResponse(BaseModel):
     audio_base64: str | None
     audio_content_type: str | None
     avatar_image_url: str | None
+    roleplay: RolePlayOpeningResponse | None = None
 
     @classmethod
     def from_payload(cls, payload: GeneratedTaskPayload) -> GeneratedPayloadResponse:
         technique = payload.assigned_technique
+        roleplay = payload.roleplay
         return cls(
             prompt=PromptResponse(
                 messages=[
@@ -125,6 +142,18 @@ class GeneratedPayloadResponse(BaseModel):
             audio_base64=payload.audio_base64,
             audio_content_type=payload.audio_content_type,
             avatar_image_url=payload.avatar_image_url,
+            roleplay=(
+                RolePlayOpeningResponse(
+                    brief_heading=roleplay.brief_heading,
+                    narration=roleplay.narration,
+                    dialogue=roleplay.dialogue,
+                    target_count=roleplay.target_count,
+                    landed_count=roleplay.landed_count,
+                    appearance=roleplay.appearance,
+                )
+                if roleplay is not None
+                else None
+            ),
         )
 
 
@@ -233,6 +262,32 @@ class CompleteRequest(BaseModel):
     stage_responses: list[StageResponseBody] = Field(default_factory=list)
 
 
+class TurnRequest(BaseModel):
+    client_transcript: str | None = None
+
+
+class RolePlayTurnResponse(BaseModel):
+    """One advance of a roleplay conversation."""
+
+    narration: str
+    dialogue: str
+    landed: bool
+    intensity: str
+    landed_count: int
+    target_count: int
+    is_complete: bool
+    audio_base64: str | None
+    audio_content_type: str | None
+
+
+class TurnTaskResponse(BaseModel):
+    attempt_id: UUID
+    status: str
+    turn: RolePlayTurnResponse
+    free_limit: FreeLimitResponse
+    streak: StreakResponse | None
+
+
 def _parse_source(source: str) -> TaskAttemptSource:
     """Parse a request source string into a `TaskAttemptSource` (422 on bad value)."""
     try:
@@ -335,6 +390,51 @@ async def complete_task(
             current_streak=result.streak.current_streak,
             longest_streak=result.streak.longest_streak,
             last_qualified_date=result.streak.last_qualified_date,
+        ),
+    )
+
+
+@router.post("/attempts/{attempt_id}/turn", response_model=TurnTaskResponse)
+async def turn_task(
+    attempt_id: UUID,
+    body: TurnRequest,
+    container: ContainerDep,
+    user: CurrentUser,
+) -> TurnTaskResponse:
+    """Advance a multi-turn (roleplay) attempt by one turn.
+
+    Returns the next AI line + progress; on the goal-reaching turn it also
+    finalizes the attempt and returns updated gating + streak state.
+    """
+    result = await container.task_attempt_service.turn_task(
+        user.id,
+        attempt_id,
+        client_transcript=body.client_transcript,
+    )
+    turn = result.turn
+    return TurnTaskResponse(
+        attempt_id=result.attempt.id,
+        status=result.attempt.status.value,
+        turn=RolePlayTurnResponse(
+            narration=turn.narration,
+            dialogue=turn.dialogue,
+            landed=turn.landed,
+            intensity=turn.intensity,
+            landed_count=turn.landed_count,
+            target_count=turn.target_count,
+            is_complete=turn.is_complete,
+            audio_base64=turn.audio_base64,
+            audio_content_type=turn.audio_content_type,
+        ),
+        free_limit=FreeLimitResponse.from_decision(result.free_limit),
+        streak=(
+            StreakResponse(
+                current_streak=result.streak.current_streak,
+                longest_streak=result.streak.longest_streak,
+                last_qualified_date=result.streak.last_qualified_date,
+            )
+            if result.streak is not None
+            else None
         ),
     )
 

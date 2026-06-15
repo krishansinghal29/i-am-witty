@@ -50,12 +50,13 @@ from app.infrastructure.repositories.pg_task_attempt_repository import (
 from app.infrastructure.repositories.pg_task_repository import PgTaskRepository
 from app.infrastructure.repositories.pg_usage_repository import PgUsageRepository
 from app.infrastructure.repositories.pg_user_repository import PgUserRepository
+from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
+from app.infrastructure.runtime.roleplay_engine import RoleplayTaskEngine
 from app.infrastructure.runtime.voice_prompt_engine import VoicePromptTaskEngine
 from app.ports.integrations.analytics import Analytics
 from app.ports.integrations.auth_token_verifier import AuthTokenVerifier
 from app.ports.integrations.subscription_provider import SubscriptionProvider
 from app.ports.integrations.transcription_provider import TranscriptionProvider
-from app.ports.task_runtime_engine import TaskRuntimeEngine
 from app.settings import Settings
 
 
@@ -67,7 +68,7 @@ class Integrations:
     subscription_provider: SubscriptionProvider
     analytics: Analytics
     transcription_provider: TranscriptionProvider
-    runtime_engine: TaskRuntimeEngine
+    runtime_engines: TaskRuntimeEngineResolver
 
 
 def build_integrations(settings: Settings) -> Integrations:
@@ -80,19 +81,31 @@ def build_integrations(settings: Settings) -> Integrations:
     """
     llm = LiteLlmProvider(settings)
     tts = OpenAiTtsProvider(settings)
-    runtime_engine = VoicePromptTaskEngine(
+    voice_prompt_engine = VoicePromptTaskEngine(
         llm,
         tts,
         generator_model=settings.llm_generator_model,
         evaluator_model=settings.llm_evaluator_model,
         tts_voice=settings.tts_voice,
     )
+    roleplay_engine = RoleplayTaskEngine(
+        llm,
+        tts,
+        generator_model=settings.llm_generator_model,
+        tts_voice=settings.tts_voice,
+    )
+    runtime_engines = TaskRuntimeEngineResolver(
+        {
+            "voice_prompt_v1": voice_prompt_engine,
+            "roleplay_v1": roleplay_engine,
+        }
+    )
     return Integrations(
         auth_verifier=FirebaseAuthTokenVerifier(settings),
         subscription_provider=RevenueCatSubscriptionProvider(settings),
         analytics=PostHogAnalytics(settings),
         transcription_provider=DeepgramTranscriptionProvider(settings),
-        runtime_engine=runtime_engine,
+        runtime_engines=runtime_engines,
     )
 
 
@@ -139,11 +152,11 @@ class RequestContainer:
             entitlements,
             config,
             self.transcription_service,
-            integrations.runtime_engine,
+            integrations.runtime_engines,
             uow,
         )
         self.task_runtime_service = TaskRuntimeService(
-            self.task_attempt_service, integrations.runtime_engine, attempts, uow
+            self.task_attempt_service, integrations.runtime_engines, attempts, uow
         )
         self.progress_service = ProgressService(users, progress)
         self.entitlement_service = EntitlementService(

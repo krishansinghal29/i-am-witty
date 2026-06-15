@@ -25,6 +25,15 @@ export interface TechniqueDto {
   example: string;
 }
 
+export interface RolePlayOpeningDto {
+  brief_heading: string;
+  narration: string;
+  dialogue: string;
+  target_count: number;
+  landed_count: number;
+  appearance: string;
+}
+
 export interface GeneratedPayloadDto {
   prompt: PromptDto;
   assigned_technique: TechniqueDto | null;
@@ -32,6 +41,7 @@ export interface GeneratedPayloadDto {
   audio_base64: string | null;
   audio_content_type: string | null;
   avatar_image_url: string | null;
+  roleplay?: RolePlayOpeningDto | null;
 }
 
 export interface FeedbackTabsDto {

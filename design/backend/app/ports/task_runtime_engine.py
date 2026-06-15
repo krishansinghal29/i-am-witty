@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import uuid
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from app.domain.models.task import Task
@@ -35,12 +35,31 @@ class GenerateTaskInput:
 
 
 @dataclass(frozen=True)
+class RolePlayOpening:
+    """The opening turn of a multi-turn roleplay attempt.
+
+    `narration` is scene/appearance framing shown but never spoken; `dialogue`
+    is her first spoken line (TTS'd). `runtime_state` is the full conversational
+    state the service persists on the attempt for subsequent `turn` calls.
+    """
+
+    brief_heading: str
+    narration: str
+    dialogue: str
+    target_count: int
+    landed_count: int
+    appearance: str
+    runtime_state: dict
+
+
+@dataclass(frozen=True)
 class GeneratedTaskPayload:
     """Generated runtime payload for a task attempt.
 
     Optional sections vary by task type: scaffolded tasks populate
-    `scaffold_stages`, technique tasks populate `assigned_technique`, and
-    avatar/audio fields are filled only when the provider produces them.
+    `scaffold_stages`, technique tasks populate `assigned_technique`, roleplay
+    tasks populate `roleplay`, and avatar/audio fields are filled only when the
+    provider produces them.
     """
 
     prompt: GeneratedPrompt
@@ -49,6 +68,7 @@ class GeneratedTaskPayload:
     audio_base64: str | None = None
     audio_content_type: str | None = None
     avatar_image_url: str | None = None
+    roleplay: RolePlayOpening | None = None
 
 
 @dataclass(frozen=True)
@@ -66,6 +86,46 @@ class CompleteTaskRuntimeInput:
     transcript: str
     assigned_technique: AssignedTechnique | None = None
     stage_responses: tuple[StageResponse, ...] = ()
+
+
+@dataclass(frozen=True)
+class TurnTaskRuntimeInput:
+    """One advance of a multi-turn (conversational) attempt.
+
+    `runtime_state` is the attempt's persisted conversation/character state from
+    the opening (or the previous turn); `user_transcript` is the user's latest
+    spoken/typed line.
+    """
+
+    task: Task
+    task_type: TaskType
+    attempt_id: uuid.UUID
+    runtime_state: dict
+    user_transcript: str
+
+
+@dataclass(frozen=True)
+class TurnResult:
+    """Result of advancing a multi-turn attempt.
+
+    `narration` is shown (with a tiny in-world coach note woven in) but not
+    spoken; `dialogue` is her next spoken line (TTS'd). `landed`/`intensity`
+    drive the progress UI. `is_complete` is true once the goal is reached, at
+    which point the service runs the shared completion side-effects.
+    `runtime_state` is the new state to persist.
+    """
+
+    narration: str
+    dialogue: str
+    landed: bool
+    intensity: str
+    landed_count: int
+    target_count: int
+    is_complete: bool
+    runtime_state: dict
+    audio_base64: str | None = None
+    audio_content_type: str | None = None
+    completion_metadata: dict = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -100,4 +160,13 @@ class TaskRuntimeEngine(Protocol):
     async def complete(
         self, input: CompleteTaskRuntimeInput
     ) -> TaskRuntimeResult:
+        ...
+
+    async def turn(self, input: TurnTaskRuntimeInput) -> TurnResult:
+        """Advance a multi-turn (conversational) attempt by one turn.
+
+        Only conversational task types support this; single-shot engines may
+        raise ``NotImplementedError``. The service gates on the task type's
+        ``supports_turns`` metadata before dispatching here.
+        """
         ...

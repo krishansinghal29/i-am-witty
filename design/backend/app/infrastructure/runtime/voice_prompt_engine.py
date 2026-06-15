@@ -13,6 +13,8 @@ from app.ports.task_runtime_engine import (
     GenerateTaskInput,
     PromptMessage,
     TaskRuntimeResult,
+    TurnResult,
+    TurnTaskRuntimeInput,
 )
 
 logger = logging.getLogger(__name__)
@@ -141,6 +143,11 @@ class VoicePromptTaskEngine:
                 "evaluator_version": rc.get("prompt_bundle_key"),
                 "assigned_technique_name": technique_name,
             },
+        )
+
+    async def turn(self, input: TurnTaskRuntimeInput) -> TurnResult:
+        raise NotImplementedError(
+            "voice_prompt task types are single-shot; they do not support turn()"
         )
 
     # -- helpers -----------------------------------------------------------

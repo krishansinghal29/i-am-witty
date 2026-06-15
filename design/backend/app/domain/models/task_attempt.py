@@ -10,7 +10,6 @@ class TaskAttemptSource(str, Enum):
     onboarding = "onboarding"
     daily_plan = "daily_plan"
     practice_library = "practice_library"
-    role_play = "role_play"
 
 
 class TaskAttemptStatus(str, Enum):

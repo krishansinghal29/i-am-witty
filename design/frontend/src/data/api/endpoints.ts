@@ -20,6 +20,7 @@ export const endpoints = {
   taskRuntime: (taskId: string) => `/v1/tasks/${taskId}/runtime`,
   startTask: (taskId: string) => `/v1/tasks/${taskId}/start`,
   completeTask: (attemptId: string) => `/v1/attempts/${attemptId}/complete`,
+  turnAttempt: (attemptId: string) => `/v1/attempts/${attemptId}/turn`,
 
   // Transcription
   transcriptionTokens: '/v1/transcription-tokens',

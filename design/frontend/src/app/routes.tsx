@@ -5,22 +5,16 @@ import {
   IonIcon,
   IonLabel,
   IonRouterOutlet,
-  IonBadge,
-  IonPage,
-  IonContent,
 } from '@ionic/react';
 import { Route, Redirect } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import {
   homeOutline,
   flameOutline,
-  chatbubblesOutline,
   personOutline,
 } from 'ionicons/icons';
 import { OnboardingGuard } from '@/app/guards/onboarding_guard';
 import { ErrorBoundary } from '@/app/error_boundary';
-import { useIntegrations } from '@/app/providers';
-import { TopBar, EmptyView } from '@/components/ui';
 import { HomePage } from '@/screens/home/home_page';
 import { PracticePage } from '@/screens/practice/practice_page';
 import { ProfilePage } from '@/screens/profile/profile_page';
@@ -31,27 +25,7 @@ import { TaskRuntimePage } from '@/screens/task_runtime/task_runtime_page';
 import { PaywallSheet } from '@/screens/paywall/paywall_sheet';
 import { SupportSheet } from '@/screens/support/support_sheet';
 
-function RolePlayPlaceholder() {
-  return (
-    <IonPage>
-      <IonContent>
-        <div style={{ padding: 'calc(env(safe-area-inset-top, 0px) + 14px) 20px 0' }}>
-          <TopBar supportSource="roleplay" />
-        </div>
-        <EmptyView
-          title="Role play"
-          message="This space is warming up. Check back soon."
-          icon={chatbubblesOutline}
-        />
-      </IonContent>
-    </IonPage>
-  );
-}
-
 export function AppTabs() {
-  const { analytics } = useIntegrations();
-  const rolePlayEnabled = analytics.isFeatureEnabled('role_play');
-
   return (
     <>
       <IonTabs>
@@ -76,15 +50,6 @@ export function AppTabs() {
           />
           <Route
             exact
-            path="/app/roleplay"
-            render={() => (
-              <ErrorBoundary>
-                <RolePlayPlaceholder />
-              </ErrorBoundary>
-            )}
-          />
-          <Route
-            exact
             path="/app/profile"
             render={() => (
               <ErrorBoundary>
@@ -104,15 +69,6 @@ export function AppTabs() {
           <IonTabButton tab="practice" href="/app/practice">
             <IonIcon icon={flameOutline} />
             <IonLabel>Practice</IonLabel>
-          </IonTabButton>
-          <IonTabButton
-            tab="roleplay"
-            href={rolePlayEnabled ? '/app/roleplay' : undefined}
-            disabled={!rolePlayEnabled}
-          >
-            <IonIcon icon={chatbubblesOutline} />
-            <IonLabel>Role play</IonLabel>
-            {!rolePlayEnabled && <IonBadge color="medium">Soon</IonBadge>}
           </IonTabButton>
           <IonTabButton tab="profile" href="/app/profile">
             <IonIcon icon={personOutline} />

@@ -4,6 +4,7 @@ import {
   AssignedTechnique,
   Prompt,
   PromptMessage,
+  RolePlayOpening,
   RuntimeContent,
   RuntimePayload,
   ScaffoldStage,
@@ -15,6 +16,7 @@ import {
   GeneratedPayloadDto,
   MessageDto,
   PromptDto,
+  RolePlayOpeningDto,
   TaskRuntimeDto,
   TaskTypeDto,
   TechniqueDto,
@@ -93,6 +95,17 @@ function mapContent(
   };
 }
 
+function mapRolePlayOpening(dto: RolePlayOpeningDto): RolePlayOpening {
+  return {
+    briefHeading: dto.brief_heading,
+    narration: dto.narration,
+    dialogue: dto.dialogue,
+    targetCount: dto.target_count,
+    landedCount: dto.landed_count,
+    appearance: dto.appearance,
+  };
+}
+
 function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
   return {
     prompt: mapPrompt(dto.prompt),
@@ -105,6 +118,7 @@ function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
       contentType: dto.audio_content_type,
     },
     avatarImageUrl: dto.avatar_image_url,
+    roleplay: dto.roleplay != null ? mapRolePlayOpening(dto.roleplay) : null,
   };
 }
 

@@ -7,6 +7,8 @@ from app.ports.task_runtime_engine import (
     GenerateTaskInput,
     PromptMessage,
     TaskRuntimeResult,
+    TurnResult,
+    TurnTaskRuntimeInput,
 )
 
 _SCAFFOLD_KEYS = ("scaffold", "stages", "prompts")
@@ -74,6 +76,31 @@ class FakeTaskRuntimeEngine:
                 "transcript_chars": len(input.transcript),
                 "task_type_id": input.task_type.id,
             },
+        )
+
+    async def turn(self, input: TurnTaskRuntimeInput) -> TurnResult:
+        """Deterministic single-turn advance that completes immediately."""
+        rp = (input.runtime_state or {}).get("roleplay") or {}
+        target = int(rp.get("target_count", 1))
+        landed = int(rp.get("landed_count", 0)) + 1
+        conversation = list(rp.get("conversation") or [])
+        conversation.append({"role": "you", "content": input.user_transcript})
+        narration = "Nice — she smiles and plays along."
+        dialogue = "I see what you did there."
+        conversation.append({"role": "she_narration", "content": narration})
+        conversation.append({"role": "she", "content": dialogue})
+        return TurnResult(
+            narration=narration,
+            dialogue=dialogue,
+            landed=True,
+            intensity="strong",
+            landed_count=landed,
+            target_count=target,
+            is_complete=landed >= target,
+            runtime_state={"roleplay": {**rp, "conversation": conversation, "landed_count": landed}},
+            audio_base64=None,
+            audio_content_type=None,
+            completion_metadata={"evaluator": "fake", "landed_count": landed},
         )
 
     @staticmethod

@@ -17,6 +17,7 @@ import {
   SupportMessage,
   TaskRuntime,
   TranscriptionToken,
+  TurnTaskResult,
 } from '@/types/models';
 
 import { HttpClient } from './http_client';
@@ -29,6 +30,7 @@ import { HomeDto } from '@/data/dto/home_dto';
 import { CatalogItemDto } from '@/data/dto/catalog_dto';
 import { TaskRuntimeDto } from '@/data/dto/task_runtime_dto';
 import { CompleteTaskDto, StartTaskDto } from '@/data/dto/attempt_dto';
+import { TurnTaskDto } from '@/data/dto/roleplay_dto';
 import { AccessDto } from '@/data/dto/entitlement_dto';
 import { DeviceDto, SupportDto } from '@/data/dto/comms_dto';
 import { TranscriptionTokenDto } from '@/data/dto/transcription_dto';
@@ -40,6 +42,7 @@ import { mapHome } from '@/data/mappers/home_mapper';
 import { mapCatalogItem } from '@/data/mappers/catalog_mapper';
 import { mapTaskRuntime } from '@/data/mappers/task_runtime_mapper';
 import { mapCompleteResult, mapStartResult } from '@/data/mappers/attempt_mapper';
+import { mapTurnResult } from '@/data/mappers/roleplay_mapper';
 import { mapAccess } from '@/data/mappers/entitlement_mapper';
 import {
   mapNotificationDevice,
@@ -96,6 +99,15 @@ export interface RiffyApi {
       stageResponses?: { position: number; transcript: string }[];
     },
   ): Promise<CompleteTaskResult>;
+
+  /**
+   * Advance a multi-turn (roleplay) attempt by one turn. Returns the next AI
+   * line + progress; the goal-reaching turn also returns finalized streak state.
+   */
+  turnAttempt(
+    attemptId: string,
+    body: { clientTranscript?: string },
+  ): Promise<TurnTaskResult>;
 
   /** Mint a short-lived transcription token for the device. */
   mintTranscriptionToken(): Promise<TranscriptionToken>;
@@ -191,6 +203,15 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
         },
       );
       return mapCompleteResult(dto);
+    },
+
+    async turnAttempt(attemptId, body) {
+      const dto = await http.post<TurnTaskDto>(endpoints.turnAttempt(attemptId), {
+        ...(body.clientTranscript != null
+          ? { client_transcript: body.clientTranscript }
+          : {}),
+      });
+      return mapTurnResult(dto);
     },
 
     async mintTranscriptionToken() {

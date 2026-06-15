@@ -49,6 +49,23 @@ TASK_TYPES: list[dict] = [
             "supports_scaffold_stages": True,
         },
     },
+    {
+        "id": "roleplay",
+        "display_name": "Role Play",
+        "description": "A multi-turn, in-character spoken conversation that practices a wit skill live.",
+        "ui_schema_key": "roleplay_v1",
+        "runtime_engine_key": "roleplay_v1",
+        "default_duration_seconds": None,
+        "is_active": True,
+        "sort_order": 40,
+        "type_metadata": {
+            "supports_tts": True,
+            "supports_avatar": True,
+            "supports_assigned_technique": False,
+            "supports_scaffold_stages": False,
+            "supports_turns": True,
+        },
+    },
 ]
 
 TASKS: list[dict] = [
@@ -628,6 +645,36 @@ TASKS: list[dict] = [
                 "strategy": "transcript_feedback",
                 "criteria": ["uses_subject", "real_parallel", "surprise", "punch", "range"],
             },
+        },
+    },
+    {
+        "slug": "roleplay-misinterpretation",
+        "title": "Misinterpretation",
+        "description": "Misread her lines and commit — live, in a roleplay conversation.",
+        "task_type_id": "roleplay",
+        "duration_seconds": None,
+        "thumbnail_key": "roleplay-misinterpretation",
+        "image_key": "roleplay-misinterpretation",
+        "access_tier": "free",
+        "status": "active",
+        "sort_order": 140,
+        "content": {
+            "exercise_key": "rpMisinterpretation",
+            "prompt_label": "She",
+            "prompt_roles": ["She"],
+            "response_instruction": "Misread her line and run with it.",
+            "recording_limit_seconds": 60,
+            "target_count": 5,
+            "feedback_tabs": {
+                "feedback_label": "Feedback",
+                "sample_answer_label": "Better Way",
+            },
+        },
+        "runtime_config": {
+            "backend_key": "rpMisinterpretation",
+            "prompt_bundle_key": "roleplay_misinterpretation_v1",
+            "verbs": {"strategy": "random_sample", "count": 10},
+            "target_count": 5,
         },
     },
 ]

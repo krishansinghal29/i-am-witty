@@ -47,12 +47,6 @@ APP_CONFIG: list[dict] = [
 
 FEATURE_GATES: list[dict] = [
     {
-        "feature_key": "role_play",
-        "default_enabled": False,
-        "requires_entitlement": "riffy_plus",
-        "min_app_version": None,
-    },
-    {
         "feature_key": "riffy_plus",
         "default_enabled": True,
         "requires_entitlement": None,

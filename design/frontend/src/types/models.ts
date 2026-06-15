@@ -202,6 +202,20 @@ export interface RuntimeAudio {
   contentType: string | null;
 }
 
+/**
+ * Opening turn of a multi-turn roleplay attempt. Present only for roleplay
+ * task types; `narration` is shown but not spoken, `dialogue` is her first
+ * spoken line (also in `prompt`/`audio`), and the counts seed the progress UI.
+ */
+export interface RolePlayOpening {
+  briefHeading: string;
+  narration: string;
+  dialogue: string;
+  targetCount: number;
+  landedCount: number;
+  appearance: string;
+}
+
 /** All data needed to drive a task runtime session in the UI. */
 export interface RuntimePayload {
   prompt: Prompt;
@@ -209,6 +223,7 @@ export interface RuntimePayload {
   scaffoldStages: ScaffoldStage[];
   audio: RuntimeAudio;
   avatarImageUrl: string | null;
+  roleplay: RolePlayOpening | null;
 }
 
 /** Labels for the two feedback tabs shown on the Reflect phase. */
@@ -276,6 +291,28 @@ export interface StartTaskResult {
   taskId: string;
   status: string;
   freeLimit: FreeLimit;
+}
+
+/** One advance of a roleplay conversation (from `/v1/attempts/:id/turn`). */
+export interface RolePlayTurn {
+  narration: string;
+  dialogue: string;
+  landed: boolean;
+  intensity: string;
+  landedCount: number;
+  targetCount: number;
+  isComplete: boolean;
+  audio: RuntimeAudio;
+}
+
+/** Response from the `/v1/attempts/:id/turn` endpoint. */
+export interface TurnTaskResult {
+  attemptId: string;
+  status: string;
+  turn: RolePlayTurn;
+  freeLimit: FreeLimit;
+  /** Populated only on the goal-reaching turn that finalizes the attempt. */
+  streak: Streak | null;
 }
 
 // ---------------------------------------------------------------------------
