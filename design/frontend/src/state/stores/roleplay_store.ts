@@ -23,6 +23,9 @@ interface RolePlayState {
   messages: ChatMessage[];
   landedCount: number;
   targetCount: number;
+  /** Model misinterpretation of the line the user just answered; shown as a hint
+   *  from the second beat onward (null on the opening). */
+  currentSample: string | null;
   /** True while a turn request is in flight. */
   isAwaitingReply: boolean;
   isRecording: boolean;
@@ -32,6 +35,7 @@ interface RolePlayState {
   start: (attemptId: string, targetCount: number) => void;
   addMessage: (message: ChatMessage) => void;
   setProgress: (landedCount: number, targetCount: number) => void;
+  setSample: (sample: string | null) => void;
   setAwaitingReply: (on: boolean) => void;
   setRecording: (on: boolean) => void;
   setDraft: (text: string) => void;
@@ -45,6 +49,7 @@ const initialState = {
   messages: [] as ChatMessage[],
   landedCount: 0,
   targetCount: 5,
+  currentSample: null as string | null,
   isAwaitingReply: false,
   isRecording: false,
   draft: '',
@@ -58,6 +63,7 @@ export const useRolePlayStore = create<RolePlayState>()((set) => ({
   addMessage: (message) =>
     set((state) => ({ messages: [...state.messages, message] })),
   setProgress: (landedCount, targetCount) => set({ landedCount, targetCount }),
+  setSample: (sample) => set({ currentSample: sample }),
   setAwaitingReply: (on) => set({ isAwaitingReply: on }),
   setRecording: (on) => set({ isRecording: on }),
   setDraft: (text) => set({ draft: text }),

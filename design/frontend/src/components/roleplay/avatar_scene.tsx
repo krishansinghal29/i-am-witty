@@ -9,14 +9,11 @@ import type { CSSProperties } from 'react';
 export function AvatarScene() {
   return (
     <div style={SCENE} aria-hidden>
-      <svg viewBox="0 0 392 850" preserveAspectRatio="xMidYMin slice" style={SVG}>
+      {/* Avatar drawn whole and centred (preserveAspectRatio "meet") so it stays
+          fully in view at any viewport width; the warm backdrop is a full-bleed
+          CSS gradient behind it (see SCENE), not part of the SVG. */}
+      <svg viewBox="0 0 392 850" preserveAspectRatio="xMidYMin meet" style={SVG}>
         <defs>
-          <linearGradient id="rp-bg" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#FFF3E6" />
-            <stop offset="0.4" stopColor="#FFE3CB" />
-            <stop offset="0.74" stopColor="#FBCBA4" />
-            <stop offset="1" stopColor="#F4B488" />
-          </linearGradient>
           <linearGradient id="rp-hair" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stopColor="#6A4634" />
             <stop offset="1" stopColor="#4A2E22" />
@@ -34,7 +31,6 @@ export function AvatarScene() {
           </filter>
         </defs>
 
-        <rect width="392" height="850" fill="url(#rp-bg)" />
         <g filter="url(#rp-soft)" opacity="0.85">
           <circle cx="52" cy="120" r="20" fill="#FFC178" opacity=".55" />
           <circle cx="124" cy="66" r="13" fill="#FFE2B4" opacity=".6" />
@@ -70,6 +66,10 @@ const SCENE: CSSProperties = {
   inset: 0,
   zIndex: 0,
   overflow: 'hidden',
+  // Full-bleed warm backdrop (mirrors the old in-SVG gradient) so the scene
+  // fills the whole width while the avatar sits centred on top of it.
+  background:
+    'linear-gradient(180deg, #FFF3E6 0%, #FFE3CB 40%, #FBCBA4 74%, #F4B488 100%)',
 };
 
 const SVG: CSSProperties = {

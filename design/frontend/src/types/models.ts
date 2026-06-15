@@ -302,6 +302,8 @@ export interface RolePlayTurn {
   landedCount: number;
   targetCount: number;
   isComplete: boolean;
+  /** A model misinterpretation of the line the user just answered (coaching). */
+  sampleAnswer: string;
   audio: RuntimeAudio;
 }
 

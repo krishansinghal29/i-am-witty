@@ -191,6 +191,7 @@ class RoleplayTaskEngine:
             target_count=target,
             is_complete=is_complete,
             runtime_state=new_runtime_state,
+            sample_answer=turn.sample_answer,
             audio_base64=audio_base64,
             audio_content_type=audio_content_type,
             completion_metadata={

@@ -123,6 +123,7 @@ class TurnResult:
     target_count: int
     is_complete: bool
     runtime_state: dict
+    sample_answer: str = ""
     audio_base64: str | None = None
     audio_content_type: str | None = None
     completion_metadata: dict = field(default_factory=dict)

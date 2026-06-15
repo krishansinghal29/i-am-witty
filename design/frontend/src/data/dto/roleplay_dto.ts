@@ -14,6 +14,7 @@ export interface RolePlayTurnDto {
   landed_count: number;
   target_count: number;
   is_complete: boolean;
+  sample_answer: string;
   audio_base64: string | null;
   audio_content_type: string | null;
 }

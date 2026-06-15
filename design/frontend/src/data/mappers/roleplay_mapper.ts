@@ -13,6 +13,7 @@ export function mapRolePlayTurn(dto: RolePlayTurnDto): RolePlayTurn {
     landedCount: dto.landed_count,
     targetCount: dto.target_count,
     isComplete: dto.is_complete,
+    sampleAnswer: dto.sample_answer,
     audio: {
       audioBase64: dto.audio_base64,
       contentType: dto.audio_content_type,

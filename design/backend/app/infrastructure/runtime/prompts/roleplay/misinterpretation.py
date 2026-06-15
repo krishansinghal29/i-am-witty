@@ -56,6 +56,23 @@ _TECHNIQUES = '''=== THE 6 MISINTERPRETATION TECHNIQUES (what a good user line l
 6. **Subject/Pronoun Flip**: Respond as if "you" refers to them, or redirect "we" unexpectedly.
    - "You always do this" → "Do what — be impossible to forget? Yeah, that's on me."'''
 
+# Guidance for the `sample_answer` field — a model misinterpretation of the line
+# the user JUST answered, written exactly as the standalone Misinterpretation
+# exercise would coach it (drawn from that exercise's instructions + examples).
+_SAMPLE_GUIDANCE = '''=== SAMPLE ANSWER (COACHING — NEVER SPOKEN) ===
+Alongside your reaction, produce `sample_answer`: one model example of how a sharp person could have misinterpreted YOUR PREVIOUS spoken line — the exact line the user just responded to (NOT your new dialogue). It is shown to the user as "one way you could've played it" AFTER their attempt, so it never spoils the current line.
+
+Write it like the standalone Misinterpretation exercise teaches it:
+- Pick one of the 6 techniques above and commit fully to that single alternative reading — no hedging, no winking, no explaining the joke.
+- It must FAIL the litmus test: it must NOT still work under the line's original, intended meaning. If it would, it is not a misinterpretation — rewrite it.
+- Anchor it to a real word, modifier, pronoun, or phrase actually in your previous line.
+- 1-2 short sentences, natural and punchy — something a real person would actually say.
+
+Shape (technique → the misread):
+- "I think I kinked something earlier" → "Should I be worried about your wiring, or is this a you-thing?"  (Literal Trap)
+- "We should slow down" → "Agreed — let's not rush into knowing each other's middle names."  (Context Shift)
+- "You're a lot to handle" → "Finally, someone qualified for the job."  (Subject/Pronoun Flip)'''
+
 
 # ── Small pure helpers ───────────────────────────────────────────
 
@@ -114,13 +131,20 @@ The user is practising MISINTERPRETATION — deliberately misreading an everyday
 
 === TWO-PART STRUCTURE FOR EVERY TURN OF YOURS ===
 Every turn you produce has two distinct parts:
-1. `narration` — what's happening, how you react, a scene beat, your body language. These are things you do NOT say aloud. Third-person scene description. Keep it SHORT — 1-2 sentences max, never more.
+1. `narration` — ONE scene beat: what's happening or how you react, in third person. Things you do NOT say aloud. Write ONE plain, complete sentence — aim for ~12 words, never more than 18. Cover a SINGLE beat (one reaction OR one action); never stack several details into one line.
 2. `dialogue` — your actual spoken line. This is the ONLY thing you say out loud. It MUST:
    - contain the word "I", "you", or "we",
    - sound completely ordinary — something a real person would actually say,
    - be ripe for misinterpretation (carry a surface meaning AND at least one other readable meaning),
-   - stay to 1-2 sentences.
+   - be ONE plain line — a single sentence, no line breaks, ~10 words, never more than 15.
 Never put quoted speech inside `narration`, and never put scene description inside `dialogue`.
+
+=== KEEP THE LANGUAGE PLAIN AND EASY (CRITICAL) ===
+Both `narration` and `dialogue` must read like everyday speech, not a novel. Simple and short always wins.
+- Use common, everyday words. Say "small" not "petite", "calm" not "composed", "watching" not "attentive", "in" not "amid".
+- Write normal complete sentences. No semicolons, no comma-stacked fragments, and never drop "a", "the", or "is" just to save room.
+- Don't copy adjectives from the appearance brief word-for-word — describe her simply, in your own plain words.
+- If you're tempted to add a second detail to hit the word count, cut it instead. Saying less, plainly, always beats cramming more in.
 
 === ENCOURAGING EVALUATION (CRITICAL — TONE IS THE OPPOSITE OF HARSH COACHING) ===
 Treat ANY genuine misread as a win. Be generous.
@@ -141,6 +165,8 @@ The only feedback the user gets is how you, in-world, react. Carry it entirely i
 === SLOW REVEAL / SLOW REWARD ===
 You start guarded and neutral. Reveal your personality bit by bit, and only warm up as the user keeps landing misreads. Do NOT over-reward early — early wins earn a small, measured thaw, not instant warmth. Right now the user has landed {ctx.landed_count} of {ctx.target_count}. At {ctx.landed_count}/{ctx.target_count}, only reveal a little; save your fuller, warmer, more playful self for as the count climbs toward {ctx.target_count}.
 
+{_SAMPLE_GUIDANCE}
+
 === SPARK VERBS (LOOSE INSPIRATION ONLY) ===
 {_verb_clause(ctx)}
 
@@ -158,10 +184,10 @@ def build_opening_user(ctx: RoleplayContext) -> str:
     return f"""Open the roleplay. Produce a `RolePlayOpening` with these fields:
 
 - `brief_heading`: a short scene title that frames the moment (a few words, e.g. "At the rooftop party").
-- `narration`: establish the scene in 1-2 sentences max. Set how you look right now and the setting, and how you're carrying yourself. Your appearance to work from:
+- `narration`: set the scene in ONE plain sentence (~12 words, never over 18). Give just ONE concrete visual detail about her, plus where she is and what she's doing — NOT a head-to-toe description. Pick the single most vivid detail from her appearance below and put it in plain, everyday words; ignore the rest. Her appearance to draw that one detail from:
 {ctx.appearance}
-  This is scene description — things you do NOT say aloud. Keep it SHORT.
-- `dialogue`: your very first spoken line. It must contain "I", "you", or "we", sound completely ordinary and everyday, and be ripe for misinterpretation (1-2 sentences).
+  This is scene description — things you do NOT say aloud.
+- `dialogue`: your very first spoken line. It must contain "I", "you", or "we", sound completely ordinary and everyday, and be ripe for misinterpretation. One plain line, ~10 words, never over 15.
 
 You are guarded and neutral to start — this is the very beginning, before the user has earned any warmth. Progress so far: {ctx.landed_count}/{ctx.target_count} landed.
 
@@ -184,8 +210,9 @@ Landed so far: {ctx.landed_count}/{ctx.target_count}.
 Now do two things and return a `RolePlayTurn`:
 1. Evaluate the user's MOST RECENT "You" line above for a misinterpretation of your immediately preceding spoken line. Set `landed` and `intensity` per the encouraging rules (any genuine misread = landed; only a fully plain reply = off).
 2. Produce your next move in character:
-   - `narration`: your reaction and the scene beat — with the in-world coach note woven into the opening (warm affirmation if it landed; a gentle, subtle cue if it was off). Not spoken aloud. Keep it SHORT — 1-2 sentences max.
-   - `dialogue`: your next spoken line — ordinary, contains "I"/"you"/"we", ripe for misinterpretation, 1-2 sentences.
+   - `narration`: ONE plain sentence (~12 words, never over 18) — a single reaction beat with the in-world coach note woven in (warm affirmation if it landed; a gentle, subtle cue if it was off). Not spoken aloud. Don't re-describe her looks; just the one beat, in plain everyday words.
+   - `dialogue`: your next spoken line — ordinary, contains "I"/"you"/"we", ripe for misinterpretation. One plain line, ~10 words, never over 15.
+   - `sample_answer`: a model misinterpretation of your PREVIOUS spoken line (the last "She (spoken)" line above — the one the user just responded to, NOT your new dialogue), per the SAMPLE ANSWER guidance. Max 20 words.
    - `is_complete`: true only if `landed_count` after counting this turn reaches {ctx.target_count}; otherwise false.
 
 Let your warmth scale with the quality of the misread and with how close the count is to {ctx.target_count}. Keep it concise."""

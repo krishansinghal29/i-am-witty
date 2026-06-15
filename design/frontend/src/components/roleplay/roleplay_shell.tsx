@@ -42,10 +42,12 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
   const isRecording = useRolePlayStore((s) => s.isRecording);
   const isAwaitingReply = useRolePlayStore((s) => s.isAwaitingReply);
   const draft = useRolePlayStore((s) => s.draft);
+  const currentSample = useRolePlayStore((s) => s.currentSample);
 
   const start = useRolePlayStore((s) => s.start);
   const addMessage = useRolePlayStore((s) => s.addMessage);
   const setProgress = useRolePlayStore((s) => s.setProgress);
+  const setSample = useRolePlayStore((s) => s.setSample);
   const setAwaitingReply = useRolePlayStore((s) => s.setAwaitingReply);
   const setRecording = useRolePlayStore((s) => s.setRecording);
   const setDraft = useRolePlayStore((s) => s.setDraft);
@@ -171,6 +173,8 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
         audioContentType: t.audio.contentType,
       });
       setProgress(t.landedCount, t.targetCount);
+      // (b) Show a model answer for the line they just attempted, from now on.
+      setSample(t.sampleAnswer || null);
       if (t.isComplete) {
         setDoneFreeLimit(result.freeLimit);
         setPhase('done');
@@ -191,6 +195,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
     setDraft,
     setPhase,
     setProgress,
+    setSample,
     stopRecording,
   ]);
 
@@ -228,7 +233,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
         <span style={{ ...ICON_BTN, visibility: 'hidden' }} aria-hidden />
       </header>
 
-      <TaskStrip landed={landedCount} target={targetCount} />
+      <TaskStrip landed={landedCount} target={targetCount} sample={currentSample} />
 
       <main ref={chatRef} style={CHAT}>
         <div style={CHAT_INNER}>
@@ -268,7 +273,15 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
 // Task strip (goal + progress dots + hint)
 // ---------------------------------------------------------------------------
 
-function TaskStrip({ landed, target }: { landed: number; target: number }) {
+function TaskStrip({
+  landed,
+  target,
+  sample,
+}: {
+  landed: number;
+  target: number;
+  sample: string | null;
+}) {
   return (
     <div style={STRIP}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
@@ -301,7 +314,15 @@ function TaskStrip({ landed, target }: { landed: number; target: number }) {
         ))}
       </div>
       <div style={HINT}>
-        💡 <span><b>Misread her line</b> — find another meaning and run with it. Commit, don’t explain.</span>
+        {sample ? (
+          <span>
+            💡 <b>One way you could&rsquo;ve played it:</b> &ldquo;{sample}&rdquo;
+          </span>
+        ) : (
+          <span>
+            💡 <b>Misread her line</b> — find another meaning and run with it. Commit, don&rsquo;t explain.
+          </span>
+        )}
       </div>
     </div>
   );
@@ -573,6 +594,7 @@ function DoneBar({ landed, target, onDone }: { landed: number; target: number; o
 const COL: CSSProperties = {
   position: 'relative',
   height: '100%',
+  width: '100%',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',

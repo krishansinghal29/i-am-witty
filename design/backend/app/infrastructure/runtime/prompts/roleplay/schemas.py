@@ -23,9 +23,11 @@ class RolePlayOpening(BaseModel):
         ...,
         min_length=1,
         description=(
-            "Sets her appearance and the setting and how she's carrying herself "
-            "right now. This is scene description — things she is NOT saying "
-            "aloud. Never spoken dialogue. Keep it SHORT: 1-2 sentences max."
+            "Sets the scene in ONE plain sentence — one concrete visual detail "
+            "about her plus where she is, in everyday words (not a head-to-toe "
+            "description). This is scene description — things she is NOT saying "
+            "aloud. Never spoken dialogue. ~12 words, never over 18; a single "
+            "beat, no semicolons or stacked fragments."
         ),
     )
     dialogue: str = Field(
@@ -34,8 +36,9 @@ class RolePlayOpening(BaseModel):
         description=(
             "Her opening spoken line — the only thing she actually says out loud. "
             "MUST contain the word 'I', 'you', or 'we', sound completely ordinary "
-            "and everyday, and be ripe for misinterpretation. Keep it to 1-2 "
-            "sentences."
+            "and everyday, and be ripe for misinterpretation. One plain line in "
+            "everyday words, ~10 words (never over 15), a single sentence with no "
+            "line breaks."
         ),
     )
 
@@ -71,8 +74,9 @@ class RolePlayTurn(BaseModel):
             "affirmation that doubles as feedback (e.g. 'she catches the misread "
             "and laughs, leaning in'). When it's off, give a gentle, subtle "
             "in-world cue (a slight cooling, she doesn't quite follow) — never an "
-            "explicit scolding. Never spoken dialogue. Keep it SHORT: 1-2 "
-            "sentences max."
+            "explicit scolding. Never spoken dialogue. ONE plain, complete "
+            "sentence in everyday words (~12 words, never over 18); a single "
+            "beat, no semicolons or stacked fragments, don't re-describe her looks."
         ),
     )
     dialogue: str = Field(
@@ -81,8 +85,20 @@ class RolePlayTurn(BaseModel):
         description=(
             "Her next spoken line — the only thing she actually says out loud. "
             "MUST contain the word 'I', 'you', or 'we', sound completely ordinary "
-            "and everyday, and be ripe for misinterpretation. Keep it to 1-2 "
-            "sentences."
+            "and everyday, and be ripe for misinterpretation. One plain line in "
+            "everyday words, ~10 words (never over 15), a single sentence with no "
+            "line breaks."
+        ),
+    )
+    sample_answer: str = Field(
+        ...,
+        min_length=1,
+        description=(
+            "A model misinterpretation of YOUR PREVIOUS spoken line — the exact "
+            "line the user just responded to (NOT your new dialogue). One short, "
+            "fully committed example a sharp person could have said, following the "
+            "misinterpretation techniques and failing the litmus test. HARD LIMIT: "
+            "20 words. Shown to the user as coaching AFTER their attempt; never spoken."
         ),
     )
     is_complete: bool = Field(

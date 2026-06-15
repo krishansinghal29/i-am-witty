@@ -276,6 +276,7 @@ class RolePlayTurnResponse(BaseModel):
     landed_count: int
     target_count: int
     is_complete: bool
+    sample_answer: str
     audio_base64: str | None
     audio_content_type: str | None
 
@@ -423,6 +424,7 @@ async def turn_task(
             landed_count=turn.landed_count,
             target_count=turn.target_count,
             is_complete=turn.is_complete,
+            sample_answer=turn.sample_answer,
             audio_base64=turn.audio_base64,
             audio_content_type=turn.audio_content_type,
         ),
