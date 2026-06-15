@@ -100,14 +100,13 @@ class RoleplayTaskEngine:
             }
         }
 
-        audio_base64, audio_content_type = await self._synthesize(
-            opening.dialogue, input
-        )
+        spoken = self._spoken_text(opening.narration, opening.dialogue)
+        audio_base64, audio_content_type = await self._synthesize(spoken, input)
 
         return GeneratedTaskPayload(
             prompt=GeneratedPrompt(
                 messages=(PromptMessage(role="She", content=opening.dialogue),),
-                speech_text=opening.dialogue,
+                speech_text=spoken,
             ),
             audio_base64=audio_base64,
             audio_content_type=audio_content_type,
@@ -179,7 +178,9 @@ class RoleplayTaskEngine:
             }
         }
 
-        audio_base64, audio_content_type = await self._synthesize_text(turn.dialogue)
+        audio_base64, audio_content_type = await self._synthesize_text(
+            self._spoken_text(turn.narration, turn.dialogue)
+        )
 
         return TurnResult(
             narration=turn.narration,
@@ -234,6 +235,12 @@ class RoleplayTaskEngine:
         if not verbs:
             return 0
         return (cursor + 1) % len(verbs)
+
+    @staticmethod
+    def _spoken_text(narration: str, dialogue: str) -> str:
+        """The single spoken line: her narration then her dialogue, one audio."""
+        parts = [p.strip() for p in (narration, dialogue) if p and p.strip()]
+        return "\n\n".join(parts)
 
     async def _synthesize(
         self, text: str, input: GenerateTaskInput

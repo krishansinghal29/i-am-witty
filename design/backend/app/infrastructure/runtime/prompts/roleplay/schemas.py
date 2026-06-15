@@ -25,7 +25,7 @@ class RolePlayOpening(BaseModel):
         description=(
             "Sets her appearance and the setting and how she's carrying herself "
             "right now. This is scene description — things she is NOT saying "
-            "aloud. Never spoken dialogue."
+            "aloud. Never spoken dialogue. Keep it SHORT: 1-2 sentences max."
         ),
     )
     dialogue: str = Field(
@@ -71,7 +71,8 @@ class RolePlayTurn(BaseModel):
             "affirmation that doubles as feedback (e.g. 'she catches the misread "
             "and laughs, leaning in'). When it's off, give a gentle, subtle "
             "in-world cue (a slight cooling, she doesn't quite follow) — never an "
-            "explicit scolding. Never spoken dialogue."
+            "explicit scolding. Never spoken dialogue. Keep it SHORT: 1-2 "
+            "sentences max."
         ),
     )
     dialogue: str = Field(

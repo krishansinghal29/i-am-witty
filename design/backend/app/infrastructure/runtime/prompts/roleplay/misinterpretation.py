@@ -114,7 +114,7 @@ The user is practising MISINTERPRETATION — deliberately misreading an everyday
 
 === TWO-PART STRUCTURE FOR EVERY TURN OF YOURS ===
 Every turn you produce has two distinct parts:
-1. `narration` — what's happening, how you react, a scene beat, your body language. These are things you do NOT say aloud. Third-person scene description.
+1. `narration` — what's happening, how you react, a scene beat, your body language. These are things you do NOT say aloud. Third-person scene description. Keep it SHORT — 1-2 sentences max, never more.
 2. `dialogue` — your actual spoken line. This is the ONLY thing you say out loud. It MUST:
    - contain the word "I", "you", or "we",
    - sound completely ordinary — something a real person would actually say,
@@ -158,9 +158,9 @@ def build_opening_user(ctx: RoleplayContext) -> str:
     return f"""Open the roleplay. Produce a `RolePlayOpening` with these fields:
 
 - `brief_heading`: a short scene title that frames the moment (a few words, e.g. "At the rooftop party").
-- `narration`: establish the scene. Set how you look right now and the setting, and how you're carrying yourself. Your appearance to work from:
+- `narration`: establish the scene in 1-2 sentences max. Set how you look right now and the setting, and how you're carrying yourself. Your appearance to work from:
 {ctx.appearance}
-  This is scene description — things you do NOT say aloud.
+  This is scene description — things you do NOT say aloud. Keep it SHORT.
 - `dialogue`: your very first spoken line. It must contain "I", "you", or "we", sound completely ordinary and everyday, and be ripe for misinterpretation (1-2 sentences).
 
 You are guarded and neutral to start — this is the very beginning, before the user has earned any warmth. Progress so far: {ctx.landed_count}/{ctx.target_count} landed.
@@ -184,7 +184,7 @@ Landed so far: {ctx.landed_count}/{ctx.target_count}.
 Now do two things and return a `RolePlayTurn`:
 1. Evaluate the user's MOST RECENT "You" line above for a misinterpretation of your immediately preceding spoken line. Set `landed` and `intensity` per the encouraging rules (any genuine misread = landed; only a fully plain reply = off).
 2. Produce your next move in character:
-   - `narration`: your reaction and the scene beat — with the in-world coach note woven into the opening (warm affirmation if it landed; a gentle, subtle cue if it was off). Not spoken aloud.
+   - `narration`: your reaction and the scene beat — with the in-world coach note woven into the opening (warm affirmation if it landed; a gentle, subtle cue if it was off). Not spoken aloud. Keep it SHORT — 1-2 sentences max.
    - `dialogue`: your next spoken line — ordinary, contains "I"/"you"/"we", ripe for misinterpretation, 1-2 sentences.
    - `is_complete`: true only if `landed_count` after counting this turn reaches {ctx.target_count}; otherwise false.
 

@@ -8,7 +8,7 @@ import {
 import type { CSSProperties } from 'react';
 import { useHistory } from 'react-router-dom';
 import { IonIcon } from '@ionic/react';
-import { close as closeIcon, play as playIcon, send as sendIcon, mic as micIcon } from 'ionicons/icons';
+import { close as closeIcon, send as sendIcon, mic as micIcon, play as playIcon } from 'ionicons/icons';
 
 import { colors, gradients } from '@/theme/tokens';
 import { Button, Celebration } from '@/components/ui';
@@ -231,14 +231,16 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
       <TaskStrip landed={landedCount} target={targetCount} />
 
       <main ref={chatRef} style={CHAT}>
-        {messages.map((m) =>
-          m.role === 'she' ? (
-            <SheBubble key={m.id} message={m} animate={m.id === lastSheId && phase !== 'done'} />
-          ) : (
-            <YouBubble key={m.id} text={m.text} />
-          ),
-        )}
-        {isAwaitingReply && <TypingBubble />}
+        <div style={CHAT_INNER}>
+          {messages.map((m) =>
+            m.role === 'she' ? (
+              <SheBubble key={m.id} message={m} animate={m.id === lastSheId && phase !== 'done'} />
+            ) : (
+              <YouBubble key={m.id} text={m.text} />
+            ),
+          )}
+          {isAwaitingReply && <TypingBubble />}
+        </div>
       </main>
 
       {phase === 'done' ? (
@@ -309,79 +311,81 @@ function TaskStrip({ landed, target }: { landed: number; target: number }) {
 // Chat bubbles
 // ---------------------------------------------------------------------------
 
-/** Reveals `fullText` over a duration, synced to the spoken audio when present. */
-function useAudioSyncedReveal(fullText: string, animateInitial: boolean) {
-  const [shown, setShown] = useState(animateInitial ? '' : fullText);
+/** Narration + her spoken line as one block: narration, a blank line, then the
+ *  spoken line in quotes. The UI never distinguishes the two — it's one text. */
+function composeSheText(message: ChatMessage): string {
+  const spoken = `“${message.text}”`;
+  const narration = message.narration?.trim();
+  return narration ? `${narration}\n\n${spoken}` : spoken;
+}
+
+function SheBubble({ message, animate }: { message: ChatMessage; animate: boolean }) {
+  const fullText = composeSheText(message);
+  // The transcript appears as she speaks: revealed in step with the audio (which
+  // voices narration + dialogue as one line). Non-newest lines render in full.
+  const [shown, setShown] = useState(animate ? '' : fullText);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const rafRef = useRef<number | null>(null);
 
   const stop = useCallback(() => {
-    if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
-    rafRef.current = null;
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     }
+    audioRef.current?.pause();
+    audioRef.current = null;
   }, []);
 
-  const run = useCallback(
-    (audioBase64?: string | null, contentType?: string | null) => {
-      stop();
-      setShown('');
-      const total = fullText.length;
-      // Fallback pace (~18 chars/s) if there's no audio or duration metadata.
-      let durationMs = Math.min(9000, Math.max(900, total * 55));
-      if (audioBase64) {
-        const el = new Audio(`data:${contentType ?? 'audio/mpeg'};base64,${audioBase64}`);
-        audioRef.current = el;
-        el.onloadedmetadata = () => {
-          if (el && isFinite(el.duration) && el.duration > 0) durationMs = el.duration * 1000;
-        };
-        void el.play().catch(() => {});
-      }
-      const startedAt = performance.now();
-      const tick = (now: number) => {
-        const frac = Math.min(1, (now - startedAt) / durationMs);
-        setShown(fullText.slice(0, Math.ceil(frac * total)));
-        if (frac < 1) rafRef.current = requestAnimationFrame(tick);
+  // Play her audio and reveal the transcript in time with it. Falls back to a
+  // length-based pace if autoplay is blocked or no duration is available — so
+  // the text always finishes appearing. Used for both auto-play and replay.
+  const play = useCallback(() => {
+    stop();
+    const total = fullText.length;
+    let durationMs = Math.min(14000, Math.max(1400, total * 55));
+    const b64 = message.audioBase64;
+    if (b64) {
+      const el = new Audio(`data:${message.audioContentType ?? 'audio/mpeg'};base64,${b64}`);
+      audioRef.current = el;
+      el.onloadedmetadata = () => {
+        if (isFinite(el.duration) && el.duration > 0) durationMs = el.duration * 1000;
       };
-      rafRef.current = requestAnimationFrame(tick);
-    },
-    [fullText, stop],
-  );
-
-  useEffect(() => stop, [stop]);
-  return { shown, run };
-}
-
-function SheBubble({ message, animate }: { message: ChatMessage; animate: boolean }) {
-  const { shown, run } = useAudioSyncedReveal(message.text, animate);
-  const startedRef = useRef(false);
-
-  useEffect(() => {
-    if (animate && !startedRef.current) {
-      startedRef.current = true;
-      run(message.audioBase64, message.audioContentType);
+      void el.play().catch(() => {});
     }
-  }, [animate, run, message.audioBase64, message.audioContentType]);
+    setShown('');
+    const startedAt = performance.now();
+    const tick = (now: number) => {
+      const frac = Math.min(1, (now - startedAt) / durationMs);
+      setShown(fullText.slice(0, Math.ceil(frac * total)));
+      if (frac < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+  }, [fullText, message.audioBase64, message.audioContentType, stop]);
+
+  // Auto-play + reveal the first time her newest line appears. Effect-driven
+  // (no surviving ref guard) so React's dev remount cleanly restarts it.
+  useEffect(() => {
+    if (!animate) {
+      setShown(fullText);
+      return;
+    }
+    play();
+    return stop;
+  }, [animate, fullText, play, stop]);
 
   return (
     <div style={{ ...MSG, alignSelf: 'flex-start' }} className="riffy-rise">
       <span style={AVATAR_DOT} aria-hidden />
-      <div style={{ maxWidth: '100%' }}>
-        {message.narration && <div style={NARRATION}>{message.narration}</div>}
-        <div style={SHE_BUBBLE}>
-          <div style={WHO}>Her</div>
-          {animate ? shown : message.text}
-          <button
-            type="button"
-            style={PLAY_BTN}
-            aria-label="Replay"
-            onClick={() => run(message.audioBase64, message.audioContentType)}
-          >
-            <IonIcon icon={playIcon} style={{ fontSize: 12 }} aria-hidden />
-          </button>
-        </div>
+      <div style={SHE_BUBBLE}>
+        <div style={WHO}>Her</div>
+        {shown}
+        {message.audioBase64 && (
+          <div style={{ marginTop: 7, textAlign: 'right' }}>
+            <button type="button" style={PLAY_BTN} aria-label="Replay her line" onClick={play}>
+              <IonIcon icon={playIcon} style={{ fontSize: 12, marginLeft: 1 }} aria-hidden />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -449,6 +453,18 @@ function InputBar({
   onMicPress: () => void;
   onSend: () => void;
 }) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Grow the input to fit its content (up to MAX_INPUT_HEIGHT, then it scrolls).
+  // Runs on every draft change — including the transcript dropped in after speech
+  // and the reset to empty after Send.
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+  }, [draft, recording]);
+
   return (
     <footer style={{ display: 'flex', flexDirection: 'column', position: 'relative', zIndex: 4 }}>
       {error && (
@@ -465,14 +481,20 @@ function InputBar({
               <Waveform />
             </span>
           ) : (
-            <input
+            <textarea
+              ref={textareaRef}
               style={INPUT}
+              rows={1}
               value={draft}
               onChange={(e) => onDraftChange(e.target.value)}
               placeholder={connecting ? 'Connecting mic…' : 'Say or type your line…'}
               aria-label="Your line"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' && canSend) onSend();
+                // Enter sends; Shift+Enter inserts a newline.
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (canSend) onSend();
+                }
               }}
             />
           )}
@@ -661,11 +683,20 @@ const CHAT: CSSProperties = {
   flex: 1,
   minHeight: 0,
   overflowY: 'auto',
+  WebkitOverflowScrolling: 'touch',
   display: 'flex',
   flexDirection: 'column',
-  justifyContent: 'flex-end',
-  gap: 11,
   padding: '16px 16px 8px',
+};
+
+// Anchors the thread to the bottom (via margin-top:auto) while keeping the top
+// reachable when it overflows — avoids the flex `justify-content:flex-end`
+// scroll-clipping bug, so the user can scroll up through the whole chat.
+const CHAT_INNER: CSSProperties = {
+  marginTop: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 11,
 };
 
 const MSG: CSSProperties = {
@@ -685,19 +716,11 @@ const AVATAR_DOT: CSSProperties = {
   border: '2px solid #fff',
 };
 
-const NARRATION: CSSProperties = {
-  fontStyle: 'italic',
-  fontSize: 12.5,
-  color: '#7A5A3A',
-  lineHeight: 1.4,
-  margin: '0 0 5px 2px',
-};
-
 const SHE_BUBBLE: CSSProperties = {
-  position: 'relative',
-  padding: '11px 42px 11px 14px',
+  padding: '11px 14px',
   fontSize: 14,
   lineHeight: 1.42,
+  whiteSpace: 'pre-line',
   borderRadius: 18,
   borderBottomLeftRadius: 7,
   background: 'rgba(255, 255, 255, 0.94)',
@@ -729,14 +752,11 @@ const YOU_BUBBLE: CSSProperties = {
 };
 
 const PLAY_BTN: CSSProperties = {
-  position: 'absolute',
-  right: 8,
-  bottom: 8,
   width: 27,
   height: 27,
   borderRadius: '50%',
   border: 'none',
-  display: 'grid',
+  display: 'inline-grid',
   placeItems: 'center',
   cursor: 'pointer',
   background: gradients.warmCta,
@@ -744,9 +764,12 @@ const PLAY_BTN: CSSProperties = {
   boxShadow: '0 4px 11px rgba(249, 115, 22, 0.4)',
 };
 
+/** Max height the input grows to before it starts scrolling internally. */
+const MAX_INPUT_HEIGHT = 120;
+
 const INPUT_BAR: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-end',
   gap: 9,
   padding: '12px 14px calc(15px + env(safe-area-inset-bottom))',
   background: 'rgba(255, 248, 241, 0.86)',
@@ -773,9 +796,15 @@ const INPUT: CSSProperties = {
   outline: 'none',
   width: '100%',
   fontSize: 14.5,
+  lineHeight: 1.4,
   color: colors.text,
   background: 'transparent',
   fontFamily: 'inherit',
+  resize: 'none',
+  padding: '12px 0',
+  maxHeight: MAX_INPUT_HEIGHT,
+  overflowY: 'auto',
+  display: 'block',
 };
 
 const CIRC: CSSProperties = {
