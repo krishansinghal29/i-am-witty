@@ -1,4 +1,6 @@
-from dataclasses import dataclass, field
+from __future__ import annotations
+
+from dataclasses import dataclass, field, fields
 
 
 @dataclass
@@ -6,7 +8,19 @@ class IngestedFile:
     filename: str
     file_type: str  # "text" | "html" | "video" | "audio"
     content: str
-    metadata: dict = field(default_factory=dict)  # word_count, duration_seconds, etc.
+    # Timestamped transcript chunks: [{"start": float, "end": float, "text": str}]
+    segments: list = field(default_factory=list)
+    # 1-min (configurable) timeline hints: [{"timestamp": "MM:SS", "start_seconds": int, "text": str}]
+    timeline: list = field(default_factory=list)
+    # {"abstract": str, "key_points": [str, ...]} or None if not generated
+    summary: dict | None = None
+    metadata: dict = field(default_factory=dict)  # source_path, duration_seconds, language, etc.
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "IngestedFile":
+        """Build from a cached JSON dict, ignoring any unknown keys (forward-compatible)."""
+        known = {f.name for f in fields(cls)}
+        return cls(**{k: v for k, v in data.items() if k in known})
 
 
 @dataclass

@@ -14,7 +14,12 @@ from modules.audio_generator.generator import generate_audio
 @click.option("--voice", "voice_id", default=None, help="ElevenLabs voice ID (overrides .env)")
 @click.option("--module", "module", default="all", type=click.Choice(["1", "2", "3", "all"]), help="Run a specific module or the full pipeline")
 @click.option("--topic", "topic", default=None, help="Lesson topic — filters source material to relevant content (required for module 2)")
-def main(input_dir: str, output_dir: str, voice_id: str | None, module: str, topic: str | None):
+@click.option("--force", is_flag=True, default=False, help="Module 1: re-transcribe even if a cached _transcript.json exists")
+@click.option("--interval", "interval", default=60, type=int, help="Module 1: timeline hint interval in seconds (default 60)")
+@click.option("--no-summary", "no_summary", is_flag=True, default=False, help="Module 1: skip per-video summary generation")
+@click.option("--concurrency", "concurrency", default=16, type=int, help="Module 1: number of files to process in parallel (default 16)")
+def main(input_dir: str, output_dir: str, voice_id: str | None, module: str, topic: str | None,
+         force: bool, interval: int, no_summary: bool, concurrency: int):
     """Lesson Generator — converts mixed content into a spoken audio lesson."""
     output_path = Path(output_dir)
     (output_path / "scripts").mkdir(parents=True, exist_ok=True)
@@ -24,8 +29,12 @@ def main(input_dir: str, output_dir: str, voice_id: str | None, module: str, top
     script = None
 
     if module in ("1", "all"):
-        click.echo("── Module 1: Ingesting content...")
-        ingested = ingest_directory(input_dir, output_dir)
+        click.echo("── Module 1: Ingesting content (transcript + timeline + summary)...")
+        ingested = ingest_directory(
+            input_dir, output_dir,
+            force=force, interval_seconds=interval, summarize=not no_summary,
+            concurrency=concurrency,
+        )
         click.echo(f"   Ingested {len(ingested)} file(s).")
 
     if module in ("2", "all"):
@@ -101,7 +110,7 @@ def _load_ingested(input_dir: Path):
     for p in input_dir.rglob("*.json"):
         with open(p) as f:
             data = json.load(f)
-        files.append(IngestedFile(**data))
+        files.append(IngestedFile.from_dict(data))
     return files
 
 
