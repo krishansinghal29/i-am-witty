@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from app.infrastructure.runtime.prompts.first_unusual_thing import SPEC as FIRST_UNUSUAL_THING
-from app.infrastructure.runtime.prompts.heightening import SPEC as HEIGHTENING
 from app.infrastructure.runtime.prompts.if_by_x import SPEC as IF_BY_X
 from app.infrastructure.runtime.prompts.love_hate import SPEC as LOVE_HATE
 from app.infrastructure.runtime.prompts.misinterpretation import SPEC as MISINTERPRETATION
@@ -28,7 +27,6 @@ _EXERCISES: dict[str, ExerciseSpec] = {
         QUESTION_ANSWER_TEASE,
         VIBING,
         PUSH_PULL,
-        HEIGHTENING,
         FIRST_UNUSUAL_THING,
         SHIT_TEST,
         SEXUAL_MISINTERPRETATION,

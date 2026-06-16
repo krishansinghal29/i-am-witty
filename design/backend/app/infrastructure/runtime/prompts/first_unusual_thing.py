@@ -1,6 +1,10 @@
 from app.infrastructure.runtime.prompts.fallbacks import standard_evaluator_fallback
-from app.infrastructure.runtime.prompts.generator_strategies import verb_seed_generator_prompt
+from app.infrastructure.runtime.prompts.generator_strategies import scene_seed_generator_prompt
 from app.infrastructure.runtime.prompts.output_schemas import EvaluationResult, SingleSheQuestion
+from app.infrastructure.runtime.prompts.push_pull import (
+    APPEARANCE_SEED_CATEGORIES,
+    VIBE_SEED_CATEGORIES,
+)
 from app.infrastructure.runtime.prompts.prompt_builders import (
     build_feedback_style,
     build_sample_answer_guidelines,
@@ -11,50 +15,51 @@ from app.infrastructure.runtime.prompts.prompt_contracts import EVALUATION_CONTE
 from app.infrastructure.runtime.prompts.spec import ExerciseSpec
 
 
-# Local override: unlike other exercises, each sample answer is broken into the
-# three beats of the move (ordinary detail → unusual thing → association) so the
-# learner sees the anatomy, not just a finished one-liner.
+# Local override: the scene already contains the unusual thing, so each sample
+# answer models the learner's two beats — Label (the made-up why) and Exaggerate
+# (the crazy build). Answer 1 is label-only, to show a single label already lands.
 FIRST_UNUSUAL_THING_OUTPUT_CONTRACT = '''=== STRUCTURED OUTPUT CONTRACT (CRITICAL) ===
 The response schema has exactly these fields:
 - feedback: HTML formatted feedback using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift.
-- sample_answer: 3 answers, each broken into 3 labeled lines, formatted exactly as described below.
+- sample_answer: 3 answers, formatted exactly as described below.
 
 Rules:
 - feedback MUST follow the exact 4-section structure defined above.
 - sample_answer must contain exactly 3 answers, separated by <br><br>.
-- Each answer begins with its number (<b>1.</b>, <b>2.</b>, <b>3.</b>) followed by <br>, then exactly three lines separated by <br>, in this order:
-  <b>Ordinary detail:</b> <the base-reality detail from the scene being tilted>
-  <b>Unusual thing:</b> <the single deviation, stated straight as if normal>
-  <b>Association:</b> <the "if this is true, what else is true" build, or an exaggeration of the tilt>
-- Keep each line short and punchy. No text outside the three labeled lines.
+- Each answer begins with its number (<b>1.</b>, <b>2.</b>, <b>3.</b>) followed by <br>, then its labeled beats separated by <br>:
+  <b>Label:</b> <a playful, made-up reason for the scene's given unusual thing>
+  <b>Exaggerate:</b> <the crazy "if this is true, what else is true" build, ideally landing a light playful push about her>
+- Answer 1 is LABEL-ONLY: it has the <b>Label:</b> line and NO <b>Exaggerate:</b> line — a complete short tease on its own.
+- Answers 2 and 3 each have BOTH a <b>Label:</b> line and an <b>Exaggerate:</b> line.
+- Keep each line short and punchy — something you'd actually say. No text outside the labeled lines.
 
-Example of ONE answer's exact formatting:
-<b>1.</b><br><b>Ordinary detail:</b> the TV's on in the background<br><b>Unusual thing:</b> I pause it whenever someone on screen stands up, out of respect<br><b>Association:</b> standing ovations are exhausting, but you don't skip them'''
+Example of the exact formatting:
+<b>1.</b><br><b>Label:</b> you must be the regional champion of waiting rooms<br><br><b>2.</b><br><b>Label:</b> you read posters like they're classified files<br><b>Exaggerate:</b> by date three you'll have the fire-exit map memorized and you'll quiz me before they call my name'''
 
 
 SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
     [
-        "First: improved version of user's attempt (keep their tilt, anchor it harder or commit more)",
-        "Second: completely new approach using a different technique",
-        "Third: another new approach using yet another technique",
+        "First: an improved version of the user's attempt — keep their angle, sharpen the label. Show it LABEL-ONLY (no exaggerate line) to prove a single clean label already lands",
+        "Second: a fresh take — a different playful label, then a crazy exaggerate that builds on it",
+        "Third: another fresh take — yet another label + exaggerate",
     ],
-    'Break EACH answer into three labeled lines — <b>Ordinary detail</b> (the scene detail being tilted), <b>Unusual thing</b> (the single deviation, stated straight), and <b>Association</b> (the "if this is true, what else is true" build, or an exaggeration of the tilt). Keep each line SHORT and anchored to the scene. See the structured output contract below for the exact <br> structure.',
+    'The scene already contains the unusual thing, so these answers model what the LEARNER adds: a <b>Label</b> (a playful, made-up reason for the oddity, never the literal truth) and, for answers 2 and 3, an <b>Exaggerate</b> ("if this is true, what else is true", pushed crazy, ideally landing a light playful push about her). Keep each line short and sayable. See the structured output contract below for the exact <br> structure.',
 )
 
 FEEDBACK_STYLE = build_feedback_style(
-    "The specific mistake. Common first-unusual-thing traps:",
+    "The specific mistake. Common traps once the scene hands over the unusual thing:",
     [
-        "TOO NORMAL: Reacted to the scene without tilting anything — stayed in base reality, the #1 failure",
-        "TOO RANDOM: Threw in chaos or a non-sequitur anchored to nothing — unusual but unbuildable",
-        "FICTIONAL: Made the world magical — objects with feelings/memory, physics breaking — instead of revealing something odd about a real person. Keep the world real; put the strangeness in the PERSON (a compulsion, superstition, or ritual)",
-        "MULTIPLE THINGS: Introduced several weird things at once, so there's no single game",
-        "TOO BIG TOO FAST: Started at maximum absurdity with no base reality left to deviate from",
-        "EXPLAINED IT: Justified or winked at the bit instead of committing to it",
+        "FLAT/LITERAL: Just restated or agreed with the oddity, or gave its real logical reason — no playful made-up label. The #1 failure",
+        "LOGICAL EXAGGERATION: The build was a plausible real consequence, not a crazy one ('so high you forgot your jacket'). Teases need exaggeration, not realism",
+        "UNDOES IT: The next beat cancels the one before it (sees a ghost -> 'you must be superstitious') instead of building from it",
+        "SAME THING THRICE: Restated the same observation louder three times instead of adding a new angle (shiny -> shiny -> shiny)",
+        "ALL ABOUT THE THING: Kept poking the object or detail and never made it about HER",
+        "OVER-EXPLAINED: Spelled the bit out or ran long instead of dropping it in a line",
     ],
     [
-        "You don't need a big joke. The funniest move is one small, sincere deviation from normal.",
-        "Keep almost everything ordinary — the tilt only reads as unusual against a normal background.",
-        "Commit like it's a documentary. State the strange thing as plain fact and let it breathe.",
+        "Even just the label is already a tease — you don't need the big finish to land.",
+        "Make up a FUN reason, not the true one. The invented why is where the humor lives.",
+        "Exaggerate, don't explain — the build has to be crazy, not plausible — and make it about her.",
     ],
     mindset_intro="One root-cause observation.",
 )
@@ -62,87 +67,101 @@ FEEDBACK_STYLE = build_feedback_style(
 
 PROMPT_TEXT = {
     "evaluator": {
-        "intro": 'You are a wit coach evaluating "First Unusual Thing" responses — the skill of taking a completely ordinary moment and introducing the ONE unusual thing that breaks its base reality and opens a game.',
+        "intro": 'You are a wit coach evaluating "First Unusual Thing" responses. The scene already contains one unusual thing; the move is to riff on it — make up a playful reason for it (the label), then optionally push that to a crazy place (exaggerate). You are judging that tease.',
         "what_this_exercise_is": '''=== WHAT THIS EXERCISE IS ===
-You are given a deliberately mundane scene — a slice of ordinary, everyday reality with nothing funny in it yet. This is the **base reality**. Your job is to introduce the **first unusual thing**: the single small tilt that knocks the scene off-center and makes it interesting.
+The learner is shown a short everyday scene that already has ONE unusual thing embedded in it — something she does, wears, says, or how she reacts. The unusual thing is GIVEN; the learner does not have to find or invent it. Their job is to play off it in two beats:
 
-This is the engine of every funny conversation — the move that takes "how was your weekend" out of small-talk and into something worth playing with. The challenge is precision: NOT random chaos, NOT a big joke, but ONE grounded deviation you could build an entire bit on.''',
-        "the_process": '''=== THE PROCESS (BASE REALITY → NOTICE → FRAME → ASSOCIATE) ===
-A clean first-unusual-thing move walks through four beats. The scene gives you the first one; you supply the other three:
+1. **Label** — make up a playful reason or identity for the oddity ("you must be the world Barbie-doll champion"). An invented, fun why — NOT the literal explanation.
+2. **Exaggerate** — take "if this is true, what else is true?" somewhere crazy, ideally landing a light playful push about her ("...but I'm sending you back to Zelda in the morning").
 
-1. **Base Reality** (given): the ordinary world of the scene. You must keep most of it intact — if everything is weird, nothing is unusual.
-2. **Notice**: spot the one ordinary detail you can twist. The best tilts come from a tiny deviation, not a big swing — a strange belief, an odd emotional reaction, an unexpected behavior, or a normal thing taken way too seriously.
-3. **Frame / Label**: introduce the unusual thing and commit to it. State it like it's completely normal. Don't explain it, don't wink, don't hedge — one clear deviation, owned.
-4. **Associate**: take the first step of "if this is true, what else is true?" — a single line that shows the tilt has a future and isn't a dead-end non-sequitur.
+Crucially: a strong Label ALONE is already a complete, winning tease. The Exaggerate beat is a bonus, not a requirement — in real conversation one beat is plenty.''',
+        "the_process": '''=== THE MOVE (OBSERVE [given] -> LABEL -> EXAGGERATE) ===
+1. **Observe** (given): the scene already hands over the one unusual thing. Nothing to find or invent.
+2. **Label**: invent a playful reason for it — a fun made-up why or identity, often a cheeky accusation ("you must be...", "did you just..."). The label by itself is already a tease.
+3. **Exaggerate**: run "if this is true, what else is true?" and push it past plausible into crazy — ideally about HER, landing a light playful push.
 
-The strongest answers do Frame + Associate together: introduce the unusual thing AND begin building from it.''',
-        "what_counts": '''=== WHAT COUNTS AS A FIRST UNUSUAL THING ===
-A valid response must introduce **exactly one** deviation from the scene's base reality that is **anchored** to something in the scene and **buildable** into a game.
+Reward what's there: Label-only is a full pass; Label + a crazy Exaggerate is the bonus. Never dock a clean tease for stopping after the label.''',
+        "what_counts": '''=== WHAT COUNTS ===
+A valid response takes the scene's given unusual thing and adds at least a **Label** — a playful, invented reason for it. That alone is enough.
 
-The tilt must stay **humanly real**: it reveals an odd belief, habit, reaction, compulsion, or ritual that a real PERSON could actually have. The physical world itself stays normal — floors don't have feelings, objects don't have memory, physics doesn't bend. If you catch yourself giving an object a superpower, move the strangeness back into the person (their compulsion about the object, their superstition or ritual around it). The funniest tilts make the listener think "I know someone exactly like that," not "that's fantasy."
+- The label must be a FUN made-up why — not the literal/logical explanation, and not a flat restatement of the oddity.
+- If they also Exaggerate, the build must be CRAZY (not a plausible real consequence), must BUILD on the label (not cancel it, not just repeat the observation louder), and is best when it's about HER and lands a light playful push.
+- Keep it short and sayable — a line you'd actually deliver, not an explained bit.
 
-A response FAILS if it:
-- Stays in base reality — reacts normally, agrees, or continues the scene without tilting anything (TOO NORMAL)
-- Throws in chaos or a non-sequitur with no connection to the scene — unusual but ungrounded, nothing to build on (TOO RANDOM)
-- Makes the world magical or fictional — objects with feelings or memory, physics breaking, supernatural events — instead of revealing something odd about a real person (FICTIONAL)
-- Introduces three weird things at once, so there's no single game (MULTIPLE THINGS)
-- Starts at maximum absurdity with no base reality left to deviate from (TOO BIG TOO FAST)
-- Explains, justifies, or winks at the bit instead of committing (EXPLAINED IT)
+It FAILS only when it adds nothing playable:
+- Just restates or agrees with the oddity, or gives its real logical reason (FLAT/LITERAL — the #1 failure)
+- The exaggeration is merely plausible, not crazy (LOGICAL EXAGGERATION)
+- The next beat cancels the previous one (UNDOES IT)
+- Restates the same observation three times with no new angle (SAME THING THRICE)
+- Never makes it about her, just keeps poking the object/detail (ALL ABOUT THE THING)
 
-**The litmus test**: Can you point to the one ordinary thing in the scene that was tilted, AND can you imagine the next "if this is true, what else is true?" beat? If you can't name the single tilt, or it leads nowhere — it's not a clean first unusual thing.
+Examples (Scene = the GIVEN unusual thing):
+❌ Scene: "She lines up the sugar packets by color before she'll order." → "Haha, that's so particular." → FLAT/LITERAL (just reacted, no label).
+✅ Label-only: "You must be the regional champion of condiment organization." → a fun invented why; complete on its own.
+✅ Label + Exaggerate: "You're clearly a condiment quality inspector — by our third date you'll be auditing my spice rack and writing me up." → playful why + crazy build about her.
 
-❌ Scene: "I'm folding laundry while the TV plays in the background."
-❌ Response: "Folding laundry is so boring, I hate it." → TOO NORMAL (stayed in base reality, just reacted).
-❌ Response: "Suddenly a dragon made of taxes flew through the window screaming about Tuesdays." → TOO RANDOM (chaos, anchored to nothing, nowhere to build).
-✅ Response: "I fold every shirt exactly the same way the store does — if it's off by an inch, it goes back in the basket." → ONE tilt (a strange over-serious ritual), anchored to the folding, and obviously buildable.
+❌ Scene: "She reads every poster on the waiting-room wall, in order." → "You really love reading, you must be a big reader." → SAME THING THRICE / FLAT (restates, and the literal label kills the fun).
+✅ "You're cramming for the test, aren't you — you'll quiz me on the fire-exit route before they call my name." → invented why + crazy build.''',
+        "label_exaggerate_techniques": '''=== WAYS TO LABEL & EXAGGERATE ===
+Good labels invent a fun reason for the oddity; good exaggerations push it somewhere crazy. Common moves:
+1. **Made-up identity / title**: crown her with a role that "explains" it. "You must be the world Barbie-doll champion." -> "...I'm just never going where you keep the dolls, that's too freaky."
+2. **Invented backstory**: a fun event that caused it. "Did you just come out of a parade?" -> "...I hope it's not all performance with you."
+3. **Wrong-but-committed theory**: a confident, absurd explanation. "Shiny dress — you must love the 70s." -> "...closet full of bell-bottoms, does psychedelic mushrooms, hates all modern technology."
+4. **Playful push / mock-boundary**: land the exaggerate on a light romantic boundary. "You look like an 8-bit character." -> "...we can party tonight, but I'm sending you back to Zelda in the morning."
 
-❌ Scene: "You scuffle your shoes on the doormat before stepping inside to keep the floor clean."
-❌ Response: "The floor remembers who dirtied it and gets colder toward them." → FICTIONAL (gave the floor supernatural memory — the world stopped being real; the tilt should expose something odd about YOU, not magic about the floor).
-✅ Response: "One speck gets through and I'm re-mopping the entire entryway — guests call it a quirk, I call it the bare minimum." → ONE tilt (a real, OCD-ish cleaning compulsion), the world stays normal, and it's obviously buildable.''',
-        "unusual_thing_techniques": '''=== TECHNIQUES FOR INTRODUCING THE UNUSUAL THING ===
-1. **Disproportionate Reaction**: Have a huge emotional reaction to something completely mundane in the scene.
-   - "I'm at the laundromat." → "Watching that one sock tumble alone is the most emotional I've been all month. I'm not okay."
-
-2. **Strange Belief**: Reveal an odd, sincere conviction about the ordinary thing.
-   - "I'm waiting for my coffee." → "I never thank the barista. You thank them, they remember you, and then they own a piece of you forever."
-
-3. **Oddly Specific Ritual / Rule**: A private rule or ritual that governs the everyday activity.
-   - "I'm packing my bag for work." → "Pens go in left to right by how much I trust them. The clicky one hasn't earned a spot yet."
-
-4. **Over-Valued Trifle**: Treat something trivial as enormously important.
-   - "I'm picking a parking spot." → "This decision determines the entire moral arc of my day. No pressure."
-
-5. **The Bad Idea** (harmless, self-directed): Voluntarily do the wrong-but-harmless thing, played straight.
-   - "I'm making tea." → "I let it steep for exactly 47 minutes. That's how you build a tea with character."
-
-6. **Tilt One Fact**: Keep everything normal except one detail that's just slightly off.
-   - "I'm feeding my cat breakfast." → "Same time every day. He files a complaint if I'm late. In writing."''',
+The first line of each (the label) already lands on its own; the arrow part is the bonus exaggerate.''',
         "evaluation_criteria": '''=== EVALUATION CRITERIA ===
-1. **Anchored (Notice)**: Name the specific ordinary detail from the scene that was tilted. If you can't point to it, the move was random — fail it.
-2. **Singular & Committed (Frame)**: Is there exactly ONE clear deviation, stated straight as if normal? Multiple tilts, hedging, or "haha just kidding" all fail.
-3. **Buildable (Associate)**: Could the next "if this is true, what else is true?" line obviously follow? Bonus if they already took that first step. Dead-end non-sequiturs fail.
-4. **Grounded, Not Random**: Did they keep most of base reality intact, or blow up the whole scene? If everything is weird, nothing is unusual. The tilt must also be **humanly real** — an odd person, not a magical world. Floors don't have feelings; if an object got superpowers or physics bent, it failed (FICTIONAL). The strangeness belongs in the person's psychology (a belief, compulsion, ritual), not in the world's physics.
-5. **Right Size**: A tiny, specific deviation beats a big loud joke. Did they tilt, or did they swing for the fences and miss the base reality?
-6. **Brevity**: One or two sentences. Longer = explaining the bit instead of dropping it.
-7. **Wit**: Is the tilt surprising and genuinely funny?''',
+1. **Engaged the oddity**: Did they riff on the scene's given unusual thing (not ignore it for something unrelated)?
+2. **Label present & playful**: Is there a made-up, fun reason for the oddity — not a flat restatement, not the literal truth? This is the floor, and a strong label here alone earns a top score.
+3. **Exaggerate is crazy, not logical** (only if attempted): If they pushed further, is the build absurd rather than a plausible real consequence? A missing exaggerate is NOT penalized.
+4. **Builds, doesn't undo or repeat**: Does each beat add a new angle, rather than cancel the previous one or restate the observation louder?
+5. **About her / playful push** (bonus): Extra credit when it's aimed at HER and lands a light playful boundary. Not required.
+6. **Brevity & naturalness**: One or two lines, something a real person would actually say.
+7. **Wit**: Is it genuinely funny and surprising?
+
+Scoring: weight by QUALITY, not by how many beats are present. A single excellent Label outscores a weak label bolted to a forced exaggerate. Only a response that adds no playful label at all should fail.''',
     },
     "generator": {
-        "intro": '''You generate mundane scenes for a "First Unusual Thing" exercise.
+        "intro": '''You generate scenes for a "First Unusual Thing" exercise.
 
-You receive a verb and a pronoun ("I", "you", or "we"). Write ONE short, deliberately ORDINARY scene — a slice of everyday base reality — spoken in the first person as something a person would casually say.
+Each scene is a short, ordinary moment with ONE small unusual thing already embedded in it. The learner's job is to NOTICE that hidden tilt and build on it — so your job is to PLANT it: keep almost everything normal, and slip in a single oddity that an attentive person would catch but that the scene never points at.
 
-Treat the verb as the everyday ACTIVITY at the center of the scene, and use the given pronoun naturally.
+WHAT TO PLANT:
+- Exactly ONE unusual thing. Everything else stays completely ordinary — the tilt only reads as odd against a normal background.
+- Put the oddity in HER or in the shared moment — something SHE does, wears, says, or how she reacts; or an odd note in the situation between you. NEVER make it the narrator's own quirk: the learner riffs on her / the moment, not on themselves.
+- Plant only WHAT — never WHY. Give the observable thing and stop: do NOT supply her reason or motive, and never write "she says it's because…". The reason is the learner's first move (the made-up label); if you provide it, you've taken their turn.
+- Keep it EMBEDDED and slightly hidden — state it plainly, as if it were the most normal thing in the world. Do NOT announce, explain, justify, or wink at it (no "...which is weird", no "for some reason"). One quiet deviation, dropped and left alone.
+- Plant ONLY the oddity. Do NOT take the next step ("if this is true...") and do NOT escalate it — leave the build entirely to the learner.
+- Keep it humanly real: an odd belief, habit, ritual, reaction, or turn of phrase a real person could actually have. The physical world stays normal — no magic, no physics breaking.
 
-CRITICAL RULES:
-- The scene must be completely NORMAL. Do NOT add anything weird, funny, quirky, or unusual — introducing the unusual thing is the user's job, not yours.
-- Be concrete and grounded: a real setting + a real ordinary activity + maybe one plain, true detail. This gives the user a surface to tilt.
-- Sound like natural spoken language — something said out loud, not narrated prose.
-- 1 sentence (2 only if needed), no punctuation theatrics.
-- Output only the scene, nothing else.
+USING THE SEED:
+The seed only supplies ordinary CONTENT to build the moment from. Let it set what the scene is about; you supply the embedded oddity.
+- verb: an everyday activity she's doing.
+- adjective: a quality coloring her or the moment.
+- verb+adverb: how she does an everyday activity.
+- vibe (subject + adjective): how her [subject] comes across.
+- appearance (subject + adjective): an observable detail of her look.
+- object: an everyday object she's dealing with.
+- setting (domain + flavor adjective): a specific ordinary place the two of you are in.
+- overheard (domain + speaker): one line the speaker says TO you in that place, with the oddity embedded in what they say.
 
-Examples (for the deliberately plain register, not scenes to copy):
-- "I'm folding laundry on the couch while the TV plays in the background."
-- "I'm in line at the post office holding a package I need to mail."''',
+VOICE:
+- Most types: describe HER in the moment — "She..." (or the two of you — "We...").
+- overheard: only the spoken line, nothing else.
+
+RULES:
+- 1 sentence (2 only if truly needed), natural spoken/observed language, no punctuation theatrics.
+- Output only the scene (or the overheard line), nothing else.
+
+Examples (note the single quiet, embedded tilt — observable only, never explained, never built on):
+- (verb "reheat") "She reheats the same cup of coffee three times before she'll actually drink it."
+- (object "parking meter") "She feeds the parking meter a full extra hour even though we're leaving in ten."
+- (setting "waiting somewhere") "We're in the waiting room and she's reading every poster on the wall, in order, under her breath."
+- (appearance "jacket") "She's wearing a denim jacket with every button done up to the very top."
+- (vibe "laugh") "Her laugh always lands a full beat after everyone else's."
+- (overheard, errand, a partner) "Grab milk while you're out, and eggs if they still have any left."
+
+❌ Don't bake in the why: "She feeds the meter an extra hour because she says it brings luck." — the "because…" is the learner's label, not yours.''',
     },
 }
 
@@ -152,10 +171,13 @@ _generator = PROMPT_TEXT["generator"]
 
 SPEC = ExerciseSpec(
     key="firstUnusualThing",
-    description="First Unusual Thing exercise — take a mundane scene and introduce the one grounded tilt that breaks base reality and opens a game.",
+    description="First Unusual Thing exercise — the scene hands over one unusual thing; the learner labels it with a playful made-up reason and optionally exaggerates it into a crazy tease.",
     sprint_question_label="Scene",
     generator_system=_generator["intro"],
-    generator_prompt=verb_seed_generator_prompt,
+    generator_prompt=scene_seed_generator_prompt(
+        appearance_categories=APPEARANCE_SEED_CATEGORIES,
+        vibe_categories=VIBE_SEED_CATEGORIES,
+    ),
     generator_response_schema=SingleSheQuestion,
     evaluator_system=build_evaluator_system(
         intro=_evaluator["intro"],
@@ -164,7 +186,7 @@ SPEC = ExerciseSpec(
             _evaluator["what_this_exercise_is"],
             _evaluator["the_process"],
             _evaluator["what_counts"],
-            _evaluator["unusual_thing_techniques"],
+            _evaluator["label_exaggerate_techniques"],
             _evaluator["evaluation_criteria"],
         ],
         feedback_style=FEEDBACK_STYLE,

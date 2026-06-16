@@ -260,7 +260,6 @@ Seed examples:
 - `question-answer-tease`
 - `vibing`
 - `push-pull`
-- `heightening`
 - `first-unusual-thing`
 - future/non-voice catalog items such as `warm-up-riff`, `box-breathing`, `peak-end-hook`, `one-word-story`, `punch-it-up`, `sixty-second-story`, and `power-pose`
 

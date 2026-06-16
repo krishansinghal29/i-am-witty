@@ -458,7 +458,6 @@ Use `design/extra/tasks.md` as the full source for the remaining exercises:
 - `love-hate`
 - `if-by-x-you-mean-y`
 - `vibing`
-- `heightening`
 - `first-unusual-thing`
 
 Mapping rules:

@@ -172,13 +172,6 @@ export function LandingPage() {
                       </div>
                       <div className="s-thumb g">⚡</div>
                     </div>
-                    <div className="s-card">
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <h4>Heightening</h4>
-                        <div className="s-meta">⏱ 1 min · Radio</div>
-                      </div>
-                      <div className="s-thumb o">🎙️</div>
-                    </div>
                   </div>
                   <div className="s-tabs">
                     <span className="s-tab on"><span className="d" />Home</span>

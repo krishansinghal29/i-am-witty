@@ -176,3 +176,101 @@ def weighted_seed_generator_prompt(
         return seed_line + SEED_SIMPLER_LANGUAGE_NOTE
 
     return build
+
+
+# Broad "where" buckets the scene generator expands into a specific ordinary
+# place. Kept small and abstract on purpose: domain x adjective (or x speaker)
+# explodes combinatorially, so variety comes from the multiplication rather than
+# a long hardcoded list of named locations.
+SCENE_DOMAINS = [
+    "at home",
+    "in transit",
+    "at work",
+    "shopping or at a checkout",
+    "eating or drinking out",
+    "waiting somewhere",
+    "a social gathering",
+    "outdoors",
+    "on the phone or online",
+    "at a service counter",
+    "at the gym or recreation",
+    "running an errand",
+]
+
+# Who delivers an "overheard" line spoken to the user.
+SCENE_SPEAKERS = [
+    "a friend",
+    "a partner",
+    "a relative",
+    "a coworker",
+    "a stranger",
+    "someone serving you (a waiter, clerk, or barista)",
+]
+
+
+def scene_seed_generator_prompt(
+    *,
+    appearance_categories: Sequence[dict[str, Any]],
+    vibe_categories: Sequence[dict[str, Any]],
+    domains: Sequence[str] = SCENE_DOMAINS,
+    speakers: Sequence[str] = SCENE_SPEAKERS,
+) -> GeneratorPromptFactory:
+    """Seed strategy for mundane base-reality scenes (First Unusual Thing).
+
+    Rolls a weighted seed type. The first five mirror the push-pull seeds (so
+    they can be dialed to zero); ``object``/``setting``/``overheard`` add the
+    scene-specific axes a single verb seed can't reach — a concrete handle to
+    tilt, a place, and a conversational line spoken to the user.
+    """
+    seed_types = [
+        ("verb", 2),
+        ("adjective", 1),
+        ("verb_adverb", 1),
+        ("vibe", 1),
+        ("appearance", 1),
+        ("object", 3),
+        ("setting", 3),
+        ("overheard", 2),
+    ]
+    names = [name for name, _ in seed_types]
+    weights = [weight for _, weight in seed_types]
+
+    def build() -> str:
+        seed_type = random.choices(names, weights=weights, k=1)[0]
+
+        if seed_type == "verb":
+            verb = random.choice(word_list("verbs"))
+            seed_line = f'Seed type: verb. Value: "{verb}"'
+        elif seed_type == "adjective":
+            adjective = random.choice(word_list("adjectives"))
+            seed_line = f'Seed type: adjective. Value: "{adjective}"'
+        elif seed_type == "verb_adverb":
+            verb = random.choice(word_list("verbs"))
+            adverb = random.choice(word_list("adverbs"))
+            seed_line = f'Seed type: verb+adverb. Verb: "{verb}", Adverb: "{adverb}"'
+        elif seed_type == "vibe":
+            subject = _weighted_category_pick(vibe_categories)
+            adjective = random.choice(word_list("adjectives"))
+            seed_line = f'Seed type: vibe. Subject: "{subject}", Adjective: "{adjective}"'
+        elif seed_type == "appearance":
+            subject = _weighted_category_pick(appearance_categories)
+            adjective = random.choice(word_list("adjectives"))
+            seed_line = f'Seed type: appearance. Subject: "{subject}", Adjective: "{adjective}"'
+        elif seed_type == "object":
+            noun = random.choice(word_list("nouns_concrete"))
+            seed_line = f'Seed type: object. Value: "{noun}"'
+            if random.random() < 0.5:
+                adjective = random.choice(word_list("adjectives"))
+                seed_line += f', Adjective: "{adjective}"'
+        elif seed_type == "setting":
+            domain = random.choice(list(domains))
+            adjective = random.choice(word_list("adjectives"))
+            seed_line = f'Seed type: setting. Domain: "{domain}", Flavor adjective: "{adjective}"'
+        else:  # overheard
+            domain = random.choice(list(domains))
+            speaker = random.choice(list(speakers))
+            seed_line = f'Seed type: overheard. Domain: "{domain}", Speaker: "{speaker}"'
+
+        return seed_line + SEED_SIMPLER_LANGUAGE_NOTE
+
+    return build

@@ -57,7 +57,7 @@ Key backend needs:
 - Ensure tasks of the same type can share the same client UI structure while varying their content and assets.
 - Support the current voice task types defined in `design/tasks_trimmed.md`: `voice_single_prompt`, `voice_dialogue_prompt`, and `voice_scaffolded_prompt`.
 - Keep product groupings such as sprint, improv, calm, and story as metadata/categories rather than conflating them with frontend/runtime task types.
-- Support the current exercise catalog using the task type/runtime patterns in `design/tasks_trimmed.md`, including Yes And, Misinterpretation, Misinterpretation Techniques, Love/Hate, If by X you mean Y, Question Answer Tease, Vibing, Push/Pull, Heightening, and First Unusual Thing.
+- Support the current exercise catalog using the task type/runtime patterns in `design/tasks_trimmed.md`, including Yes And, Misinterpretation, Misinterpretation Techniques, Love/Hate, If by X you mean Y, Question Answer Tease, Vibing, Push/Pull, and First Unusual Thing.
 - Continue to support broader Practice-screen items shown in the mockups, including Warm-up riff, Box breathing, Peak-End hook, One-word story, Punch it up, 60-second story, and Power pose, as future catalog entries with their own task types where needed.
 - Allow task definitions to be active, inactive, free, premium, or future-gated.
 - Avoid hard-coding task-specific behavior into the general task catalog.
