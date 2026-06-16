@@ -37,7 +37,6 @@ export interface RolePlayOpeningDto {
 export interface GeneratedPayloadDto {
   prompt: PromptDto;
   assigned_technique: TechniqueDto | null;
-  scaffold_stages: Record<string, unknown>[];
   audio_base64: string | null;
   audio_content_type: string | null;
   avatar_image_url: string | null;

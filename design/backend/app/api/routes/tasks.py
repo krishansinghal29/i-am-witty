@@ -4,14 +4,14 @@ from datetime import date, datetime
 from uuid import UUID
 
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 from app.api.deps import ContainerDep, CurrentUser
 from app.application.exceptions import ValidationError
 from app.domain.models.task import Task
 from app.domain.models.task_attempt import TaskAttemptSource
 from app.domain.policies.daily_limit_policy import FreeLimitDecision
-from app.ports.task_runtime_engine import GeneratedTaskPayload, StageResponse
+from app.ports.task_runtime_engine import GeneratedTaskPayload
 
 router = APIRouter(prefix="/v1", tags=["tasks"])
 
@@ -111,7 +111,6 @@ class GeneratedPayloadResponse(BaseModel):
 
     prompt: PromptResponse
     assigned_technique: TechniqueResponse | None
-    scaffold_stages: list[dict]
     audio_base64: str | None
     audio_content_type: str | None
     avatar_image_url: str | None
@@ -138,7 +137,6 @@ class GeneratedPayloadResponse(BaseModel):
                 if technique is not None
                 else None
             ),
-            scaffold_stages=[dict(stage) for stage in payload.scaffold_stages],
             audio_base64=payload.audio_base64,
             audio_content_type=payload.audio_content_type,
             avatar_image_url=payload.avatar_image_url,
@@ -252,14 +250,8 @@ class RuntimeRequest(BaseModel):
     daily_plan_item_id: UUID | None = None
 
 
-class StageResponseBody(BaseModel):
-    position: int
-    transcript: str
-
-
 class CompleteRequest(BaseModel):
     client_transcript: str | None = None
-    stage_responses: list[StageResponseBody] = Field(default_factory=list)
 
 
 class TurnRequest(BaseModel):
@@ -372,10 +364,6 @@ async def complete_task(
         user.id,
         attempt_id,
         client_transcript=body.client_transcript,
-        stage_responses=tuple(
-            StageResponse(position=s.position, transcript=s.transcript)
-            for s in body.stage_responses
-        ),
     )
     return CompleteTaskResponse(
         attempt_id=result.attempt.id,

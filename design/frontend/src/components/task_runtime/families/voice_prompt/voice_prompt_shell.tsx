@@ -5,12 +5,12 @@ import { IonIcon } from '@ionic/react';
 import {
   close as closeIcon,
   helpCircleOutline,
-  arrowForward,
   micOutline,
+  mic as micIcon,
 } from 'ionicons/icons';
 
-import { colors, radius } from '@/theme/tokens';
-import { Button, RecordRing } from '@/components/ui';
+import { colors } from '@/theme/tokens';
+import { Button } from '@/components/ui';
 import { useIntegrations } from '@/app/providers';
 import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useRuntimeStore } from '@/state/stores/runtime_store';
@@ -18,15 +18,10 @@ import type {
   TranscriptionSession,
   TranscriptionWarmup,
 } from '@/integrations/ports/transcription_gateway';
-import type { ScaffoldStage, TaskRuntime } from '@/types/models';
+import type { TaskRuntime } from '@/types/models';
 
 import type { AttemptController, VoiceCompleteBody } from '../../contract';
-import {
-  currentStage,
-  isFinalStage,
-  nextStageIndex,
-  phaseSteps,
-} from './phase_machine';
+import { phaseSteps } from './phase_machine';
 import { PhaseBar } from './phase_bar';
 import { FeedbackPanel } from './feedback_panel';
 import { ReflectRecap } from './reflect_recap';
@@ -36,8 +31,6 @@ export interface VoicePromptShellProps {
   attempt: AttemptController<VoiceCompleteBody>;
   /** Prompt rendering for the Respond phase (role-chipped messages, technique). */
   promptArea: ReactNode;
-  /** When true, render the scaffold stepper and run the multi-take flow. */
-  scaffolded?: boolean;
   /** Emoji/glyph for the Brief hero. */
   briefIcon?: ReactNode;
 }
@@ -116,22 +109,6 @@ const CUE_CHIP: CSSProperties = {
   textAlign: 'center',
 };
 
-const TEXTAREA: CSSProperties = {
-  marginTop: 14,
-  width: '100%',
-  minHeight: 80,
-  resize: 'vertical',
-  background: colors.surface,
-  border: `1px solid ${colors.line}`,
-  borderRadius: radius.md,
-  padding: '12px 14px',
-  fontSize: 14.5,
-  lineHeight: 1.55,
-  color: colors.text,
-  fontFamily: 'inherit',
-  boxShadow: '0 6px 16px rgba(17, 24, 39, 0.05)',
-};
-
 function formatRemaining(seconds: number): string {
   const s = Math.max(0, Math.ceil(seconds));
   const m = Math.floor(s / 60);
@@ -143,20 +120,16 @@ function formatRemaining(seconds: number): string {
 const NO_RESPONSE_PLACEHOLDER =
   '[No response — the user did not answer within the time limit.]';
 
-/** Join typed prefix (captured at speak-start) with cumulative session speech. */
-function liveSpeechText(base: string, sessionSpeech: string): string {
-  const spoken = sessionSpeech.trim();
-  if (!spoken) return base;
-  const prefix = base.trimEnd();
-  if (!prefix) return spoken;
-  return `${prefix}${/\s$/.test(prefix) ? '' : ' '}${spoken}`;
+/** Join the typed prefix (captured at speak-start) with the final spoken text. */
+function joinSpeech(base: string, spoken: string): string {
+  const prefix = base.trim();
+  return prefix ? `${prefix} ${spoken}` : spoken;
 }
 
 export function VoicePromptShell({
   payload,
   attempt,
   promptArea,
-  scaffolded = false,
   briefIcon,
 }: VoicePromptShellProps) {
   const history = useHistory();
@@ -166,15 +139,10 @@ export function VoicePromptShell({
   const phase = useRuntimeStore((s) => s.phase);
   const isRecording = useRuntimeStore((s) => s.isRecording);
   const transcript = useRuntimeStore((s) => s.transcript);
-  const interimTranscript = useRuntimeStore((s) => s.interimTranscript);
-  const stageIndex = useRuntimeStore((s) => s.scaffoldStageIndex);
   const startAttempt = useRuntimeStore((s) => s.startAttempt);
   const setPhase = useRuntimeStore((s) => s.setPhase);
   const setRecording = useRuntimeStore((s) => s.setRecording);
   const setTranscript = useRuntimeStore((s) => s.setTranscript);
-  const setInterim = useRuntimeStore((s) => s.setInterim);
-  const setScaffoldStageIndex = useRuntimeStore((s) => s.setScaffoldStageIndex);
-  const recordStageResponse = useRuntimeStore((s) => s.recordStageResponse);
 
   const [remainingSeconds, setRemainingSeconds] = useState(0);
   const [localError, setLocalError] = useState<string | null>(null);
@@ -196,10 +164,7 @@ export function VoicePromptShell({
 
   const content = payload.content;
   const runtime = payload.payload;
-  const stages: ScaffoldStage[] = runtime.scaffoldStages;
   const limit = content.recordingLimitSeconds > 0 ? content.recordingLimitSeconds : 30;
-  const stage = scaffolded ? currentStage(stages, stageIndex) : null;
-  const finalStage = isFinalStage(scaffolded ? stages : [], stageIndex);
 
   const clearTimer = useCallback(() => {
     if (timerRef.current !== null) {
@@ -225,12 +190,12 @@ export function VoicePromptShell({
       setRecording(false);
       if (session) {
         const result = await session.stop();
+        // Per spec: no live text while speaking — the full line appears only now.
         const text = result.transcript.trim();
         if (text) {
-          setTranscript(liveSpeechText(speechBaseRef.current, text));
+          setTranscript(joinSpeech(speechBaseRef.current, text));
         }
       }
-      setInterim('');
       if (phase === 'respond') {
         beginWarmup();
       }
@@ -242,7 +207,7 @@ export function VoicePromptShell({
       stopPromiseRef.current = null;
       stoppingRef.current = false;
     }
-  }, [beginWarmup, phase, setInterim, setRecording, setTranscript]);
+  }, [beginWarmup, phase, setRecording, setTranscript]);
 
   const startRecording = useCallback(async (): Promise<void> => {
     if (isRecording || isConnectingMic) return;
@@ -251,7 +216,6 @@ export function VoicePromptShell({
     ttsRef.current?.pause();
     setPromptDone(true);
     setLocalError(null);
-    setInterim('');
     speechBaseRef.current = useRuntimeStore.getState().transcript;
     setIsConnectingMic(true);
 
@@ -259,14 +223,11 @@ export function VoicePromptShell({
     warmupRef.current = null;
 
     try {
+      // No `onInterim` registered: the user does NOT see live text while speaking.
       const session = await transcription.startSession({
         recordingLimitSeconds: limit,
         language: 'en-US',
         warmup: warmup ?? undefined,
-        onInterim: (t) => {
-          setInterim(t);
-          setTranscript(liveSpeechText(speechBaseRef.current, t));
-        },
       });
       sessionRef.current = session;
       setRecording(true);
@@ -274,20 +235,12 @@ export function VoicePromptShell({
       // Mic/permission/setup failure — fall back to the always-on text entry.
       setRecording(false);
       sessionRef.current = null;
+      setLocalError('Mic unavailable — type your line instead.');
       beginWarmup();
     } finally {
       setIsConnectingMic(false);
     }
-  }, [
-    beginWarmup,
-    isConnectingMic,
-    isRecording,
-    limit,
-    setInterim,
-    setRecording,
-    setTranscript,
-    transcription,
-  ]);
+  }, [beginWarmup, isConnectingMic, isRecording, limit, setRecording, transcription]);
 
   const playPrompt = useCallback(() => {
     const b64 = runtime.audio.audioBase64;
@@ -376,7 +329,7 @@ export function VoicePromptShell({
     history.goBack();
   }, [attempt.paywallOnDone, attempt.result?.freeLimit, clearTimer, handleFreeLimit, history]);
 
-  const handleRingPress = useCallback(() => {
+  const onMicPress = useCallback(() => {
     if (isConnectingMic) return;
     if (isRecording) {
       void stopRecording();
@@ -385,26 +338,6 @@ export function VoicePromptShell({
     }
   }, [isConnectingMic, isRecording, startRecording, stopRecording]);
 
-  const saveTake = useCallback(async () => {
-    if (actionInFlightRef.current) return;
-    actionInFlightRef.current = true;
-    clearTimer();
-    setLocalError(null);
-    try {
-      await stopRecording();
-      const state = useRuntimeStore.getState();
-      const text = state.transcript.trim() || NO_RESPONSE_PLACEHOLDER;
-      const here = currentStage(stages, state.scaffoldStageIndex);
-      if (here) recordStageResponse({ position: here.position, transcript: text });
-      setScaffoldStageIndex(nextStageIndex(stages, state.scaffoldStageIndex));
-      setTranscript('');
-      setInterim('');
-      setRemainingSeconds(limit);
-    } finally {
-      actionInFlightRef.current = false;
-    }
-  }, [clearTimer, limit, recordStageResponse, setInterim, setScaffoldStageIndex, setTranscript, stages, stopRecording]);
-
   const submit = useCallback(async () => {
     if (actionInFlightRef.current) return;
     actionInFlightRef.current = true;
@@ -412,37 +345,18 @@ export function VoicePromptShell({
     setLocalError(null);
     try {
       await stopRecording();
-      const state = useRuntimeStore.getState();
-      const typedTranscript = state.transcript.trim();
-      const clientTranscript = typedTranscript || NO_RESPONSE_PLACEHOLDER;
-
-      let stageResponses: { position: number; transcript: string }[] | undefined;
-      if (scaffolded) {
-        const here = currentStage(stages, state.scaffoldStageIndex);
-        const prior = state.stageResponses.filter((p) => p.position !== here?.position);
-        stageResponses = [
-          ...prior,
-          ...(here
-            ? [{ position: here.position, transcript: typedTranscript || NO_RESPONSE_PLACEHOLDER }]
-            : []),
-        ].sort((a, b) => a.position - b.position);
-      }
-
-      const body: VoiceCompleteBody = {
-        clientTranscript,
-        ...(stageResponses ? { stageResponses } : {}),
-      };
-
+      const text =
+        useRuntimeStore.getState().transcript.trim() || NO_RESPONSE_PLACEHOLDER;
       try {
-        await attempt.complete(body);
+        await attempt.complete({ clientTranscript: text });
         setPhase('reflect');
       } catch {
-        // attempt.status === 'error' surfaces below the action bar.
+        // attempt.status === 'error' surfaces above the input bar.
       }
     } finally {
       actionInFlightRef.current = false;
     }
-  }, [attempt, clearTimer, scaffolded, setPhase, stages, stopRecording]);
+  }, [attempt, clearTimer, setPhase, stopRecording]);
 
   useEffect(() => {
     clearTimer();
@@ -464,27 +378,12 @@ export function VoicePromptShell({
       setRemainingSeconds(nextRemaining);
       if (nextRemaining <= 0) {
         clearTimer();
-        if (scaffolded && !finalStage) {
-          void saveTake();
-        } else {
-          void submit();
-        }
+        void submit();
       }
     }, 250);
 
     return clearTimer;
-  }, [
-    attempt.isSubmitting,
-    clearTimer,
-    finalStage,
-    limit,
-    phase,
-    promptDone,
-    saveTake,
-    scaffolded,
-    stageIndex,
-    submit,
-  ]);
+  }, [attempt.isSubmitting, clearTimer, limit, phase, promptDone, submit]);
 
   const onPhaseSelect = useCallback(
     (target: 'brief' | 'respond' | 'reflect') => {
@@ -495,10 +394,6 @@ export function VoicePromptShell({
   );
 
   const canSubmit = isRecording || transcript.trim().length > 0;
-  const answerText =
-    isRecording && interimTranscript.trim()
-      ? liveSpeechText(speechBaseRef.current, interimTranscript)
-      : transcript;
 
   return (
     <div style={COL}>
@@ -518,7 +413,7 @@ export function VoicePromptShell({
       </header>
 
       <PhaseBar
-        steps={phaseSteps({ scaffolded })}
+        steps={phaseSteps()}
         current={phase}
         onSelect={phase === 'reflect' ? undefined : onPhaseSelect}
       />
@@ -531,8 +426,6 @@ export function VoicePromptShell({
             title={payload.task.title}
             what={payload.task.description ?? content.responseInstruction}
             limit={limit}
-            scaffolded={scaffolded}
-            stages={stages}
           />
         )}
 
@@ -540,41 +433,12 @@ export function VoicePromptShell({
           <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
             {promptArea}
 
-            {scaffolded && stages.length > 0 && (
-              <ScaffoldStepper stages={stages} currentIndex={stageIndex} />
-            )}
-
             {content.responseInstruction && (
               <div style={CUE_CHIP}>
                 <IonIcon icon={micOutline} aria-hidden />
                 {content.responseInstruction}
               </div>
             )}
-
-            <RecordArea
-              recording={isRecording}
-              connecting={isConnectingMic}
-              progress={(limit - remainingSeconds) / limit}
-              remaining={remainingSeconds}
-              error={localError}
-              onPress={handleRingPress}
-            />
-
-            <textarea
-              style={TEXTAREA}
-              value={answerText}
-              onChange={(e) => {
-                setLocalError(null);
-                const next = e.target.value;
-                setTranscript(next);
-                if (isRecording) {
-                  speechBaseRef.current = next;
-                  setInterim('');
-                }
-              }}
-              placeholder="Type your line — one line is plenty."
-              aria-label="Your response"
-            />
           </div>
         )}
 
@@ -593,19 +457,30 @@ export function VoicePromptShell({
         )}
       </main>
 
-      <FooterBar
-        phase={phase}
-        scaffolded={scaffolded}
-        finalStage={finalStage}
-        canSubmit={canSubmit}
-        submitting={attempt.isSubmitting}
-        errored={attempt.status === 'error'}
-        stageTitle={stage?.title}
-        onStart={() => setPhase('respond')}
-        onSaveTake={() => void saveTake()}
-        onSubmit={() => void submit()}
-        onDone={finish}
-      />
+      {phase === 'respond' ? (
+        <RespondDock
+          timerText={formatRemaining(remainingSeconds)}
+          transcript={transcript}
+          recording={isRecording}
+          connecting={isConnectingMic}
+          canSubmit={canSubmit}
+          submitting={attempt.isSubmitting}
+          errored={attempt.status === 'error'}
+          localError={localError}
+          onDraftChange={(text) => {
+            setLocalError(null);
+            setTranscript(text);
+          }}
+          onMicPress={onMicPress}
+          onSubmit={() => void submit()}
+        />
+      ) : (
+        <FooterBar
+          phase={phase}
+          onStart={() => setPhase('respond')}
+          onDone={finish}
+        />
+      )}
     </div>
   );
 }
@@ -630,27 +505,17 @@ function BriefStage({
   title,
   what,
   limit,
-  scaffolded,
-  stages,
 }: {
   icon: ReactNode;
   title: string;
   what: string | null;
   limit: number;
-  scaffolded: boolean;
-  stages: ScaffoldStage[];
 }) {
-  const steps: { tint: string; head: string; body: string }[] = scaffolded
-    ? stages.map((s) => ({
-        tint: s.isFinalSubmission ? colors.accent : colors.primary,
-        head: s.title,
-        body: s.isFinalSubmission ? `${s.instruction} (scored)` : s.instruction,
-      }))
-    : [
-        { tint: colors.primary, head: 'Hear the prompt', body: 'It plays out loud — just listen.' },
-        { tint: colors.accent, head: 'Your turn', body: `Speak or type before the ${limit}s timer ends.` },
-        { tint: colors.green, head: 'Gentle feedback', body: 'Plus sharper lines you can borrow.' },
-      ];
+  const steps: { tint: string; head: string; body: string }[] = [
+    { tint: colors.primary, head: 'Hear the prompt', body: 'It plays out loud — just listen.' },
+    { tint: colors.accent, head: 'Your turn', body: `Speak or type before the ${limit}s timer ends.` },
+    { tint: colors.green, head: 'Gentle feedback', body: 'Plus sharper lines you can borrow.' },
+  ];
 
   return (
     <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
@@ -679,23 +544,7 @@ function BriefStage({
         )}
       </div>
 
-      {scaffolded && (
-        <div
-          style={{
-            textAlign: 'center',
-            fontSize: 10.5,
-            fontWeight: 800,
-            letterSpacing: 1.1,
-            textTransform: 'uppercase',
-            color: colors.muted,
-            margin: '20px 0 10px',
-          }}
-        >
-          Answer each stage — only the last is scored
-        </div>
-      )}
-
-      <div style={{ marginTop: scaffolded ? 0 : 22, display: 'flex', flexDirection: 'column', gap: 11 }}>
+      <div style={{ marginTop: 22, display: 'flex', flexDirection: 'column', gap: 11 }}>
         {steps.map((s, i) => (
           <div key={i} style={STEP_CARD}>
             <span
@@ -742,285 +591,150 @@ function BriefStage({
 }
 
 // ---------------------------------------------------------------------------
-// Scaffold stepper + captured chips
+// Respond dock — plain countdown + roleplay-style field with an inline mic
 // ---------------------------------------------------------------------------
 
-function ScaffoldStepper({
-  stages,
-  currentIndex,
-}: {
-  stages: ScaffoldStage[];
-  currentIndex: number;
-}) {
-  const stageResponses = useRuntimeStore((s) => s.stageResponses);
-  const here = stages[currentIndex];
+/** Max height the input grows to before it starts scrolling internally. */
+const MAX_INPUT_HEIGHT = 120;
 
-  return (
-    <div style={{ marginTop: 18 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
-        {stages.map((s, i) => {
-          const status = i < currentIndex ? 'done' : i === currentIndex ? 'cur' : 'upcoming';
-          const dotBg =
-            status === 'done'
-              ? 'rgba(22, 163, 74, 0.12)'
-              : status === 'cur'
-                ? colors.primary
-                : colors.surface;
-          const dotColor = status === 'cur' ? '#FFFFFF' : status === 'done' ? colors.green : colors.faint;
-          const dotBorder = status === 'cur' ? 'transparent' : status === 'done' ? 'rgba(22, 163, 74, 0.5)' : colors.line;
-          return (
-            <div key={s.position} style={{ display: 'contents' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, width: 64, flex: 'none' }}>
-                <span
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: '50%',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontWeight: 800,
-                    fontSize: 14,
-                    background: dotBg,
-                    border: `2px solid ${dotBorder}`,
-                    color: dotColor,
-                  }}
-                >
-                  {status === 'done' ? '✓' : i + 1}
-                </span>
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: dotColor === '#FFFFFF' ? colors.active : dotColor }}>
-                  {s.title}
-                </span>
-              </div>
-              {i < stages.length - 1 && (
-                <span
-                  style={{
-                    flex: 1,
-                    height: 3,
-                    borderRadius: 3,
-                    margin: '0 -2px 22px',
-                    background: i < currentIndex ? 'rgba(22, 163, 74, 0.5)' : colors.line,
-                  }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {stageResponses.length > 0 && (
-        <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 9 }}>
-          {stageResponses.map((r) => {
-            const s = stages.find((x) => x.position === r.position);
-            return (
-              <div
-                key={r.position}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 11,
-                  background: 'rgba(22, 163, 74, 0.06)',
-                  border: '1px solid rgba(22, 163, 74, 0.28)',
-                  borderRadius: 13,
-                  padding: '10px 13px',
-                }}
-              >
-                <span style={{ flex: 1, minWidth: 0 }}>
-                  <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: 0.7, textTransform: 'uppercase', color: colors.green }}>
-                    {s?.title ?? `Step ${r.position}`}
-                  </span>
-                  <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: colors.text, lineHeight: 1.3, marginTop: 1 }}>
-                    {r.transcript || '—'}
-                  </span>
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-
-      {here && (
-        <div style={{ marginTop: 16, textAlign: 'center' }}>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 7,
-              padding: '6px 14px',
-              borderRadius: 999,
-              background: 'rgba(10, 143, 242, 0.10)',
-              border: '1px solid rgba(10, 143, 242, 0.3)',
-              color: colors.active,
-              fontSize: 11.5,
-              fontWeight: 800,
-              letterSpacing: 0.4,
-              textTransform: 'uppercase',
-            }}
-          >
-            {here.label}
-            {here.isFinalSubmission ? ' · scored' : ''}
-          </span>
-          <h3 style={{ fontWeight: 800, fontSize: 22, letterSpacing: '-0.3px', marginTop: 10, color: colors.text }}>
-            {here.title}
-          </h3>
-          <p style={{ fontSize: 13.5, color: colors.muted, lineHeight: 1.45, marginTop: 4, maxWidth: '32ch', marginInline: 'auto' }}>
-            {here.instruction}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Record area
-// ---------------------------------------------------------------------------
-
-function RecordArea({
+function RespondDock({
+  timerText,
+  transcript,
   recording,
   connecting,
-  progress,
-  remaining,
-  error,
-  onPress,
+  canSubmit,
+  submitting,
+  errored,
+  localError,
+  onDraftChange,
+  onMicPress,
+  onSubmit,
 }: {
+  timerText: string;
+  transcript: string;
   recording: boolean;
-  connecting?: boolean;
-  progress: number;
-  remaining: number;
-  error: string | null;
-  onPress: () => void;
+  connecting: boolean;
+  canSubmit: boolean;
+  submitting: boolean;
+  errored: boolean;
+  localError: string | null;
+  onDraftChange: (text: string) => void;
+  onMicPress: () => void;
+  onSubmit: () => void;
 }) {
-  const statusLine = connecting
-    ? 'Connecting mic…'
-    : recording
-      ? 'tap to stop speaking'
-      : 'tap to speak or type';
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  // Grow the input to fit its content (up to MAX_INPUT_HEIGHT, then it scrolls).
+  // Runs on every change — including the transcript dropped in after speech.
+  useEffect(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, MAX_INPUT_HEIGHT)}px`;
+  }, [transcript, recording]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, marginTop: 18 }}>
-      {connecting && (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 7,
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: 0.5,
-            color: colors.active,
-            textTransform: 'uppercase',
-          }}
-        >
-          <span
-            className="riffy-ring-pulse"
-            style={{ width: 8, height: 8, borderRadius: '50%', background: colors.active, display: 'inline-block' }}
-          />
-          Connecting mic
-        </span>
-      )}
+    <footer style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={DOCK}>
+        <div style={TIMER_LINE}>
+          {timerText}{' '}
+          <span style={{ color: colors.faint, fontWeight: 600, fontSize: 13 }}>left</span>
+        </div>
 
-      {recording && !connecting && (
-        <span
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 7,
-            fontSize: 11,
-            fontWeight: 800,
-            letterSpacing: 0.5,
-            color: colors.red,
-            textTransform: 'uppercase',
-          }}
-        >
-          <span
-            className="riffy-ring-pulse"
-            style={{ width: 8, height: 8, borderRadius: '50%', background: colors.red, display: 'inline-block' }}
-          />
-          Tap-to-speak on
-        </span>
-      )}
+        {(errored || localError) && (
+          <p style={{ color: colors.red, fontSize: 12.5, textAlign: 'center', margin: '0 0 8px' }}>
+            {localError ?? 'That didn’t go through. Give it another try.'}
+          </p>
+        )}
 
-      <RecordRing
-        recording={recording}
-        progress={progress}
-        onPress={onPress}
-        disabled={connecting}
-      />
+        <div style={FIELD_ROW}>
+          <div style={FIELD}>
+            {recording ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 9, width: '100%' }}>
+                <span className="riffy-ring-pulse" style={{ width: 8, height: 8, borderRadius: '50%', background: colors.red }} />
+                <span style={{ fontSize: 13.5, fontWeight: 700, color: colors.active }}>Listening…</span>
+                <Waveform />
+              </span>
+            ) : (
+              <textarea
+                ref={textareaRef}
+                style={INPUT}
+                rows={1}
+                value={transcript}
+                onChange={(e) => onDraftChange(e.target.value)}
+                placeholder={connecting ? 'Connecting mic…' : 'Say or type your line…'}
+                aria-label="Your response"
+              />
+            )}
+          </div>
 
-      <div style={{ fontWeight: 800, fontSize: 16, color: colors.accent }}>
-        {formatRemaining(remaining)}{' '}
-        <span style={{ color: colors.faint, fontWeight: 600, fontSize: 13 }}>
-          left · {statusLine}
-        </span>
+          <button
+            type="button"
+            style={{ ...CIRC, ...MIC_BTN, ...(recording ? MIC_ON : {}) }}
+            aria-label={recording ? 'Stop speaking' : 'Speak'}
+            onClick={onMicPress}
+            disabled={connecting || submitting}
+          >
+            <IonIcon icon={micIcon} style={{ fontSize: 22 }} aria-hidden />
+          </button>
+        </div>
       </div>
 
-      {error && (
-        <p style={{ color: colors.red, fontSize: 12.5, textAlign: 'center', margin: 0 }}>
-          {error}
-        </p>
-      )}
-    </div>
+      <div style={FOOTER}>
+        <Button
+          variant="accent"
+          block
+          loading={submitting}
+          disabled={!canSubmit}
+          onClick={onSubmit}
+        >
+          Submit — get feedback
+        </Button>
+      </div>
+    </footer>
+  );
+}
+
+function Waveform() {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'flex-end', gap: 3, height: 18 }}>
+      {[0, 0.12, 0.24, 0.08, 0.3, 0.18, 0.26].map((d, i) => (
+        <span
+          key={i}
+          className="riffy-ring-pulse"
+          style={{
+            width: 3,
+            height: 14,
+            borderRadius: 2,
+            background: colors.active,
+            transformOrigin: 'bottom',
+            animationDelay: `${d}s`,
+          }}
+        />
+      ))}
+    </span>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Footer
+// Footer (Brief / Reflect)
 // ---------------------------------------------------------------------------
 
 function FooterBar({
   phase,
-  scaffolded,
-  finalStage,
-  canSubmit,
-  submitting,
-  errored,
-  stageTitle,
   onStart,
-  onSaveTake,
-  onSubmit,
   onDone,
 }: {
   phase: 'brief' | 'respond' | 'reflect';
-  scaffolded: boolean;
-  finalStage: boolean;
-  canSubmit: boolean;
-  submitting: boolean;
-  errored: boolean;
-  stageTitle: string | undefined;
   onStart: () => void;
-  onSaveTake: () => void;
-  onSubmit: () => void;
   onDone: () => void;
 }) {
   return (
     <footer style={{ display: 'flex', flexDirection: 'column' }}>
-      {errored && phase === 'respond' && (
-        <p style={{ color: colors.red, fontSize: 12.5, textAlign: 'center', padding: '0 18px 6px' }}>
-          That didn&rsquo;t go through. Give it another try.
-        </p>
-      )}
       <div style={FOOTER}>
         {phase === 'brief' && (
           <Button variant="primary" block onClick={onStart}>
             Start
-          </Button>
-        )}
-
-        {phase === 'respond' && scaffolded && !finalStage && (
-          <Button variant="primary" block disabled={!canSubmit} onClick={onSaveTake}>
-            Save {stageTitle ?? 'take'} <IonIcon icon={arrowForward} aria-hidden />
-          </Button>
-        )}
-
-        {phase === 'respond' && (!scaffolded || finalStage) && (
-          <Button
-            variant="accent"
-            block
-            loading={submitting}
-            disabled={!canSubmit}
-            onClick={onSubmit}
-          >
-            Submit — get feedback
           </Button>
         )}
 
@@ -1033,3 +747,83 @@ function FooterBar({
     </footer>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Respond-dock styles (mirrors the roleplay input bar)
+// ---------------------------------------------------------------------------
+
+const DOCK: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  padding: '12px 18px 4px',
+  background: colors.surface,
+  borderTop: `1px solid ${colors.line}`,
+};
+
+const TIMER_LINE: CSSProperties = {
+  textAlign: 'center',
+  fontWeight: 800,
+  fontSize: 16,
+  color: colors.accent,
+  marginBottom: 10,
+};
+
+const FIELD_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: 9,
+};
+
+const FIELD: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  minHeight: 46,
+  borderRadius: 23,
+  border: '1.5px solid #D8E0EA',
+  background: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  padding: '0 16px',
+  boxShadow: '0 4px 12px rgba(17, 24, 39, 0.05)',
+};
+
+const INPUT: CSSProperties = {
+  border: 'none',
+  outline: 'none',
+  width: '100%',
+  fontSize: 14.5,
+  lineHeight: 1.4,
+  color: colors.text,
+  background: 'transparent',
+  fontFamily: 'inherit',
+  resize: 'none',
+  padding: '12px 0',
+  maxHeight: MAX_INPUT_HEIGHT,
+  overflowY: 'auto',
+  display: 'block',
+};
+
+const CIRC: CSSProperties = {
+  width: 46,
+  height: 46,
+  borderRadius: '50%',
+  border: 'none',
+  flex: 'none',
+  display: 'grid',
+  placeItems: 'center',
+  cursor: 'pointer',
+};
+
+const MIC_BTN: CSSProperties = {
+  background: '#fff',
+  border: '1.5px solid #D8E0EA',
+  color: colors.primary,
+  boxShadow: '0 4px 12px rgba(17, 24, 39, 0.06)',
+};
+
+const MIC_ON: CSSProperties = {
+  background: 'linear-gradient(135deg, #3B82F6, #0A8FF2)',
+  color: '#fff',
+  border: '1.5px solid transparent',
+  boxShadow: '0 8px 18px rgba(59, 130, 246, 0.4)',
+};

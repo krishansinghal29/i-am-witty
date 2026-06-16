@@ -29,11 +29,11 @@ _EVALUATION_TEMPERATURE = 1.0
 class VoicePromptTaskEngine:
     """LLM-backed `TaskRuntimeEngine` for all `voice_prompt_v1` task types.
 
-    A single engine serves `voice_single_prompt`, `voice_dialogue_prompt`, and
-    `voice_scaffolded_prompt`: it routes to the exercise prompt bundle by the
-    task's ``runtime_config.backend_key`` and reads its shape (assigned
-    technique, scaffold stages, dialogue vs single) from the task's ``content``
-    and ``runtime_config``. Generation and evaluation are the two external LLM
+    A single engine serves `voice_single_prompt` and `voice_dialogue_prompt`:
+    it routes to the exercise prompt bundle by the task's
+    ``runtime_config.backend_key`` and reads its shape (assigned technique,
+    dialogue vs single) from the task's ``content`` and ``runtime_config``.
+    Generation and evaluation are the two external LLM
     calls; both run outside any DB transaction (the services release the read
     transaction before calling `complete`).
     """
@@ -93,7 +93,6 @@ class VoicePromptTaskEngine:
         return GeneratedTaskPayload(
             prompt=GeneratedPrompt(messages=messages, speech_text=speech_text),
             assigned_technique=technique,
-            scaffold_stages=self._scaffold_stages(input.task),
             audio_base64=audio_base64,
             audio_content_type=audio_content_type,
             avatar_image_url=None,
@@ -161,12 +160,6 @@ class VoicePromptTaskEngine:
         if not key:
             raise ValueError(f"task {task.slug} has no runtime backend_key")
         return key
-
-    @staticmethod
-    def _scaffold_stages(task) -> tuple[dict, ...]:
-        content = task.content or {}
-        stages = content.get("scaffold_stages")
-        return tuple(stages) if isinstance(stages, list) else ()
 
     @staticmethod
     def _build_speech_text(raw_messages: list[dict]) -> str:

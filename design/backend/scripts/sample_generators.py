@@ -8,7 +8,7 @@ mirroring the runtime path in VoicePromptTaskEngine.generate.
 Run:
     uv run python scripts/sample_generators.py
     uv run python scripts/sample_generators.py --runs 10 --concurrency 30
-    uv run python scripts/sample_generators.py --exercises heightening,pushPull --no-seeds
+    uv run python scripts/sample_generators.py --exercises vibing,pushPull --no-seeds
 """
 from __future__ import annotations
 

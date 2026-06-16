@@ -180,19 +180,6 @@ export interface AssignedTechnique {
 }
 
 /**
- * One stage in the scaffold flow that guides the user through the task.
- * Index signature allows engines to attach extra stage-specific fields.
- */
-export interface ScaffoldStage {
-  position: number;
-  label: string;
-  title: string;
-  instruction: string;
-  isFinalSubmission: boolean;
-  [key: string]: unknown;
-}
-
-/**
  * Backend TTS audio played TO the user when the task starts.
  * Corresponds to `audio_base64` / `audio_content_type` flat fields in the
  * backend payload — regrouped here for clarity (mapper handles the conversion).
@@ -220,7 +207,6 @@ export interface RolePlayOpening {
 export interface RuntimePayload {
   prompt: Prompt;
   assignedTechnique: AssignedTechnique | null;
-  scaffoldStages: ScaffoldStage[];
   audio: RuntimeAudio;
   avatarImageUrl: string | null;
   roleplay: RolePlayOpening | null;

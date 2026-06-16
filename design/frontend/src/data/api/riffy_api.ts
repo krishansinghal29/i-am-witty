@@ -96,7 +96,6 @@ export interface RiffyApi {
     attemptId: string,
     body: {
       clientTranscript?: string;
-      stageResponses?: { position: number; transcript: string }[];
     },
   ): Promise<CompleteTaskResult>;
 
@@ -199,7 +198,6 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
           ...(body.clientTranscript != null
             ? { client_transcript: body.clientTranscript }
             : {}),
-          stage_responses: body.stageResponses ?? [],
         },
       );
       return mapCompleteResult(dto);

@@ -7,7 +7,6 @@ import {
   RolePlayOpening,
   RuntimeContent,
   RuntimePayload,
-  ScaffoldStage,
   TaskRuntime,
   TaskType,
 } from '@/types/models';
@@ -54,27 +53,6 @@ function mapTechnique(dto: TechniqueDto): AssignedTechnique {
   };
 }
 
-function mapScaffoldStage(raw: Record<string, unknown>): ScaffoldStage {
-  // Extract known fields; spread the rest to satisfy the index signature.
-  const {
-    position,
-    label,
-    title,
-    instruction,
-    is_final_submission,
-    ...rest
-  } = raw;
-
-  return {
-    position: typeof position === 'number' ? position : 0,
-    label: typeof label === 'string' ? label : '',
-    title: typeof title === 'string' ? title : '',
-    instruction: typeof instruction === 'string' ? instruction : '',
-    isFinalSubmission: typeof is_final_submission === 'boolean' ? is_final_submission : false,
-    ...rest,
-  };
-}
-
 /**
  * Map the optional `content` block with defaults so older/partial responses
  * still render. `recordingLimitSeconds` falls back to the task duration.
@@ -112,7 +90,6 @@ function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
     assignedTechnique: dto.assigned_technique != null
       ? mapTechnique(dto.assigned_technique)
       : null,
-    scaffoldStages: dto.scaffold_stages.map(mapScaffoldStage),
     audio: {
       audioBase64: dto.audio_base64,
       contentType: dto.audio_content_type,

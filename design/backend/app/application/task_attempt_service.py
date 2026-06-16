@@ -54,7 +54,6 @@ from app.ports.task_runtime_engine import (
     AssignedTechnique,
     CompleteTaskRuntimeInput,
     PromptMessage,
-    StageResponse,
     TaskRuntimeResult,
     TurnResult,
     TurnTaskRuntimeInput,
@@ -247,7 +246,6 @@ class TaskAttemptService:
         client_transcript: str | None = None,
         prompt_messages: tuple[PromptMessage, ...] = (),
         assigned_technique: AssignedTechnique | None = None,
-        stage_responses: tuple[StageResponse, ...] = (),
     ) -> CompleteTaskResult:
         # PHASE 1 — reads (inside the request's open read transaction).
         user = await self._users.find_by_id(app_user_id)
@@ -288,7 +286,6 @@ class TaskAttemptService:
                 prompt_messages=eval_messages,
                 transcript=transcript.text,
                 assigned_technique=eval_technique,
-                stage_responses=tuple(stage_responses),
             )
         )
 

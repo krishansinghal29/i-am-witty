@@ -6,12 +6,10 @@
 import type { TaskRuntimeView } from './contract';
 import { VoiceSinglePromptV1 } from './views/voice_single_prompt_v1';
 import { VoiceDialoguePromptV1 } from './views/voice_dialogue_prompt_v1';
-import { VoiceScaffoldedPromptV1 } from './views/voice_scaffolded_prompt_v1';
 import { RoleplayV1 } from './views/roleplay_v1';
 
 export const taskRuntimeRegistry: Record<string, TaskRuntimeView> = {
   voice_single_prompt_v1: VoiceSinglePromptV1,
   voice_dialogue_prompt_v1: VoiceDialoguePromptV1,
-  voice_scaffolded_prompt_v1: VoiceScaffoldedPromptV1,
   roleplay_v1: RoleplayV1,
 };

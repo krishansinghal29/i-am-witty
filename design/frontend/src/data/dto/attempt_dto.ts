@@ -44,5 +44,4 @@ export interface CompleteTaskRequestDto {
   audio_base64?: string | null;
   content_type?: string | null;
   language?: string | null;
-  stage_responses: { position: number; transcript: string }[];
 }

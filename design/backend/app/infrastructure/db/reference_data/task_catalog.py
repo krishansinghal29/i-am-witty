@@ -14,7 +14,6 @@ TASK_TYPES: list[dict] = [
             "supports_tts": True,
             "supports_avatar": True,
             "supports_assigned_technique": True,
-            "supports_scaffold_stages": False,
         },
     },
     {
@@ -30,23 +29,6 @@ TASK_TYPES: list[dict] = [
             "supports_tts": True,
             "supports_avatar": True,
             "supports_assigned_technique": False,
-            "supports_scaffold_stages": False,
-        },
-    },
-    {
-        "id": "voice_scaffolded_prompt",
-        "display_name": "Voice Scaffolded Prompt",
-        "description": "One generated prompt with guided rehearsal stages before the final evaluated response.",
-        "ui_schema_key": "voice_scaffolded_prompt_v1",
-        "runtime_engine_key": "voice_prompt_v1",
-        "default_duration_seconds": 30,
-        "is_active": True,
-        "sort_order": 30,
-        "type_metadata": {
-            "supports_tts": True,
-            "supports_avatar": True,
-            "supports_assigned_technique": False,
-            "supports_scaffold_stages": True,
         },
     },
     {
@@ -62,7 +44,6 @@ TASK_TYPES: list[dict] = [
             "supports_tts": True,
             "supports_avatar": True,
             "supports_assigned_technique": False,
-            "supports_scaffold_stages": False,
             "supports_turns": True,
         },
     },
@@ -87,7 +68,6 @@ TASKS: list[dict] = [
             "response_instruction": "Use the assigned technique to misread the sentence.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "runtime_generated",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -135,7 +115,6 @@ TASKS: list[dict] = [
             "response_instruction": "Tease her answer playfully without insulting or interviewing.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -159,7 +138,7 @@ TASKS: list[dict] = [
         "slug": "push-pull",
         "title": "Push/Pull",
         "description": "Balance genuine interest with playful challenge.",
-        "task_type_id": "voice_scaffolded_prompt",
+        "task_type_id": "voice_single_prompt",
         "duration_seconds": 30,
         "thumbnail_key": "push-pull",
         "image_key": "push-pull",
@@ -170,32 +149,9 @@ TASKS: list[dict] = [
             "exercise_key": "pushPull",
             "prompt_label": "Scenario",
             "prompt_roles": ["She"],
-            "response_instruction": "Build a push, a pull, then combine them.",
+            "response_instruction": "Land one push-pull line — tease something trivial, mean the compliment.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [
-                {
-                    "position": 1,
-                    "label": "Step 1 of 3",
-                    "title": "Push",
-                    "instruction": "Say just the push: one sentence, no softening.",
-                    "is_final_submission": False,
-                },
-                {
-                    "position": 2,
-                    "label": "Step 2 of 3",
-                    "title": "Pull",
-                    "instruction": "Say just the genuine compliment: no irony.",
-                    "is_final_submission": False,
-                },
-                {
-                    "position": 3,
-                    "label": "Step 3 of 3",
-                    "title": "Combine",
-                    "instruction": "Combine them into one push-pull line.",
-                    "is_final_submission": True,
-                },
-            ],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -211,7 +167,6 @@ TASKS: list[dict] = [
             },
             "evaluator": {
                 "strategy": "transcript_feedback",
-                "evaluate_stage": "final",
                 "criteria": [
                     "both_sides_present",
                     "trivial_push",
@@ -241,7 +196,6 @@ TASKS: list[dict] = [
             "response_instruction": "Accept the premise and add something that makes it more fun.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -279,7 +233,6 @@ TASKS: list[dict] = [
             "response_instruction": "Misread the sentence and commit to that alternative meaning.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -317,7 +270,6 @@ TASKS: list[dict] = [
             "response_instruction": "Choose love or hate and make the stance vivid.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -355,7 +307,6 @@ TASKS: list[dict] = [
             "response_instruction": "Use the If by X you mean Y structure to transform the criticism.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -398,7 +349,6 @@ TASKS: list[dict] = [
             "response_instruction": "Respond with warmth, curiosity, and matching energy.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -422,7 +372,7 @@ TASKS: list[dict] = [
         "slug": "first-unusual-thing",
         "title": "First Unusual Thing",
         "description": "Introduce one grounded tilt into an ordinary scene.",
-        "task_type_id": "voice_scaffolded_prompt",
+        "task_type_id": "voice_single_prompt",
         "duration_seconds": 30,
         "thumbnail_key": "first-unusual-thing",
         "image_key": "first-unusual-thing",
@@ -433,32 +383,9 @@ TASKS: list[dict] = [
             "exercise_key": "firstUnusualThing",
             "prompt_label": "Scene",
             "prompt_roles": ["She"],
-            "response_instruction": "Notice the ordinary detail, frame one unusual thing, then associate.",
+            "response_instruction": "Name one unusual thing in the scene, then say what else is true if that's true.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [
-                {
-                    "position": 1,
-                    "label": "Step 1 of 3",
-                    "title": "Notice",
-                    "instruction": "Say the one most ordinary detail in this scene.",
-                    "is_final_submission": False,
-                },
-                {
-                    "position": 2,
-                    "label": "Step 2 of 3",
-                    "title": "Frame",
-                    "instruction": "Introduce one unusual thing about it. State it straight, like it is normal.",
-                    "is_final_submission": False,
-                },
-                {
-                    "position": 3,
-                    "label": "Step 3 of 3",
-                    "title": "Associate",
-                    "instruction": "Now say the full move: your unusual thing plus what else is true if that is true.",
-                    "is_final_submission": True,
-                },
-            ],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -474,7 +401,6 @@ TASKS: list[dict] = [
             },
             "evaluator": {
                 "strategy": "transcript_feedback",
-                "evaluate_stage": "final",
                 "criteria": [
                     "anchored",
                     "singular_committed",
@@ -506,7 +432,6 @@ TASKS: list[dict] = [
             "response_instruction": "Treat the tease as a compliment and reframe it — own it, don't explain.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -544,7 +469,6 @@ TASKS: list[dict] = [
             "response_instruction": "Respond as if you heard the suggestive meaning — commit, keep it clever.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -582,7 +506,6 @@ TASKS: list[dict] = [
             "response_instruction": "Come up with at least 3 different ways to finish it.",
             "recording_limit_seconds": 30,
             "assigned_technique_mode": "none",
-            "scaffold_stages": [],
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
