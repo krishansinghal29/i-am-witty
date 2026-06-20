@@ -20,15 +20,15 @@ from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 from roleplay_sim.api.schemas import ChatStreamIn, NewSessionIn, TtsIn
-from roleplay_sim.domain.config import SceneConfig, SessionConfig
 from roleplay_sim.domain.enums import ActionType
-from roleplay_sim.domain.models import ActionMove, GameState, PlayerTurn
+from roleplay_sim.domain.models import ActionMove, PlayerTurn
 from roleplay_sim.engine.registry import ACTION_LADDER
 from roleplay_sim.factory import build_llm_simulation
+from roleplay_sim.generator.session import generate_session
+from roleplay_sim.orchestrator.conversation_log import build_recorder_from_env
 from roleplay_sim.llm.client import LiteLLMClient
 from roleplay_sim.media import dictation, speech
 from roleplay_sim.media.providers import load_dictation, load_speech
-from roleplay_sim.personas.loader import load_persona
 
 logger = logging.getLogger("roleplay")
 _ROLEPLAY_DIR = Path(__file__).resolve().parents[3]   # .../roleplay
@@ -87,36 +87,47 @@ def create_app() -> FastAPI:
     @app.post("/api/session/new")
     async def new_session(body: NewSessionIn | None = None):
         body = body or NewSessionIn()
-        try:
-            persona = load_persona(body.persona)
-        except Exception:
-            raise HTTPException(status_code=400, detail="unknown_persona")
-        cfg = SessionConfig(
-            persona=persona,
-            scene=SceneConfig(venue="rooftop bar", approach_context="cold approach",
-                              present_company="two friends", goal=body.goal),
-            initial_state=GameState.fresh(),
-        )
+        # Every session is rolled + synthesized — a fresh woman, scene, and voice.
+        cfg = await generate_session(llm, seed=body.seed, goal=body.goal)
         sid = str(uuid.uuid4())
-        sessions[sid] = build_llm_simulation(cfg, llm)
+        recorder = build_recorder_from_env(sid, cfg.persona, cfg.scene, cfg.initial_state)
+        sessions[sid] = {
+            "sim": build_llm_simulation(cfg, llm, recorder=recorder),
+            "opening_sent": False,
+            "first_impression": cfg.scene.first_impression,
+        }
         return {"session_id": sid}
 
     @app.post("/api/chat/stream")
     async def chat_stream(body: ChatStreamIn):
-        sim = sessions.get(body.session_id)
-        if sim is None:
+        entry = sessions.get(body.session_id)
+        if entry is None:
             raise HTTPException(status_code=404, detail="session_not_found")
+        sim = entry["sim"]
         message = (body.message or "").strip()
         action = _build_action(body.action)
+
+        # Opening turn: the web client kicks off with an empty message. Stream the
+        # firewalled first impression once, before any real exchange — it sets the
+        # scene without advancing the simulation.
         if not message and action is None:
-            raise HTTPException(status_code=400, detail="message_required")
+            if entry["opening_sent"] or sim.state.flags.turn_count > 0:
+                raise HTTPException(status_code=400, detail="message_required")
+            entry["opening_sent"] = True
+            opening = entry["first_impression"] or ""
+
+            async def opener():
+                for word in opening.split(" "):
+                    yield _sse({"type": "token", "text": word + " "})
+                yield _sse({"type": "done", "reply": opening, "status": sim.status.value})
+
+            return StreamingResponse(opener(), media_type="text/event-stream",
+                                     headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"})
 
         async def generator():
             try:
                 actor_turn, status = await sim.submit(PlayerTurn(text=message, action=action))
                 reply = actor_turn.text
-                if actor_turn.action:
-                    reply = f"{reply} *[{actor_turn.action}]*"
                 for word in reply.split(" "):
                     yield _sse({"type": "token", "text": word + " "})
                 yield _sse({"type": "done", "reply": reply, "status": status.value})

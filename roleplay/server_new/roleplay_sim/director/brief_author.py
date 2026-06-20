@@ -11,7 +11,9 @@ from pydantic import BaseModel
 
 from roleplay_sim.domain.config import PersonaConfig
 from roleplay_sim.domain.enums import Beat, Consequence
+from roleplay_sim.domain.glossary import DIAL_DOC, beat_line
 from roleplay_sim.domain.interfaces import LLMClient
+from roleplay_sim.llm.tracing import llm_stage
 from roleplay_sim.domain.models import Dials, GameState
 
 
@@ -24,7 +26,9 @@ _SYSTEM = (
     "You direct an actress playing a woman being approached. Given her required beat, "
     "performance dials, and what just happened, write: (1) note — ONE in-character line "
     "telling her how to play this beat (no numbers, no meta, no quotes of dialogue), and "
-    "(2) recap — a 2-3 sentence running summary of the interaction so far. Output JSON."
+    "(2) recap — a 2-3 sentence running summary of the interaction so far. Output JSON.\n\n"
+    "The beat (with its intent in parens) is what she must do this turn. The dials are her "
+    "current performance levels (each low/med/high); their meaning:\n" + DIAL_DOC
 )
 
 
@@ -51,7 +55,7 @@ class LLMBriefAuthor:
         cons = ", ".join(c.value for c in consequences) or "nothing notable"
         user = (
             f"Woman: {persona.archetype}; mood: {persona.mood_tonight}.\n"
-            f"Beat: {beat.value}\n"
+            f"Beat: {beat_line(beat)}\n"
             f"Dials: warmth={dials.warmth.value}, investment={dials.investment.value}, "
             f"testiness={dials.testiness.value}, openness={dials.openness.value}, "
             f"receptiveness={dials.receptiveness.value}\n"
@@ -60,10 +64,11 @@ class LLMBriefAuthor:
             f"Recent transcript:\n{_transcript(history)}\n"
         )
         model = getattr(self.client, "model_for_author", lambda: None)()
-        out = await self.client.complete_structured(
-            [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": user}],
-            schema=BriefOut, model=model,
-        )
+        with llm_stage("author"):
+            out = await self.client.complete_structured(
+                [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": user}],
+                schema=BriefOut, model=model,
+            )
         note = out.note.strip()
         recap = out.recap.strip() or prior_recap
         return note, recap

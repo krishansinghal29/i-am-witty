@@ -1,0 +1,56 @@
+a airport departure lounge
+a beachside boardwalk
+a board game café
+a bookstore aisle
+a botanical garden path
+a busy coffee shop
+a campus library reading room
+a charity fundraiser gala
+a city park bench
+a coffee roastery counter
+a college lecture hall
+a community art class
+a cooking workshop
+a corner bakery
+a coworking space
+a craft beer taproom
+a crowded metro car
+a farmers market stall
+a food truck park
+a gallery opening night
+a gym floor
+a hiking trail lookout
+a hotel lobby lounge
+a house party kitchen
+a jazz club
+a juice bar counter
+a late night diner
+a live music gig
+a mall food court
+a meditation studio
+a museum exhibit hall
+a neighborhood dog park
+a open mic night
+a poetry reading
+a pottery studio
+a public library
+a record store
+a rock climbing gym
+a rooftop bar
+a running club meetup
+a salsa dance class
+a science museum
+a slow afternoon park
+a stationery shop
+a street food festival
+a sunday flea market
+a sunlit terrace café
+a tech meetup
+a train station platform
+a wedding reception
+a weekend farmers market
+a yoga studio lobby
+an airport gate queue
+an art gallery opening
+an outdoor film screening
+the bus stop bench

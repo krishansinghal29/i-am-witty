@@ -13,7 +13,191 @@ const startBtn = $("startBtn");
 const doneBtn = $("doneBtn");
 const newConvBtn = $("newConvBtn");
 const endBtn = $("endBtn");
-const actionSelect = $("actionSelect");
+
+// --------------------------------------------------------------------------
+// Action dock — a one-shot "move" that rides with the next spoken turn.
+// Grouped chips live in a bottom sheet; the trigger pill reflects the armed
+// move and clears it once consumed.
+// --------------------------------------------------------------------------
+const ACTION_GROUPS = [
+  {
+    label: "Body language",
+    items: [
+      { value: "sit_down", label: "Sit down", icon: "🪑" },
+      { value: "hold_gaze", label: "Hold eye contact", icon: "👁️" },
+      { value: "lean_in", label: "Lean in", icon: "💫" },
+      { value: "step_back", label: "Step back", icon: "👣" },
+    ],
+  },
+  {
+    label: "Touch",
+    items: [
+      { value: "touch_light", label: "Light touch", icon: "🤚" },
+      { value: "touch_escalate", label: "Escalate touch", icon: "🔥" },
+      { value: "kiss_attempt", label: "Go for the kiss", icon: "💋" },
+    ],
+  },
+  {
+    label: "Steer the moment",
+    items: [
+      { value: "stop_her", label: "Stop her", icon: "🛑" },
+      { value: "suggest_isolate", label: "Move aside", icon: "↪️" },
+      { value: "suggest_venue_change", label: "New venue", icon: "🍸" },
+      { value: "pull", label: "Leave together", icon: "🌙" },
+    ],
+  },
+];
+
+const actionDock = $("actionDock");
+const actionTrigger = $("actionTrigger");
+const actionTriggerIcon = $("actionTriggerIcon");
+const actionTriggerLabel = $("actionTriggerLabel");
+const actionTriggerTeaser = $("actionTriggerTeaser");
+const actionClear = $("actionClear");
+const actionSheet = $("actionSheet");
+const actionGroups = $("actionGroups");
+
+// Clickbait teaser — rotating flirty sample moves to entice a tap.
+const ACTION_TEASERS = [
+  "kiss her…",
+  "lean in close…",
+  "hold her gaze…",
+  "pull her in…",
+  "make your move…",
+];
+let teaserIndex = 0;
+let teaserTimer = null;
+
+const ACTION_LOOKUP = Object.fromEntries(
+  ACTION_GROUPS.flatMap((g) => g.items).map((i) => [i.value, i])
+);
+
+let selectedAction = null;
+
+function buildActionSheet() {
+  if (!actionGroups) return;
+  actionGroups.innerHTML = "";
+  for (const group of ACTION_GROUPS) {
+    const section = document.createElement("div");
+    section.className = "action-group";
+    const heading = document.createElement("p");
+    heading.className = "action-group-label";
+    heading.textContent = group.label;
+    section.appendChild(heading);
+    const chips = document.createElement("div");
+    chips.className = "action-chips";
+    for (const item of group.items) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "action-chip";
+      chip.dataset.value = item.value;
+      const icon = document.createElement("span");
+      icon.className = "action-chip-icon";
+      icon.textContent = item.icon;
+      const text = document.createElement("span");
+      text.textContent = item.label;
+      chip.append(icon, text);
+      chip.addEventListener("click", () => armAction(item.value));
+      chips.appendChild(chip);
+    }
+    section.appendChild(chips);
+    actionGroups.appendChild(section);
+  }
+}
+
+function renderActionTrigger() {
+  if (!actionTrigger) return;
+  const item = selectedAction ? ACTION_LOOKUP[selectedAction] : null;
+  actionTrigger.classList.toggle("armed", Boolean(item));
+  actionTriggerIcon.textContent = item ? item.icon : "✦";
+  actionTriggerLabel.textContent = item ? item.label : "Make a move";
+  actionClear.hidden = !item;
+  // Teaser only entices while idle; cycling pauses once a move is armed.
+  if (item) stopTeaser();
+  else startTeaser();
+  if (actionGroups) {
+    for (const chip of actionGroups.querySelectorAll(".action-chip")) {
+      chip.classList.toggle("armed", chip.dataset.value === selectedAction);
+    }
+  }
+}
+
+function startTeaser() {
+  if (!actionTriggerTeaser || teaserTimer) return;
+  teaserTimer = setInterval(() => {
+    teaserIndex = (teaserIndex + 1) % ACTION_TEASERS.length;
+    actionTriggerTeaser.style.opacity = "0";
+    setTimeout(() => {
+      actionTriggerTeaser.textContent = ACTION_TEASERS[teaserIndex];
+      actionTriggerTeaser.style.opacity = "";
+    }, 350);
+  }, 2600);
+}
+
+function stopTeaser() {
+  if (teaserTimer) {
+    clearInterval(teaserTimer);
+    teaserTimer = null;
+  }
+}
+
+function openActionSheet() {
+  if (!actionSheet) return;
+  actionSheet.hidden = false;
+  requestAnimationFrame(() => actionSheet.classList.add("show"));
+  actionTrigger.setAttribute("aria-expanded", "true");
+}
+
+function closeActionSheet() {
+  if (!actionSheet || actionSheet.hidden) return;
+  actionSheet.classList.remove("show");
+  actionTrigger.setAttribute("aria-expanded", "false");
+  setTimeout(() => {
+    actionSheet.hidden = true;
+  }, 260);
+}
+
+function armAction(value) {
+  selectedAction = value;
+  renderActionTrigger();
+  closeActionSheet();
+}
+
+function clearAction() {
+  selectedAction = null;
+  renderActionTrigger();
+}
+
+// Read the armed move and reset — one-shot per turn.
+function consumeAction() {
+  const value = selectedAction;
+  selectedAction = null;
+  renderActionTrigger();
+  return value;
+}
+
+if (actionTrigger) {
+  buildActionSheet();
+  renderActionTrigger();
+  actionTrigger.addEventListener("click", (event) => {
+    if (event.target.closest("#actionClear")) {
+      clearAction();
+      return;
+    }
+    if (actionSheet.hidden) openActionSheet();
+    else closeActionSheet();
+  });
+  // Click anywhere outside the panel/trigger closes it — the panel never
+  // covers the chat, so the transcript stays fully interactive underneath.
+  document.addEventListener("click", (event) => {
+    if (actionSheet.hidden) return;
+    if (event.target.closest("#actionSheet, #actionTrigger")) return;
+    closeActionSheet();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeActionSheet();
+  });
+}
 
 let config = { utterance_end_ms: 2000, no_speech_end_ms: 6000 };
 let session = null;
@@ -522,7 +706,11 @@ function setSessionControls(active) {
   doneBtn.hidden = !active;
   newConvBtn.hidden = !active;
   endBtn.hidden = !active;
-  if (actionSelect) actionSelect.hidden = !active;
+  if (actionDock) actionDock.hidden = !active;
+  if (!active) {
+    closeActionSheet();
+    clearAction();
+  }
 }
 
 async function playAssistantTurn({ message } = {}) {
@@ -540,7 +728,7 @@ async function playAssistantTurn({ message } = {}) {
   const drainer = createTtsDrainer((phrase) => speech.enqueue(phrase));
 
   // One-shot: the selected action rides with this turn, then resets.
-  const action = actionSelect ? actionSelect.value || null : null;
+  const action = consumeAction();
   const chatDone = streamChat({
     sessionId: session.sessionId,
     message,
@@ -550,7 +738,6 @@ async function playAssistantTurn({ message } = {}) {
       drainer.push(chunk);
     },
   });
-  if (actionSelect) actionSelect.value = "";
 
   const reply = await chatDone;
   drainer.flush();

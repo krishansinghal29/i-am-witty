@@ -1,0 +1,92 @@
+air hostess
+animator
+architect
+ayurvedic doctor
+bank officer
+beautician
+biotech researcher
+business analyst
+ca student
+chartered accountant
+chef
+civil engineer
+civil services aspirant
+clinical psychologist
+college lecturer
+company secretary
+content creator
+copywriter
+corporate trainer
+data analyst
+data scientist
+dental student
+dentist
+dietitian
+digital marketer
+doctor
+engineering student
+event manager
+fashion designer
+film editor
+financial analyst
+fitness trainer
+flight attendant
+food blogger
+freelance illustrator
+graphic designer
+gynaecologist
+hotel manager
+hr manager
+illustrator
+interior designer
+investment banker
+journalist
+law student
+lawyer
+librarian
+makeup artist
+management consultant
+marketing manager
+mba student
+medical student
+montessori teacher
+news anchor
+nurse
+nutritionist
+occupational therapist
+operations manager
+optometrist
+paediatrician
+pharmacist
+phd researcher
+photographer
+physiotherapist
+pilot
+preschool teacher
+product designer
+product manager
+professor
+project manager
+psychologist
+public relations executive
+radio jockey
+recruiter
+research scholar
+sales executive
+school teacher
+social media manager
+social worker
+software engineer
+speech therapist
+startup founder
+stylist
+talent acquisition specialist
+tax consultant
+travel blogger
+ui developer
+ux designer
+veterinarian
+video editor
+voice artist
+wedding planner
+yoga instructor

@@ -16,6 +16,8 @@ from roleplay_sim.domain.interfaces import Actor, BriefAuthor, Classifier, LLMCl
 from roleplay_sim.engine.modifiers import default_modifiers, default_turn_hooks
 from roleplay_sim.engine.registry import build_registry
 from roleplay_sim.engine.state_engine import StateEngineImpl
+from roleplay_sim.llm.recording_client import RecordingLLMClient
+from roleplay_sim.orchestrator.conversation_log import ConversationRecorder
 from roleplay_sim.orchestrator.simulation import Simulation
 from roleplay_sim.orchestrator.terminal import TerminalCheckerImpl
 
@@ -42,6 +44,7 @@ def build_director(brief_author: BriefAuthor) -> DirectorImpl:
 
 def build_simulation(
     cfg: SessionConfig, *, classifier: Classifier, actor: Actor, brief_author: BriefAuthor,
+    recorder: ConversationRecorder | None = None,
 ) -> Simulation:
     return Simulation(
         cfg=cfg,
@@ -49,14 +52,25 @@ def build_simulation(
         director=build_director(brief_author),
         actor=actor,
         terminal=TerminalCheckerImpl(),
+        recorder=recorder,
     )
 
 
-def build_llm_simulation(cfg: SessionConfig, client: LLMClient) -> Simulation:
-    """Full simulation with the three LLM-backed components sharing one client."""
+def build_llm_simulation(
+    cfg: SessionConfig, client: LLMClient, *,
+    recorder: ConversationRecorder | None = None,
+) -> Simulation:
+    """Full simulation with the three LLM-backed components sharing one client.
+
+    When the recorder captures raw LLM calls (Layer C / 'full' view), the shared
+    client is wrapped per session so prompts/responses are buffered without any
+    cross-session bleed."""
+    if recorder is not None and recorder.llm_buffer is not None:
+        client = RecordingLLMClient(client, recorder.llm_buffer)
     return build_simulation(
         cfg,
         classifier=LLMClassifier(client),
         actor=LLMActor(client),
         brief_author=LLMBriefAuthor(client),
+        recorder=recorder,
     )

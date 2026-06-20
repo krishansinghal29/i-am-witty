@@ -15,5 +15,7 @@ class TtsIn(BaseModel):
 
 
 class NewSessionIn(BaseModel):
-    persona: str = "princess"
-    goal: str = "number"
+    # Persona + scene are rolled, not chosen. `goal` optionally pins the objective
+    # (else it's rolled); `seed` makes a session reproducible.
+    goal: str | None = None
+    seed: int | None = None

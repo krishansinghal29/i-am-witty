@@ -12,7 +12,8 @@ Flow:
 from __future__ import annotations
 
 from copy import deepcopy
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
+from enum import Enum
 from typing import Any, Callable, Sequence
 
 from roleplay_sim.domain.config import PersonaConfig
@@ -45,6 +46,35 @@ def _update_register_counters(flags: GameFlags, register: Register) -> None:
         flags.consecutive_plotline = 0
 
 
+def _delta_dict(d: StateDelta) -> dict[str, Any]:
+    """Plain-dict view of a StateDelta for the (domain) event stream. Sparse."""
+    out: dict[str, Any] = {}
+    if d.emotional:
+        out["emotional"] = {k: round(v, 3) for k, v in d.emotional.items()}
+    if d.ladder_ceiling:
+        out["ladder_ceiling"] = {lad.value: round(v, 3) for lad, v in d.ladder_ceiling.items()}
+    if d.ladder_reached:
+        out["ladder_reached"] = {lad.value: round(v, 3) for lad, v in d.ladder_reached.items()}
+    if d.lock:
+        out["lock"] = {lad.value: v for lad, v in d.lock.items()}
+    if d.flags:
+        out["flags"] = {k: (v.value if isinstance(v, Enum) else v) for k, v in d.flags.items()}
+    return out
+
+
+def _move_detail(move: Any) -> dict[str, Any]:
+    """Readable summary of the classified move/action driving an outcome."""
+    detail: dict[str, Any] = {}
+    for attr in ("quality", "intensity", "target", "target_level", "intended_step", "softener"):
+        if hasattr(move, attr):
+            val = getattr(move, attr)
+            detail[attr] = val.value if isinstance(val, Enum) else val
+    lad = getattr(move, "ladder", None)
+    if lad is not None:
+        detail["ladder"] = lad.value if isinstance(lad, Enum) else lad
+    return detail
+
+
 def _resolve_test(outcome: str) -> tuple[StateDelta, list[Consequence]]:
     d = StateDelta()
     if outcome == "passed":
@@ -69,8 +99,22 @@ class StateEngineImpl:
         consequences: list[Consequence] = []
         agg = StateDelta()
 
+        ceil_before = {lad.value: ls.ceiling for lad, ls in new.ladders.items()}
         ladders.passive_step(new, persona)
+        passive = {
+            k: {"from": round(ceil_before[k], 3), "to": round(new.ladders[lad].ceiling, 3)}
+            for lad, k in ((lad, lad.value) for lad in new.ladders)
+            if ceil_before[k] != new.ladders[lad].ceiling
+        }
+        if passive:
+            events.append({"kind": "passive_accrual", "ceilings": passive})
+
         _update_register_counters(new.flags, cls.register)
+        events.append({
+            "kind": "register", "register": cls.register.value,
+            "consecutive_baseline": new.flags.consecutive_baseline,
+            "consecutive_plotline": new.flags.consecutive_plotline,
+        })
         ctx = ModContext(frame=cls.frame, register=cls.register)
 
         def run(move: Any, kind: str) -> None:
@@ -83,6 +127,8 @@ class StateEngineImpl:
             events.append({
                 "kind": kind,
                 "move": move.type.value,
+                "detail": _move_detail(move),
+                "delta": _delta_dict(res.delta),
                 "consequences": [c.value for c in res.consequences],
                 "notes": res.notes,
             })
@@ -94,10 +140,17 @@ class StateEngineImpl:
             run(cls.action, "action")
 
         if cls.shit_test_response is not None and new.flags.pending_test is not None:
+            theme = new.flags.pending_test
             td, tcons = _resolve_test(cls.shit_test_response.outcome)
             agg = agg.merged(td)
             consequences.extend(tcons)
-            events.append({"kind": "shit_test", "outcome": cls.shit_test_response.outcome})
+            events.append({
+                "kind": "shit_test", "theme": theme,
+                "outcome": cls.shit_test_response.outcome,
+                "method": cls.shit_test_response.method,
+                "delta": _delta_dict(td),
+                "consequences": [c.value for c in tcons],
+            })
             new.flags.pending_test = None
 
         for hook in self.turn_hooks:
@@ -105,9 +158,23 @@ class StateEngineImpl:
             if res is not None:
                 agg = agg.merged(res.delta)
                 consequences.extend(res.consequences)
-                if res.notes:
-                    events.append({"kind": "turn_hook", "notes": res.notes})
+                events.append({
+                    "kind": "turn_hook",
+                    "hook": getattr(hook, "__name__", "hook"),
+                    "delta": _delta_dict(res.delta),
+                    "consequences": [c.value for c in res.consequences],
+                    "notes": res.notes,
+                })
 
         apply_delta(new, agg)
+        engagement_before_drain = new.emotional.engagement
         new.emotional.engagement = clamp(new.emotional.engagement - self.base_engagement_drain)
+        events.append({
+            "kind": "aggregate",
+            "delta": _delta_dict(agg),
+            "engagement_drain": self.base_engagement_drain,
+            "engagement": {"before_drain": round(engagement_before_drain, 3),
+                           "after_drain": round(new.emotional.engagement, 3)},
+            "emotional_after": {k: round(v, 3) for k, v in asdict(new.emotional).items()},
+        })
         return StateUpdate(new_state=new, consequences=consequences, events=events)

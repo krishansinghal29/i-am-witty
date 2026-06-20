@@ -10,10 +10,10 @@ from __future__ import annotations
 
 import asyncio
 
-from roleplay_sim.domain.config import SceneConfig, SessionConfig
 from roleplay_sim.domain.enums import ActionType, Ladder, SessionStatus
-from roleplay_sim.domain.models import ActionMove, GameState, PlayerTurn
-from roleplay_sim.personas.loader import load_persona
+from roleplay_sim.domain.models import ActionMove, PlayerTurn
+from roleplay_sim.generator.session import offline_session
+from roleplay_sim.orchestrator.conversation_log import build_recorder_from_env
 from roleplay_sim.testing import build_stub_simulation
 
 
@@ -30,22 +30,21 @@ def _parse(line: str) -> PlayerTurn:
 
 
 async def _run() -> None:
-    cfg = SessionConfig(
-        persona=load_persona("princess"),
-        scene=SceneConfig(venue="rooftop bar", approach_context="cold approach",
-                          present_company="two friends", goal="number"),
-        initial_state=GameState.fresh(),
-    )
-    sim = build_stub_simulation(cfg)
+    cfg = offline_session()      # rolled persona + scene, no LLM (stub actor below)
+    recorder = build_recorder_from_env("cli", cfg.persona, cfg.scene, cfg.initial_state)
+    sim = build_stub_simulation(cfg, recorder=recorder)
     print("roleplay_sim REPL (stub classifier/actor — no LLM). '/quit' to exit.\n")
+    print(f"[{cfg.persona.identity['name']}, {cfg.persona.archetype}]")
+    print(f"{cfg.scene.first_impression}\n")
+    if recorder is not None:
+        print(f"(logging to {recorder.out_dir} as {recorder.slug}.*.json)\n")
     while True:
         line = input("you> ").strip()
         if line in {"/quit", "/q", "exit"}:
             break
         turn = _parse(line)
         actor_turn, status = await sim.submit(turn)
-        suffix = f"  *[{actor_turn.action}]*" if actor_turn.action else ""
-        print(f"her> {actor_turn.text}{suffix}")
+        print(f"her> {actor_turn.text}")
         print(f"     (engagement={sim.state.emotional.engagement:.0f}, status={status.value})\n")
         if status is not SessionStatus.ONGOING:
             print(f"--- session ended: {status.value} ---")

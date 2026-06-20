@@ -35,6 +35,9 @@ class PersonaConfig:
     mood_tonight: str = ""
     bible: str = ""                                          # static Actor prompt layer (text)
     fewshot: dict[str, list[str]] = field(default_factory=dict)  # band -> example lines
+    # Seed words that flavor her imagery/word-choice (NOT her register). One may be
+    # offered to the Actor per turn as loose, ignorable inspiration. [generator]
+    voice_palette: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -45,6 +48,14 @@ class SceneConfig:
     time_of_day: str = "evening"
     goal: str = "number"            # open | number | instant_date
     difficulty: str = "intermediate"  # beginner | intermediate | advanced
+    # Observable opener: the plain-language first impression he takes in at a glance,
+    # synthesized from observable facts only (never the latent backstory). Streamed
+    # as the session's opening turn and threaded into the Actor's scene block.
+    first_impression: str = ""
+    # Observable appearance (what the eye can see), for the Actor's scene context.
+    style: str = ""
+    body_shape: str = ""
+    age_hint: str = ""
 
 
 @dataclass

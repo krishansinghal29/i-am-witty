@@ -6,6 +6,8 @@ right warmth level.
 """
 from __future__ import annotations
 
+import random
+
 from roleplay_sim.domain.config import PersonaConfig
 from roleplay_sim.domain.enums import Beat
 
@@ -49,6 +51,12 @@ def character_system(persona: PersonaConfig) -> str:
     )
 
 
-def select_fewshot(persona: PersonaConfig, beat: Beat, k: int = 3) -> list[str]:
+def select_fewshot(persona: PersonaConfig, beat: Beat, k: int = 3,
+                   rng: random.Random | None = None) -> list[str]:
+    """Sample (not slice) k lines from the beat's band, so successive turns don't
+    anchor on the same few examples — fights few-shot mode collapse."""
     band = BAND.get(beat, "neutral")
-    return list(persona.fewshot.get(band, [])[:k])
+    pool = list(persona.fewshot.get(band, []))
+    if len(pool) <= k:
+        return pool
+    return (rng or random).sample(pool, k)

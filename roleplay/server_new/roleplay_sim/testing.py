@@ -69,7 +69,7 @@ def default_scene() -> SceneConfig:
     return SceneConfig(venue="rooftop bar", approach_context="cold approach", goal="number")
 
 
-def build_stub_simulation(cfg: SessionConfig | None = None) -> Simulation:
+def build_stub_simulation(cfg: SessionConfig | None = None, *, recorder=None) -> Simulation:
     cfg = cfg or SessionConfig(
         persona=default_persona(),
         scene=default_scene(),
@@ -87,6 +87,7 @@ def build_stub_simulation(cfg: SessionConfig | None = None) -> Simulation:
         director=director,
         actor=StubActor(),
         terminal=TerminalCheckerImpl(),
+        recorder=recorder,
     )
 
 

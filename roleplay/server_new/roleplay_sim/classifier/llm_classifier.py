@@ -17,6 +17,7 @@ from roleplay_sim.classifier.prompt import (
     context_summary,
 )
 from roleplay_sim.domain.interfaces import LLMClient
+from roleplay_sim.llm.tracing import llm_stage
 from roleplay_sim.domain.models import (
     ActionMove,
     Classification,
@@ -81,7 +82,8 @@ class LLMClassifier:
         action_hint = turn.action.type.value if turn.action else ""
         messages = build_messages(turn.text, action_hint, ctx)
         model = getattr(self.client, "model_for_classify", lambda: None)()
-        out = await self.client.complete_structured(messages, schema=ClassificationOut, model=model)
+        with llm_stage("classify"):
+            out = await self.client.complete_structured(messages, schema=ClassificationOut, model=model)
         cls = parse_classification(out)
         if turn.action is not None and cls.action is None:
             cls.action = turn.action  # trust an explicitly-supplied action

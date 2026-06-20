@@ -5,7 +5,7 @@ import asyncio
 
 import pydantic
 
-from roleplay_sim.actor.actor import LLMActor, split_action
+from roleplay_sim.actor.actor import LLMActor
 from roleplay_sim.classifier.llm_classifier import LLMClassifier, parse_classification
 from roleplay_sim.classifier.prompt import ClassificationOut
 from roleplay_sim.director.brief_author import LLMBriefAuthor
@@ -54,12 +54,6 @@ def test_invalid_enum_now_raises():
         pass
 
 
-def test_split_action():
-    spoken, action = split_action("Bold of you. *[glances away]*")
-    assert spoken == "Bold of you."
-    assert action == "glances away"
-
-
 def test_classifier_uses_client():
     client = FakeLLMClient(structured={
         "register": "plotline",
@@ -84,13 +78,16 @@ def test_brief_author_returns_note_and_recap():
     assert recap == "he just sat down"
 
 
-def test_actor_renders_text_and_action():
-    client = FakeLLMClient(text="Did I say you could sit? *[raises eyebrow]*")
+def test_actor_renders_combined_string_verbatim():
+    # The Actor emits ONE combined string (quotes + narration); the API streams it
+    # as-is. No spoken/action split — the whole line survives intact.
+    line = 'She raises an eyebrow, unimpressed. "Did I say you could sit?"'
+    client = FakeLLMClient(text=line)
     turn = asyncio.run(
         LLMActor(client).render(BehavioralBrief(), default_persona(), default_scene(), TurnHistoryImpl())
     )
-    assert "sit" in turn.text
-    assert turn.action == "raises eyebrow"
+    assert turn.text == line
+    assert turn.action is None
 
 
 def test_full_llm_simulation_round_trip():
