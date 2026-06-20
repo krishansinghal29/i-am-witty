@@ -9,26 +9,32 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any, AsyncIterator, Sequence
+from typing import Any, AsyncIterator, Sequence, TypeVar
+
+from pydantic import BaseModel
 
 from roleplay_sim.llm.providers import ChatProvider, load_chat_provider
 
 Message = dict[str, str]
+T = TypeVar("T", bound=BaseModel)
 
 _JSON_SPAN = re.compile(r"\{.*\}", re.DOTALL)
 
 
-def _extract_json(text: str) -> dict[str, Any]:
+def _loads_json(text: str) -> Any:
+    """Parse a JSON object from a model response.
+
+    Structured-output responses are pure JSON; this also tolerates a provider
+    wrapping it in prose/fences by extracting the first object span. Raises if
+    nothing parseable is found — a schema-conforming response is required.
+    """
     try:
         return json.loads(text)
-    except Exception:
+    except json.JSONDecodeError:
         m = _JSON_SPAN.search(text or "")
         if m:
-            try:
-                return json.loads(m.group(0))
-            except Exception:
-                pass
-    return {}
+            return json.loads(m.group(0))
+        raise
 
 
 class LiteLLMClient:
@@ -65,15 +71,14 @@ class LiteLLMClient:
         )
         return (resp.choices[0].message.content or "").strip()
 
-    async def complete_structured(self, messages: Sequence[Message], *, schema: dict[str, Any],
+    async def complete_structured(self, messages: Sequence[Message], *, schema: type[T],
                                   model: str | None = None, temperature: float = 0.2,
-                                  max_tokens: int = 800) -> dict[str, Any]:
+                                  max_tokens: int = 800) -> T:
         litellm = self._litellm()
         kw = self._kwargs(model, messages=list(messages), temperature=temperature,
-                          max_tokens=max_tokens,
-                          response_format={"type": "json_object"})
+                          max_tokens=max_tokens, response_format=schema)
         resp = await litellm.acompletion(**kw)
-        return _extract_json(resp.choices[0].message.content or "")
+        return schema.model_validate(_loads_json(resp.choices[0].message.content or ""))
 
     async def stream(self, messages: Sequence[Message], *, model: str | None = None,
                      temperature: float = 0.9, max_tokens: int = 300) -> AsyncIterator[str]:

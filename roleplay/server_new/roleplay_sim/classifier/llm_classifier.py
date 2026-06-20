@@ -1,21 +1,20 @@
 """LLM Classifier: PlayerTurn -> Classification via structured output. [P6]
 
-Robust, forgiving parsing: unknown move/action strings are dropped rather than
-raising, so a sloppy model response degrades gracefully.
+The model returns a validated `ClassificationOut` (pydantic); `parse_classification`
+maps it to the domain `Classification`, enriching moves/actions with their ladder
+from the registry (the model never sees ladders). A response that violates the
+schema raises at validation time rather than being silently coerced.
 """
 from __future__ import annotations
 
 from typing import Any
 
-from roleplay_sim.classifier.prompt import SCHEMA, build_messages, context_summary
-from roleplay_sim.domain.enums import (
-    ActionType,
-    LMH,
-    MoveType,
-    Quality,
-    Register,
-    Supplication,
-    ValuePosture,
+from roleplay_sim.classifier.prompt import (
+    ActionOut,
+    ClassificationOut,
+    MoveOut,
+    build_messages,
+    context_summary,
 )
 from roleplay_sim.domain.interfaces import LLMClient
 from roleplay_sim.domain.models import (
@@ -30,67 +29,45 @@ from roleplay_sim.domain.models import (
 from roleplay_sim.engine.registry import ACTION_LADDER, VERBAL_LADDER
 
 
-def _enum(enum_cls, val, default):
-    try:
-        return enum_cls(val)
-    except Exception:
-        return default
-
-
-def _parse_move(d: dict[str, Any]) -> Move | None:
-    mt = _enum(MoveType, d.get("type"), None)
-    if mt is None:
-        return None
-    lad, _lvl = VERBAL_LADDER.get(mt, (None, None))
+def _to_move(m: MoveOut) -> Move:
+    lad, _lvl = VERBAL_LADDER.get(m.type, (None, None))
     return Move(
-        type=mt,
-        quality=_enum(Quality, d.get("quality"), Quality.MEDIOCRE),
-        intensity=_enum(LMH, d.get("intensity"), LMH.MED),
-        softener=bool(d.get("softener", False)),
-        target=str(d.get("target", "none")),
+        type=m.type,
+        quality=m.quality,
+        intensity=m.intensity,
+        softener=m.softener,
+        target=m.target,
         ladder=lad,
-        target_level=d.get("target_level"),
+        target_level=m.target_level,
     )
 
 
-def _parse_action(d: dict[str, Any] | None) -> ActionMove | None:
-    if not d:
+def _to_action(a: ActionOut | None) -> ActionMove | None:
+    if a is None:
         return None
-    at = _enum(ActionType, d.get("type"), None)
-    if at is None:
-        return None
-    lad, default_level = ACTION_LADDER.get(at, (None, 1))
-    if lad is None:
-        return None
-    level = d.get("target_level")
+    lad, default_level = ACTION_LADDER[a.type]   # every ActionType has ladder meta
     return ActionMove(
-        type=at,
+        type=a.type,
         ladder=lad,
-        target_level=int(level) if isinstance(level, int) else default_level,
-        intended_step=int(d.get("intended_step") or 1),
+        target_level=a.target_level if a.target_level is not None else default_level,
+        intended_step=a.intended_step if a.intended_step is not None else 1,
     )
 
 
-def parse_classification(data: dict[str, Any]) -> Classification:
-    fr = data.get("frame") or {}
+def parse_classification(out: ClassificationOut) -> Classification:
     frame = Frame(
-        value_posture=_enum(ValuePosture, fr.get("value_posture"), ValuePosture.NEUTRAL),
-        supplication=_enum(Supplication, fr.get("supplication"), Supplication.NONE),
-        reaction_seeking=bool(fr.get("reaction_seeking", False)),
-        congruence=bool(fr.get("congruence", True)),
+        value_posture=out.frame.value_posture,
+        supplication=out.frame.supplication,
+        reaction_seeking=out.frame.reaction_seeking,
+        congruence=out.frame.congruence,
     )
-    moves = [m for m in (_parse_move(x) for x in (data.get("moves") or [])) if m]
-    st = data.get("shit_test_response")
-    str_resp = (
-        ShitTestResponse(outcome=st.get("outcome", "partial"), method=st.get("method", "unreactive"))
-        if isinstance(st, dict) and st.get("outcome")
-        else None
-    )
+    st = out.shit_test_response
+    str_resp = ShitTestResponse(outcome=st.outcome, method=st.method) if st else None
     return Classification(
-        register=_enum(Register, data.get("register"), Register.BASELINE),
-        moves=moves,
+        register=out.speech_register,
+        moves=[_to_move(m) for m in out.moves],
         frame=frame,
-        action=_parse_action(data.get("action")),
+        action=_to_action(out.action),
         shit_test_response=str_resp,
     )
 
@@ -104,8 +81,8 @@ class LLMClassifier:
         action_hint = turn.action.type.value if turn.action else ""
         messages = build_messages(turn.text, action_hint, ctx)
         model = getattr(self.client, "model_for_classify", lambda: None)()
-        data = await self.client.complete_structured(messages, schema=SCHEMA, model=model)
-        cls = parse_classification(data)
+        out = await self.client.complete_structured(messages, schema=ClassificationOut, model=model)
+        cls = parse_classification(out)
         if turn.action is not None and cls.action is None:
             cls.action = turn.action  # trust an explicitly-supplied action
         return cls

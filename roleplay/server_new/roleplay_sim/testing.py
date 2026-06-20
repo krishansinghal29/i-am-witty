@@ -101,8 +101,8 @@ class FakeLLMClient:
         return self._text
 
     async def complete_structured(self, messages, *, schema, model=None,
-                                  temperature=0.2, max_tokens=800) -> dict:
-        return dict(self._structured)
+                                  temperature=0.2, max_tokens=800):
+        return schema.model_validate(self._structured)
 
     async def stream(self, messages, *, model=None, temperature=0.9, max_tokens=300):
         for tok in self._text.split(" "):

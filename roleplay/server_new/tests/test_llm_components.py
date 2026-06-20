@@ -3,12 +3,16 @@ from __future__ import annotations
 
 import asyncio
 
+import pydantic
+
 from roleplay_sim.actor.actor import LLMActor, split_action
 from roleplay_sim.classifier.llm_classifier import LLMClassifier, parse_classification
+from roleplay_sim.classifier.prompt import ClassificationOut
 from roleplay_sim.director.brief_author import LLMBriefAuthor
 from roleplay_sim.domain.enums import (
     ActionType,
     Beat,
+    Ladder,
     MoveType,
     Register,
     SessionStatus,
@@ -21,22 +25,33 @@ from roleplay_sim.testing import FakeLLMClient, default_persona, default_scene
 from roleplay_sim.domain.config import SessionConfig
 
 
-def test_parse_classification_coerces_enums_and_drops_unknown():
-    data = {
+def test_parse_classification_maps_to_domain_with_ladders():
+    out = ClassificationOut.model_validate({
         "register": "plotline",
         "moves": [
-            {"type": "push_pull", "quality": "good", "intensity": "med"},
-            {"type": "not_a_real_move"},
+            {"type": "misinterpret", "quality": "good", "intensity": "med"},
+            {"type": "tease"},
         ],
         "frame": {"value_posture": "high", "supplication": "none", "congruence": True},
         "action": {"type": "sit_down"},
-    }
-    cls = parse_classification(data)
+    })
+    cls = parse_classification(out)
     assert cls.register is Register.PLOTLINE
-    assert [m.type for m in cls.moves] == [MoveType.PUSH_PULL]   # unknown dropped
+    assert [m.type for m in cls.moves] == [MoveType.MISINTERPRET, MoveType.TEASE]
+    assert cls.moves[0].ladder is Ladder.VERBAL   # enriched from the registry
+    assert cls.moves[1].ladder is None            # tease doesn't ride a ladder
     assert cls.frame.value_posture is ValuePosture.HIGH
     assert cls.action.type is ActionType.SIT_DOWN
     assert cls.action.ladder is not None and cls.action.target_level is not None
+
+
+def test_invalid_enum_now_raises():
+    # graceful degradation is gone: an unknown move type fails validation
+    try:
+        ClassificationOut.model_validate({"moves": [{"type": "not_a_real_move"}]})
+        raise AssertionError("expected a ValidationError")
+    except pydantic.ValidationError:
+        pass
 
 
 def test_split_action():

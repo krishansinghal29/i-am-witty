@@ -6,7 +6,9 @@ downstream from the ladder + outcome rules.
 """
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal, Optional
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from roleplay_sim.domain.enums import (
     ActionType,
@@ -22,52 +24,48 @@ from roleplay_sim.domain.models import GameState
 _MOVES = ", ".join(m.value for m in MoveType)
 _ACTIONS = ", ".join(a.value for a in ActionType)
 
-SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "register": {"type": "string", "enum": [r.value for r in Register]},
-        "moves": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "type": {"type": "string"},
-                    "quality": {"type": "string", "enum": [q.value for q in Quality]},
-                    "intensity": {"type": "string", "enum": [i.value for i in LMH]},
-                    "softener": {"type": "boolean"},
-                    "target": {"type": "string"},
-                    "target_level": {"type": ["integer", "null"]},
-                },
-                "required": ["type"],
-            },
-        },
-        "frame": {
-            "type": "object",
-            "properties": {
-                "value_posture": {"type": "string", "enum": [v.value for v in ValuePosture]},
-                "supplication": {"type": "string", "enum": [s.value for s in Supplication]},
-                "reaction_seeking": {"type": "boolean"},
-                "congruence": {"type": "boolean"},
-            },
-        },
-        "action": {
-            "type": ["object", "null"],
-            "properties": {
-                "type": {"type": "string"},
-                "target_level": {"type": ["integer", "null"]},
-                "intended_step": {"type": ["integer", "null"]},
-            },
-        },
-        "shit_test_response": {
-            "type": ["object", "null"],
-            "properties": {
-                "outcome": {"type": "string", "enum": ["passed", "partial", "failed"]},
-                "method": {"type": "string"},
-            },
-        },
-    },
-    "required": ["register", "moves", "frame"],
-}
+
+# ---------------------------------------------------------------------------
+# Structured-output schema (bare — field meaning lives in SYSTEM, refined later)
+# ---------------------------------------------------------------------------
+class MoveOut(BaseModel):
+    type: MoveType
+    quality: Quality = Quality.MEDIOCRE
+    intensity: LMH = LMH.MED
+    softener: bool = False
+    target: str = "none"
+    target_level: Optional[int] = None
+
+
+class FrameOut(BaseModel):
+    value_posture: ValuePosture = ValuePosture.NEUTRAL
+    supplication: Supplication = Supplication.NONE
+    reaction_seeking: bool = False
+    congruence: bool = True
+
+
+class ActionOut(BaseModel):
+    type: ActionType
+    target_level: Optional[int] = None
+    intended_step: Optional[int] = None
+
+
+class ShitTestOut(BaseModel):
+    outcome: Literal["passed", "partial", "failed"]
+    method: str = "unreactive"
+
+
+class ClassificationOut(BaseModel):
+    # `register` collides with BaseModel's inherited ABCMeta.register, so the
+    # Python attribute is renamed while the wire/schema key stays "register".
+    model_config = ConfigDict(populate_by_name=True)
+
+    speech_register: Register = Field(default=Register.BASELINE, alias="register")
+    moves: list[MoveOut] = Field(default_factory=list)
+    frame: FrameOut = Field(default_factory=FrameOut)
+    action: Optional[ActionOut] = None
+    shit_test_response: Optional[ShitTestOut] = None
+
 
 SYSTEM = f"""You label a man's single conversational turn while he flirts with a woman, \
 using a fixed taxonomy. Output JSON only.

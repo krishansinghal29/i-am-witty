@@ -7,16 +7,18 @@ from __future__ import annotations
 
 from typing import Any
 
+from pydantic import BaseModel
+
 from roleplay_sim.domain.config import PersonaConfig
 from roleplay_sim.domain.enums import Beat, Consequence
 from roleplay_sim.domain.interfaces import LLMClient
 from roleplay_sim.domain.models import Dials, GameState
 
-_SCHEMA = {
-    "type": "object",
-    "properties": {"note": {"type": "string"}, "recap": {"type": "string"}},
-    "required": ["note", "recap"],
-}
+
+class BriefOut(BaseModel):
+    note: str
+    recap: str
+
 
 _SYSTEM = (
     "You direct an actress playing a woman being approached. Given her required beat, "
@@ -58,10 +60,10 @@ class LLMBriefAuthor:
             f"Recent transcript:\n{_transcript(history)}\n"
         )
         model = getattr(self.client, "model_for_author", lambda: None)()
-        data = await self.client.complete_structured(
+        out = await self.client.complete_structured(
             [{"role": "system", "content": _SYSTEM}, {"role": "user", "content": user}],
-            schema=_SCHEMA, model=model,
+            schema=BriefOut, model=model,
         )
-        note = (data.get("note") or "").strip()
-        recap = (data.get("recap") or prior_recap).strip()
+        note = out.note.strip()
+        recap = out.recap.strip() or prior_recap
         return note, recap

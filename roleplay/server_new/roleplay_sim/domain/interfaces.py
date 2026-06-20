@@ -7,7 +7,9 @@ Split by execution model:
 """
 from __future__ import annotations
 
-from typing import Any, AsyncIterator, Optional, Protocol, Sequence, runtime_checkable
+from typing import Any, AsyncIterator, Optional, Protocol, Sequence, TypeVar, runtime_checkable
+
+from pydantic import BaseModel
 
 from roleplay_sim.domain.config import MoveMeta, PersonaConfig, SceneConfig
 from roleplay_sim.domain.enums import (
@@ -31,6 +33,7 @@ from roleplay_sim.domain.models import (
 )
 
 Message = dict[str, str]   # {"role": ..., "content": ...}
+T = TypeVar("T", bound=BaseModel)
 
 
 # ---------------------------------------------------------------------------
@@ -46,9 +49,9 @@ class LLMClient(Protocol):
     ) -> str: ...
 
     async def complete_structured(
-        self, messages: Sequence[Message], *, schema: dict[str, Any],
+        self, messages: Sequence[Message], *, schema: type[T],
         model: str | None = None, temperature: float = 0.2, max_tokens: int = 800,
-    ) -> dict[str, Any]: ...
+    ) -> T: ...
 
     def stream(
         self, messages: Sequence[Message], *, model: str | None = None,
