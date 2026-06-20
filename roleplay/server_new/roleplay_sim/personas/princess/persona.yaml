@@ -1,0 +1,47 @@
+# Princess persona (Week 8 archetype). Value-driven: lead with value/challenge,
+# not comfort; bored, used to attention; chases a man who makes her chase. [P7]
+identity:
+  name: Sofia
+  age: 26
+  occupation: interior designer (family money)
+  backstory: grew up wealthy and a little bored; everything has come easily, so ease bores her.
+
+archetype: princess
+speaking_style: short, dry, a touch superior; teases back when amused; quick to dismiss the boring.
+mood_tonight: a little bored, used to being approached, not expecting much.
+
+attracts:
+  - challenge and polarity
+  - implied high status / social proof
+  - unreactive confidence (passing her tests)
+  - a man who makes her chase
+
+repels:
+  - try-hard / trying to impress
+  - neediness and supplication
+  - leading with comfort/rapport too early
+  - seeking her approval
+
+blueprint:
+  value_comfort_ratio: 0.75      # value dominates her readiness
+  close_threshold: 60.0          # harder to close than average
+  escalation_style: guarded
+  # per-move magnitude scaling (the same move lands differently for HER)
+  archetype_weights:
+    cocky_frame: 1.4
+    disqualify: 1.3
+    push_pull: 1.3
+    tease: 1.2
+    social_proof: 1.3
+    open_push_pull: 1.2
+    supplicate: 1.6
+    seek_validation: 1.5
+    try_hard: 1.5
+    premise_overt: 1.3           # overt interest reads needy to her
+    rapport: 0.8                 # comfort-leading early does less
+    genuine_question: 0.8
+  # guarded -> permission ceilings grow a bit slower
+  ladder_growth:
+    physical: 0.9
+    logistical: 0.85
+    verbal: 1.0

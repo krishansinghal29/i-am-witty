@@ -3,24 +3,24 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <title>riffy · roleplay coach</title>
+    <title>riffy · conversation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="/styles.css?v=2" />
   </head>
   <body>
     <main class="stage">
       <header class="brand">
         <span class="spark">r</span>
         <span class="wordmark">riffy</span>
-        <span class="tag">roleplay coach · push-pull</span>
+        <span class="tag">conversation</span>
       </header>
 
-      <section class="coach" id="coach">
+      <section class="presence" id="presence">
         <div class="orb" id="orb" data-state="idle">
           <div class="ring"></div>
           <div class="ring ring2"></div>
@@ -29,33 +29,15 @@
         <p class="status" id="status">Tap start when you're ready.</p>
       </section>
 
-      <section class="scenario-card" id="scenarioCard" hidden>
-        <span class="label">Scenario</span>
-        <p id="scenarioText"></p>
-      </section>
-
-      <section class="transcript" id="transcriptWrap" hidden>
-        <span class="label" id="transcriptLabel">You</span>
-        <p id="transcriptText"></p>
-      </section>
-
-      <section class="feedback" id="feedbackWrap" hidden>
-        <span class="label">Coach</span>
-        <p id="feedbackText"></p>
-      </section>
+      <section class="log" id="log" hidden></section>
 
       <section class="controls">
         <button class="btn primary" id="startBtn">Start</button>
         <button class="btn" id="doneBtn" hidden>I'm done</button>
-        <div class="branch" id="branchBtns" hidden>
-          <button class="btn" id="retryBtn">Try again</button>
-          <button class="btn primary" id="newBtn">New sentence</button>
-        </div>
-        <button class="btn ghost" id="resetBtn" hidden>End session</button>
+        <button class="btn" id="newConvBtn" hidden>Try new conversation</button>
+        <button class="btn ghost" id="endBtn" hidden>End session</button>
       </section>
-
-      <footer class="meta" id="meta"></footer>
     </main>
-    <script src="/app.js"></script>
+    <script src="/app.js?v=2"></script>
   </body>
 </html>

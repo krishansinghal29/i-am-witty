@@ -1,0 +1,4 @@
+# Runtime debug dumps (character rolls + conversation transcripts).
+# Keep the folder in git, ignore its contents.
+*
+!.gitignore

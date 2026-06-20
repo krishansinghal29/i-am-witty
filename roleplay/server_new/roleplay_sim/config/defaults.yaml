@@ -1,0 +1,15 @@
+# Tunable magnitudes for the deterministic core. [P8]
+# These are loaded by config/tuning.py; the engine/ladders read from there so the
+# simulation stays reproducible AND tunable without touching logic.
+tuning:
+  # --- ladder / permission ceiling ---
+  accrual_rate: 0.30        # fraction of the gap-to-target the ceiling closes per turn
+  comfort_accrual: 0.5      # passive comfort gained per engaged turn ("more ready in 5 min")
+  at_risk_band: 1.0         # gap within this is "at the edge"
+  eighty_band: 1.5          # target this far under ceiling = the 80% sweet spot
+  at_risk_comfort: 45.0     # comfort needed to clear an at-risk escalation
+  lock_severity: 2.5        # gap beyond this (or any logistical over-reach) hard-locks the rung
+  # --- engine ---
+  base_engagement_drain: 1.0   # engagement lost per turn (opportunity cost)
+  # --- close ---
+  flaky_fraction: 0.7       # readiness in [flaky_fraction*thr, thr) -> a flaky yes

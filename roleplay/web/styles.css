@@ -5,9 +5,10 @@
   --bg: #fff7ef;
   --card: #ffffff;
   --muted: #9a8676;
-  --ok: #1f9d63;
-  --warn: #e0892b;
-  --miss: #d9534f;
+  --ai: #5b6cff;
+  --ai-soft: #a8b0ff;
+  --you: #1f9d63;
+  --you-soft: #7ddca8;
   --shadow: 0 10px 40px rgba(255, 122, 26, 0.12);
 }
 
@@ -37,6 +38,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 22px;
+  min-height: 100%;
 }
 
 .brand {
@@ -70,24 +72,24 @@ body {
   letter-spacing: 0.02em;
 }
 
-/* ---- coach orb ---- */
-.coach {
+.presence {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 16px;
-  margin-top: 14px;
+  margin-top: 8px;
 }
+
 .orb {
   position: relative;
-  width: 150px;
-  height: 150px;
+  width: 130px;
+  height: 130px;
   display: grid;
   place-items: center;
 }
 .orb .dot {
-  width: 86px;
-  height: 86px;
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--orange), var(--orange-soft));
   box-shadow: var(--shadow);
@@ -104,30 +106,29 @@ body {
   inset: 14px;
 }
 
-/* speaking: gentle pulse */
 .orb[data-state="speaking"] .dot {
+  background: linear-gradient(135deg, var(--ai), var(--ai-soft));
   animation: breathe 1.4s ease-in-out infinite;
 }
 .orb[data-state="speaking"] .ring,
 .orb[data-state="speaking"] .ring2 {
+  border-color: var(--ai-soft);
   animation: pulse 1.6s ease-out infinite;
 }
-/* listening: cool steady glow */
+
 .orb[data-state="listening"] .dot {
-  background: linear-gradient(135deg, #2bb673, #7ddca8);
+  background: linear-gradient(135deg, var(--you), var(--you-soft));
   animation: breathe 1s ease-in-out infinite;
 }
 .orb[data-state="listening"] .ring,
 .orb[data-state="listening"] .ring2 {
-  border-color: #7ddca8;
+  border-color: var(--you-soft);
   animation: pulse 1.2s ease-out infinite;
 }
-/* countdown / thinking */
-.orb[data-state="countdown"] .dot {
+
+.orb[data-state="thinking"] .dot {
   background: linear-gradient(135deg, #ffd27a, var(--orange-soft));
-}
-.orb[data-state="evaluating"] .dot {
-  animation: breathe 0.7s ease-in-out infinite;
+  animation: breathe 0.9s ease-in-out infinite;
 }
 
 @keyframes breathe {
@@ -158,45 +159,59 @@ body {
   margin: 0;
 }
 
-/* ---- cards ---- */
-.scenario-card,
-.transcript,
-.feedback {
+.log {
   width: 100%;
-  background: var(--card);
-  border-radius: 18px;
-  padding: 16px 18px;
-  box-shadow: 0 6px 24px rgba(42, 28, 18, 0.06);
-  animation: rise 0.3s ease;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding: 4px 2px;
 }
-.scenario-card {
-  border: 1.5px dashed var(--orange-soft);
-  background: #fffdfa;
+
+.bubble-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: rise 0.25s ease;
 }
-.label {
-  display: inline-block;
+.bubble-row.user {
+  align-items: flex-end;
+}
+.bubble-row.assistant {
+  align-items: flex-start;
+}
+.bubble-label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--orange);
   font-weight: 700;
-  margin-bottom: 6px;
-}
-.transcript .label {
-  color: #2bb673;
-}
-.feedback .label {
   color: var(--muted);
 }
-.scenario-card p,
-.transcript p,
-.feedback p {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.45;
+.bubble-row.user .bubble-label {
+  color: var(--you);
 }
-.feedback p {
-  font-style: italic;
+.bubble-row.assistant .bubble-label {
+  color: var(--ai);
+}
+.bubble-text {
+  margin: 0;
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 16px;
+  font-size: 16px;
+  line-height: 1.45;
+  background: var(--card);
+  box-shadow: 0 4px 16px rgba(42, 28, 18, 0.06);
+}
+.bubble-row.user .bubble-text {
+  background: #f0fbf5;
+  border: 1px solid #c9edd9;
+}
+.bubble-row.assistant .bubble-text {
+  background: #f5f6ff;
+  border: 1px solid #d5d9ff;
 }
 
 @keyframes rise {
@@ -210,19 +225,97 @@ body {
   }
 }
 
-/* ---- controls ---- */
+/* Listening — animated mic waveform shown in the user bubble while recording. */
+.wave {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  height: 13px;
+}
+.wave i {
+  display: block;
+  width: 3px;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--you);
+  transform-origin: center;
+  animation: wave 1s ease-in-out infinite;
+}
+.wave i:nth-child(1) {
+  animation-delay: -0.9s;
+}
+.wave i:nth-child(2) {
+  animation-delay: -0.7s;
+}
+.wave i:nth-child(3) {
+  animation-delay: -0.5s;
+}
+.wave i:nth-child(4) {
+  animation-delay: -0.3s;
+}
+.wave i:nth-child(5) {
+  animation-delay: -0.1s;
+}
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+/* Transcribing — bouncing dots while the recorded turn is being processed. */
+.dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+}
+.dots i {
+  display: block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: dotjump 1.2s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes dotjump {
+  0%,
+  70%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  35% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wave i,
+  .dots i {
+    animation: none;
+  }
+}
+
 .controls {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
   align-items: center;
-  margin-top: 6px;
-}
-.branch {
-  display: flex;
-  gap: 12px;
-  width: 100%;
+  margin-top: auto;
 }
 .btn {
   font-family: "Nunito", sans-serif;
@@ -235,7 +328,7 @@ body {
   color: var(--orange);
   cursor: pointer;
   transition: transform 0.08s ease, box-shadow 0.2s ease;
-  flex: 1;
+  width: 100%;
 }
 .btn:active {
   transform: scale(0.97);
@@ -252,34 +345,4 @@ body {
   color: var(--muted);
   font-weight: 600;
   font-size: 14px;
-}
-.controls > .btn {
-  width: 100%;
-}
-
-.meta {
-  font-size: 12px;
-  color: var(--muted);
-  text-align: center;
-  min-height: 16px;
-}
-.meta .pill {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #fff;
-  border: 1px solid #eedfce;
-  margin: 0 3px;
-}
-.pill.nailed {
-  color: var(--ok);
-  border-color: #bfe8d0;
-}
-.pill.close {
-  color: var(--warn);
-  border-color: #f3dcb8;
-}
-.pill.missed {
-  color: var(--miss);
-  border-color: #f3c2c0;
 }

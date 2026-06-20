@@ -1,143 +1,311 @@
 /*
- * Roleplay coach — front-end state machine.
+ * Spoken conversation — turn-based audio dialogue with streaming LLM + TTS.
  *
- * Flow:  GREET -> EXPLAIN -> EXAMPLE -> ASK(question) -> COUNTDOWN(30s soft)
- *        -> LISTEN(let them finish) -> [>=2s silence] -> EVALUATE
- *        -> FEEDBACK -> {retry | new | scaffold-down}
- *
- * Latency tricks:
- *   - static coach lines are cached server-side (synthesized once, replayed),
- *   - the next question is generated DURING the explanation and DURING answers,
- *   - the evaluator fires the instant the user's turn ends; the deliberate
- *     >=2s end-of-turn silence (Deepgram utterance_end_ms) covers its latency.
+ * Server owns session history; client sends session_id + latest user message.
+ * Flow: Start -> AI opens -> listen -> user speaks -> AI streams reply -> repeat.
  */
 
-// --------------------------------------------------------------------------
-// Static coach script (push-pull). These are spoken every session, so the
-// server caches their audio after the first synth -> ~0 latency thereafter.
-// --------------------------------------------------------------------------
-const LINES = {
-  greet: "Hey, good to see you. Let's play a little.",
-  explain:
-    "Okay — push pull. The whole game is two things at once: a tiny tease, and a little genuine interest. The tease shows you noticed her. The warmth shows you actually like what you see. Both true, both small. That little tension is what makes it stick.",
-  example:
-    "Here's one. Say she's talking a mile a minute about her dog. You could go: you are clearly a menace... and honestly kind of the best part of my day. See it? The tease, then the real thing.",
-  askLead: "Alright, your turn. Here's your scenario.",
-  askTail:
-    "Give me a push pull on that. I'll wait about thirty seconds, so take your time.",
-  nudge: "No rush. Whenever something comes to you.",
-  thinking: "Mm, let me think about that one.",
-  dropToPush:
-    "Let's make this easier. Forget the warm part for a second, and just give me the playful tease about her. Only the push.",
-  askPush: "Go ahead, just the tease.",
-  nowPull:
-    "Nice. Now flip it. Just the genuine part this time. Only the pull, something you actually mean.",
-  askPull: "Go ahead, just the warm line.",
-  recombine:
-    "You've got both pieces now. Let's put them together on a fresh one.",
-  again: "Same scenario. Take another swing.",
-};
-
-const THINK_WINDOW_MS = 30000; // soft thinking window before they start
-const MAX_NUDGES = 2;
-
-// --------------------------------------------------------------------------
-// DOM
-// --------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 const orb = $("orb");
 const statusEl = $("status");
-const scenarioCard = $("scenarioCard");
-const scenarioText = $("scenarioText");
-const transcriptWrap = $("transcriptWrap");
-const transcriptLabel = $("transcriptLabel");
-const transcriptText = $("transcriptText");
-const feedbackWrap = $("feedbackWrap");
-const feedbackText = $("feedbackText");
+const logEl = $("log");
 const startBtn = $("startBtn");
 const doneBtn = $("doneBtn");
-const branchBtns = $("branchBtns");
-const retryBtn = $("retryBtn");
-const newBtn = $("newBtn");
-const resetBtn = $("resetBtn");
-const metaEl = $("meta");
+const newConvBtn = $("newConvBtn");
+const endBtn = $("endBtn");
 
+let config = { utterance_end_ms: 2000, no_speech_end_ms: 6000 };
+let session = null;
+let chatAbort = null;
+
+const player = new Audio();
+player.preload = "auto";
+
+// In-bubble status animations: a live mic waveform while listening, bouncing
+// dots while the recorded turn is being transcribed.
+const LISTENING_HTML =
+  '<span class="wave" role="img" aria-label="Listening"><i></i><i></i><i></i><i></i><i></i></span>';
+const TRANSCRIBING_HTML =
+  '<span class="dots" role="img" aria-label="Transcribing"><i></i><i></i><i></i></span>';
+
+// --------------------------------------------------------------------------
+// UI helpers
+// --------------------------------------------------------------------------
 function setOrb(state) {
   orb.dataset.state = state;
 }
-function setStatus(t) {
-  statusEl.textContent = t;
+function setStatus(text) {
+  statusEl.textContent = text;
 }
-function showScenario(t) {
-  scenarioText.textContent = t;
-  scenarioCard.hidden = false;
+function showLog() {
+  logEl.hidden = false;
 }
-function showTranscript(t, label = "You") {
-  transcriptLabel.textContent = label;
-  transcriptText.textContent = t || "…";
-  transcriptWrap.hidden = false;
+function clearLog() {
+  logEl.innerHTML = "";
 }
-function showFeedback(t) {
-  feedbackText.textContent = t;
-  feedbackWrap.hidden = false;
-}
-function setMeta(ev, mode) {
-  metaEl.innerHTML =
-    `<span class="pill ${ev.verdict}">${ev.verdict}</span>` +
-    `<span class="pill">mode: ${mode}</span>` +
-    (ev.struggle ? `<span class="pill missed">struggling</span>` : "");
-}
-
-// --------------------------------------------------------------------------
-// Audio playback queue (the coach's voice). One <audio>, played sequentially.
-// `coachSpeaking` gates the mic so the coach never transcribes itself.
-// --------------------------------------------------------------------------
-const player = new Audio();
-player.preload = "auto";
-let coachSpeaking = false;
-
-const ttsUrl = (text) => `/api/tts?text=${encodeURIComponent(text)}`;
-const prefetchTts = (text) => {
-  fetch(ttsUrl(text)).catch(() => {});
-};
-
-function speak(text) {
-  return new Promise((resolve) => {
-    coachSpeaking = true;
-    setOrb("speaking");
-    player.src = ttsUrl(text);
-    const done = () => {
-      player.onended = null;
-      player.onerror = null;
-      coachSpeaking = false;
-      resolve();
-    };
-    player.onended = done;
-    player.onerror = done; // never block the flow on a TTS hiccup
-    player.play().catch(done);
-  });
+function addBubble(role, text) {
+  const row = document.createElement("div");
+  row.className = `bubble-row ${role}`;
+  const label = document.createElement("span");
+  label.className = "bubble-label";
+  label.textContent = role === "user" ? "You" : "AI";
+  const body = document.createElement("p");
+  body.className = "bubble-text";
+  body.textContent = text;
+  row.append(label, body);
+  logEl.appendChild(row);
+  logEl.scrollTop = logEl.scrollHeight;
+  return body;
 }
 
 // --------------------------------------------------------------------------
-// API
+// Config + session API
 // --------------------------------------------------------------------------
-async function fetchQuestion(mode) {
-  const r = await fetch(`/api/question?mode=${encodeURIComponent(mode)}`);
-  return r.json();
+async function loadConfig() {
+  const r = await fetch("/api/config");
+  config = await r.json();
 }
-async function evaluate(scenario, transcript, mode) {
-  const r = await fetch("/api/evaluate", {
+async function createSession() {
+  const r = await fetch("/api/session/new", { method: "POST" });
+  const data = await r.json();
+  return data.session_id;
+}
+
+// --------------------------------------------------------------------------
+// Streaming chat (SSE over fetch)
+// --------------------------------------------------------------------------
+async function streamChat({ sessionId, message, onToken, signal }) {
+  const r = await fetch("/api/chat/stream", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ scenario, transcript, mode }),
+    body: JSON.stringify({ session_id: sessionId, message: message ?? null }),
+    signal,
   });
-  return r.json();
+  if (!r.ok) {
+    const detail = await r.text();
+    throw new Error(detail || `chat_${r.status}`);
+  }
+
+  const reader = r.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let reply = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const parts = buffer.split("\n\n");
+    buffer = parts.pop() || "";
+    for (const block of parts) {
+      const line = block.trim();
+      if (!line.startsWith("data:")) continue;
+      const payload = JSON.parse(line.slice(5).trim());
+      if (payload.type === "token") {
+        reply += payload.text;
+        onToken(payload.text, reply);
+      } else if (payload.type === "done") {
+        reply = payload.reply || reply;
+      } else if (payload.type === "error") {
+        throw new Error(payload.message || "stream_error");
+      }
+    }
+  }
+  return reply.trim();
 }
 
 // --------------------------------------------------------------------------
-// Deepgram streaming listener (adapted from the production gateway).
-// Adds vad_events + utterance_end_ms so we can detect speech-start and a
-// >=2s end-of-turn silence. Emits: onSpeechStarted, onInterim, onUtteranceEnd.
+// Sentence-chunked TTS with transcript streaming in sync with speech
+// Words appear progressively as each sentence's audio plays.
+// --------------------------------------------------------------------------
+let aiSpeaking = false;
+
+function scrollLog() {
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function partialWords(text, progress) {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (!words.length || progress <= 0) return "";
+  const n = Math.min(
+    words.length,
+    Math.max(1, Math.floor(progress * words.length)),
+  );
+  return words.slice(0, n).join(" ");
+}
+
+const speech = {
+  queue: [],
+  running: false,
+  revealed: "",
+  bubble: null,
+  pending: [],
+
+  reset() {
+    for (const ctrl of this.pending) {
+      try {
+        ctrl.abort();
+      } catch {}
+    }
+    this.pending = [];
+    this.queue = [];
+    this.running = false;
+    this.revealed = "";
+    this.bubble = null;
+    aiSpeaking = false;
+    try {
+      player.pause();
+      player.removeAttribute("src");
+    } catch {}
+  },
+
+  setDisplay(text) {
+    if (this.bubble) {
+      this.bubble.textContent = text;
+      scrollLog();
+    }
+  },
+
+  enqueue(sentence) {
+    const ctrl = new AbortController();
+    this.pending.push(ctrl);
+    const audio = fetch("/api/tts/stream", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: sentence }),
+      signal: ctrl.signal,
+    }).then((r) => (r.ok ? r.blob() : null));
+    this.queue.push({ text: sentence, audio, ctrl });
+    this.pump();
+  },
+
+  async pump() {
+    if (this.running) return;
+    this.running = true;
+    aiSpeaking = true;
+    setOrb("speaking");
+
+    while (this.queue.length > 0) {
+      const item = this.queue.shift();
+      try {
+        const blob = await item.audio;
+        if (!blob) continue;
+        const base = this.revealed;
+        await playBlobWithStream(blob, item.text, (progress) => {
+          const chunk = partialWords(item.text, progress);
+          this.setDisplay(base ? `${base} ${chunk}` : chunk);
+        });
+        this.revealed = base ? `${base} ${item.text}` : item.text;
+        this.setDisplay(this.revealed);
+      } catch (err) {
+        if (err.name === "AbortError") break;
+      }
+    }
+
+    this.running = false;
+    aiSpeaking = false;
+    if (this.queue.length > 0) this.pump();
+  },
+
+  async drain() {
+    while (this.running || this.queue.length > 0) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  },
+};
+
+function abortAudio() {
+  speech.reset();
+}
+
+function createTtsDrainer(onPhrase) {
+  const MAX_PHRASE_WORDS = 10;
+  let buf = "";
+
+  const emit = (text) => {
+    const t = text.trim();
+    if (t.length >= 2) onPhrase(t);
+  };
+
+  const drainPhrases = () => {
+    while (true) {
+      const sentence = buf.match(/^(.*?[.!?])(\s+|$)/s);
+      if (sentence) {
+        emit(sentence[1]);
+        buf = buf.slice(sentence[0].length);
+        continue;
+      }
+      const words = buf.trim().split(/\s+/).filter(Boolean);
+      if (words.length >= MAX_PHRASE_WORDS) {
+        emit(words.slice(0, MAX_PHRASE_WORDS).join(" "));
+        buf = words.slice(MAX_PHRASE_WORDS).join(" ");
+        continue;
+      }
+      break;
+    }
+  };
+
+  return {
+    push(chunk) {
+      buf += chunk;
+      drainPhrases();
+    },
+    flush() {
+      emit(buf);
+      buf = "";
+    },
+  };
+}
+
+function playBlobWithStream(blob, sentence, onProgress) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(blob);
+    player.src = url;
+    let raf = 0;
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      cancelAnimationFrame(raf);
+      player.onended = null;
+      player.onerror = null;
+      player.onloadedmetadata = null;
+      URL.revokeObjectURL(url);
+      onProgress(1);
+      resolve();
+    };
+
+    const tick = () => {
+      const d = player.duration;
+      const t = player.currentTime;
+      if (d && Number.isFinite(d) && d > 0) {
+        onProgress(Math.min(1, t / d));
+      }
+      if (!player.paused && !player.ended) {
+        raf = requestAnimationFrame(tick);
+      }
+    };
+
+    player.onloadedmetadata = () => {};
+    player.onended = finish;
+    player.onerror = finish;
+    player
+      .play()
+      .then(() => {
+        raf = requestAnimationFrame(tick);
+      })
+      .catch(finish);
+  });
+}
+
+// --------------------------------------------------------------------------
+// Dictation — batch recorder
+//
+// We capture the whole turn as 16-bit PCM, watch the mic level to detect when
+// the user has finished (trailing silence), then send one WAV to the server,
+// which transcribes it with whichever provider is configured. The full
+// sentence appears at once — there is no live word-by-word stream.
 // --------------------------------------------------------------------------
 const PCM_WORKLET = `
 class PcmWorklet extends AudioWorkletProcessor {
@@ -163,122 +331,164 @@ function getWorkletUrl() {
   return workletUrl;
 }
 
-// >=2s of trailing silence after speech ends the turn (this IS the deliberate
-// "wait at least 2 seconds" pause from the design).
-const UTTERANCE_END_MS = 2000;
+// Mono 16-bit PCM chunks -> a single WAV blob the server can forward as-is.
+function encodeWav(chunks, sampleRate) {
+  let total = 0;
+  for (const c of chunks) total += c.length;
+  const buf = new ArrayBuffer(44 + total * 2);
+  const view = new DataView(buf);
+  const writeStr = (off, s) => {
+    for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i));
+  };
+  writeStr(0, "RIFF");
+  view.setUint32(4, 36 + total * 2, true);
+  writeStr(8, "WAVE");
+  writeStr(12, "fmt ");
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true); // PCM
+  view.setUint16(22, 1, true); // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true); // block align
+  view.setUint16(34, 16, true); // bits per sample
+  writeStr(36, "data");
+  view.setUint32(40, total * 2, true);
+  let off = 44;
+  for (const c of chunks) {
+    for (let i = 0; i < c.length; i++, off += 2) view.setInt16(off, c[i], true);
+  }
+  return new Blob([buf], { type: "audio/wav" });
+}
 
-async function startListening({ onSpeechStarted, onInterim, onUtteranceEnd }) {
-  const tok = await (await fetch("/api/token", { method: "POST" })).json();
+function rms(pcm) {
+  let sum = 0;
+  for (let i = 0; i < pcm.length; i++) {
+    const s = pcm[i] / 0x8000;
+    sum += s * s;
+  }
+  return pcm.length ? Math.sqrt(sum / pcm.length) : 0;
+}
+
+// VAD tuning (normalized RMS, 0..1). Two trailing-silence controls (from config):
+// once the user has started speaking, utterance_end_ms ends the turn; until they've
+// said anything at all, the longer no_speech_end_ms grace applies before we give up.
+const SPEECH_RMS = 0.02; // normalized level that counts as "talking"
+const MAX_TURN_SECONDS = 60; // hard cap so a stuck mic can't buffer forever
+
+async function startListening({ onSpeechStarted, onTranscribing, onTurnEnd }) {
   const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   await ctx.resume();
   await ctx.audioWorklet.addModule(getWorkletUrl());
 
-  const params = new URLSearchParams({
-    model: "nova-3",
-    smart_format: "true",
-    interim_results: "true",
-    encoding: "linear16",
-    sample_rate: String(Math.round(ctx.sampleRate)),
-    channels: "1",
-    language: "en-US",
-    vad_events: "true",
-    utterance_end_ms: String(UTTERANCE_END_MS),
-    endpointing: "300",
-  });
-  const ws = new WebSocket(
-    "wss://api.deepgram.com/v1/listen?" + params.toString(),
-    ["bearer", tok.token],
-  );
-
-  let finalTranscript = "";
-  let bestInterim = "";
-  let speaking = false;
-  let closed = false;
-
-  const best = () => (finalTranscript || bestInterim).trim();
-
-  ws.onmessage = (event) => {
-    let msg;
-    try {
-      msg = JSON.parse(event.data);
-    } catch {
-      return;
-    }
-    const type = (msg.type || "").toLowerCase();
-
-    if (type === "utteranceend") {
-      if (speaking) onUtteranceEnd(best());
-      return;
-    }
-    if (type === "speechstarted") {
-      if (!speaking) {
-        speaking = true;
-        onSpeechStarted();
-      }
-      return;
-    }
-    if (type && type !== "results") return;
-
-    const seg = msg.channel?.alternatives?.[0]?.transcript?.trim() ?? "";
-    if (!seg) return;
-    if (!speaking) {
-      speaking = true;
-      onSpeechStarted();
-    }
-    if (msg.is_final) {
-      finalTranscript = (finalTranscript + " " + seg).trim();
-      bestInterim = "";
-    } else {
-      bestInterim = seg;
-    }
-    onInterim((finalTranscript + " " + bestInterim).trim());
-  };
-
-  // pipe mic PCM -> socket, but stay silent while the coach is speaking.
+  const utteranceEndMs = config.utterance_end_ms || 2000;
+  const noSpeechEndMs = config.no_speech_end_ms || 6000;
+  const sampleRate = Math.round(ctx.sampleRate);
+  const maxSamples = sampleRate * MAX_TURN_SECONDS;
   const source = ctx.createMediaStreamSource(stream);
   const node = new AudioWorkletNode(ctx, "pcm-worklet");
-  node.port.onmessage = (e) => {
-    if (!coachSpeaking && ws.readyState === WebSocket.OPEN) {
-      ws.send(e.data);
-    }
-  };
-  source.connect(node);
-  node.connect(ctx.destination);
 
-  await new Promise((resolve, reject) => {
-    ws.onopen = resolve;
-    ws.onerror = () => reject(new Error("deepgram_ws_error"));
-  });
+  const chunks = []; // every captured PCM chunk for this turn
+  let samples = 0;
+  let started = false; // has the mic crossed the speech threshold yet?
+  let lastVoiceTs = 0;
+  const listenStartTs = performance.now(); // when the mic opened (silence ref before any speech)
+  let finalized = false;
+  let closed = false;
+  let abort = null;
+  let poll = null;
 
   const teardown = () => {
     if (closed) return;
     closed = true;
+    if (poll) clearInterval(poll);
     node.port.onmessage = null;
     try {
       source.disconnect();
       node.disconnect();
-    } catch {}
-    try {
-      if (ws.readyState === WebSocket.OPEN)
-        ws.send(JSON.stringify({ type: "CloseStream" }));
-      ws.close();
-    } catch {}
-    try {
-      ctx.close();
     } catch {}
     for (const t of stream.getTracks()) {
       try {
         t.stop();
       } catch {}
     }
+    try {
+      ctx.close();
+    } catch {}
   };
 
+  node.port.onmessage = (e) => {
+    if (aiSpeaking || finalized) return;
+    const pcm = new Int16Array(e.data);
+    chunks.push(pcm);
+    samples += pcm.length;
+    if (rms(pcm) >= SPEECH_RMS) {
+      if (!started) {
+        started = true;
+        onSpeechStarted();
+      }
+      lastVoiceTs = performance.now();
+    }
+    if (samples >= maxSamples) finalize();
+  };
+
+  source.connect(node);
+  node.connect(ctx.destination);
+
+  // The recorded turn -> server -> transcript. Runs at most once.
+  // `manual` (the "I'm done" button) transcribes whatever we captured even if
+  // the mic never crossed the speech threshold; auto-end only fires after speech.
+  const finalize = async (manual = false) => {
+    if (finalized) return;
+    finalized = true;
+    if (poll) clearInterval(poll);
+    const captured = chunks.slice();
+    teardown();
+
+    if (!captured.length || (!started && !manual)) {
+      onTurnEnd("");
+      return;
+    }
+    onTranscribing?.();
+    abort = new AbortController();
+    try {
+      const wav = encodeWav(captured, sampleRate);
+      const r = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: { "content-type": "audio/wav" },
+        body: wav,
+        signal: abort.signal,
+      });
+      if (!r.ok) throw new Error((await r.text()) || `transcribe_${r.status}`);
+      const data = await r.json();
+      onTurnEnd((data.transcript || "").trim());
+    } catch (err) {
+      if (err.name === "AbortError") return;
+      console.error("transcription failed", err);
+      onTurnEnd("");
+    }
+  };
+
+  // End the turn once the mic has been quiet long enough. The grace period is
+  // longer before any speech (no_speech_end_ms) than the trailing-silence after
+  // the user has started talking (utterance_end_ms).
+  poll = setInterval(() => {
+    if (finalized) return;
+    const silenceMs = performance.now() - (started ? lastVoiceTs : listenStartTs);
+    if (silenceMs >= (started ? utteranceEndMs : noSpeechEndMs)) finalize();
+  }, 100);
+
   return {
-    transcript: best,
+    finish: () => finalize(true), // manual "I'm done"
     stop: () => {
+      // Abandon the turn entirely (new conversation / end session).
+      finalized = true;
+      if (abort) {
+        try {
+          abort.abort();
+        } catch {}
+      }
       teardown();
-      return best();
     },
   };
 }
@@ -286,230 +496,178 @@ async function startListening({ onSpeechStarted, onInterim, onUtteranceEnd }) {
 // --------------------------------------------------------------------------
 // Session controller
 // --------------------------------------------------------------------------
-let session = null;
-
-function newSession() {
+function newLocalSession(sessionId) {
   return {
-    mode: "combine", // combine | push | pull
-    scenario: "",
-    missStreak: 0,
+    sessionId,
     listener: null,
-    thinkTimer: null,
-    nudges: 0,
-    answered: false,
-    speaking: false,
-    nextQuestion: null, // prefetched {scenario}
+    turnDone: false,
+    liveBubble: null,
+    liveUserBubble: null,
   };
 }
 
-function clearThinkTimer() {
-  if (session?.thinkTimer) {
-    clearTimeout(session.thinkTimer);
-    session.thinkTimer = null;
-  }
+function abortChat() {
+  if (chatAbort) chatAbort.abort();
+  chatAbort = null;
 }
 
-async function start() {
-  startBtn.hidden = true;
-  resetBtn.hidden = false;
-  feedbackWrap.hidden = true;
-  session = newSession();
+function setSessionControls(active) {
+  startBtn.hidden = active;
+  doneBtn.hidden = !active;
+  newConvBtn.hidden = !active;
+  endBtn.hidden = !active;
+}
 
-  // Warm everything we can up front.
-  prefetchTts(LINES.greet);
-  prefetchTts(LINES.explain);
-  prefetchTts(LINES.example);
-  prefetchTts(LINES.askLead);
-  prefetchTts(LINES.askTail);
+async function playAssistantTurn({ message } = {}) {
+  abortChat();
+  abortAudio();
+  chatAbort = new AbortController();
 
-  // Generate the first question WHILE the coach explains (latency hide).
-  const qp = fetchQuestion("combine").then((q) => {
-    prefetchTts(q.scenario);
-    return q;
+  setOrb("thinking");
+  setStatus("");
+
+  const bubble = addBubble("assistant", "");
+  session.liveBubble = bubble;
+  speech.bubble = bubble;
+  speech.revealed = "";
+  const drainer = createTtsDrainer((phrase) => speech.enqueue(phrase));
+
+  const chatDone = streamChat({
+    sessionId: session.sessionId,
+    message,
+    signal: chatAbort.signal,
+    onToken(chunk) {
+      drainer.push(chunk);
+    },
   });
 
-  setStatus("");
-  await speak(LINES.greet);
-  await speak(LINES.explain);
-  await speak(LINES.example);
+  const reply = await chatDone;
+  drainer.flush();
 
-  const q = await qp;
-  session.scenario = q.scenario;
-  await askScenario(false);
-}
+  // Keep bubble wired until all queued audio finishes — never dump full text early.
+  await speech.drain();
 
-async function askScenario(isRetry) {
-  branchBtns.hidden = true;
-  doneBtn.hidden = true;
-  feedbackWrap.hidden = true;
-  showScenario(session.scenario);
-
-  if (isRetry) {
-    await speak(LINES.again);
-  } else if (session.mode === "push") {
-    await speak(LINES.askPush);
-  } else if (session.mode === "pull") {
-    await speak(LINES.askPull);
-  } else {
-    await speak(LINES.askLead);
-    await speak(session.scenario);
-    await speak(LINES.askTail);
+  if (reply && bubble.textContent !== reply) {
+    bubble.textContent = reply;
   }
 
-  beginListen();
+  session.liveBubble = null;
+  speech.bubble = null;
 }
 
 async function beginListen() {
-  session.answered = false;
-  session.speaking = false;
-  session.nudges = 0;
-  showTranscript("", "You");
-  setOrb("countdown");
-  setStatus("Listening… take your time.");
-  doneBtn.hidden = false;
-
-  // Prefetch the NEXT question while the user answers this one.
-  if (session.mode === "combine") {
-    fetchQuestion("combine").then((q) => {
-      session.nextQuestion = q;
-      prefetchTts(q.scenario);
-    });
-  }
+  if (!session) return;
+  session.turnDone = false;
+  session.liveUserBubble = addBubble("user", "");
+  session.liveUserBubble.innerHTML = LISTENING_HTML;
+  setOrb("listening");
+  setStatus("Listening…");
 
   try {
     session.listener = await startListening({
       onSpeechStarted: () => {
-        if (session.answered) return;
-        session.speaking = true;
-        clearThinkTimer();
+        if (session.turnDone) return;
         setOrb("listening");
         setStatus("Listening…");
       },
-      onInterim: (t) => showTranscript(t, "You"),
-      onUtteranceEnd: (t) => finishTurn(t),
+      onTranscribing: () => {
+        if (session.turnDone) return;
+        setOrb("thinking");
+        setStatus("Transcribing…");
+        if (session.liveUserBubble) {
+          session.liveUserBubble.innerHTML = TRANSCRIBING_HTML;
+        }
+      },
+      onTurnEnd: (t) => finishUserTurn(t),
     });
   } catch (err) {
-    setStatus("Mic/STT error: " + err.message);
+    setStatus("Mic error: " + err.message);
     setOrb("idle");
-    return;
   }
-
-  // 30s soft thinking window — only matters until they start speaking.
-  armThinkTimer();
 }
 
-function armThinkTimer() {
-  clearThinkTimer();
-  session.thinkTimer = setTimeout(onThinkTimeout, THINK_WINDOW_MS);
-}
-
-async function onThinkTimeout() {
-  if (session.speaking || session.answered) return;
-  if (session.nudges >= MAX_NUDGES) return;
-  session.nudges += 1;
-  await speak(LINES.nudge);
-  if (!session.speaking && !session.answered) armThinkTimer();
-}
-
-async function finishTurn(transcript) {
-  if (session.answered) return;
-  session.answered = true;
-  clearThinkTimer();
+async function finishUserTurn(transcript) {
+  if (!session || session.turnDone) return;
+  session.turnDone = true;
   doneBtn.hidden = true;
 
   const text = (transcript || "").trim();
-  // Fire the evaluator immediately (in parallel with closing the mic).
-  setOrb("evaluating");
-  setStatus("");
-  const evalP = text
-    ? evaluate(session.scenario, text, session.mode)
-    : Promise.resolve({
-        verdict: "missed",
-        spoken_feedback: "I didn't quite catch that — want to try once more?",
-        struggle: true,
-        suggest: "retry",
-      });
-
   if (session.listener) session.listener.stop();
-  showTranscript(text || "(silence)", "You");
+  session.listener = null;
 
-  const ev = await evalP;
-  setMeta(ev, session.mode);
-  showFeedback(ev.spoken_feedback);
-  await speak(ev.spoken_feedback);
-  handleBranch(ev);
+  if (session.liveUserBubble) {
+    session.liveUserBubble.textContent = text || "(silence)";
+  }
+
+  if (!text) {
+    if (session.liveUserBubble) {
+      session.liveUserBubble.closest(".bubble-row")?.remove();
+      session.liveUserBubble = null;
+    }
+    doneBtn.hidden = false;
+    setStatus("Didn't catch that — try again.");
+    return beginListen();
+  }
+
+  await playAssistantTurn({ message: text });
+  doneBtn.hidden = false;
+  return beginListen();
 }
 
-async function handleBranch(ev) {
-  const missed = ev.verdict === "missed" || ev.struggle;
-  session.missStreak = missed ? session.missStreak + 1 : 0;
+async function startConversation() {
+  await loadConfig();
+  showLog();
+  clearLog();
+  setSessionControls(true);
 
-  // Scaffold DOWN when struggling on the full thing.
-  if (
-    session.mode === "combine" &&
-    (ev.suggest === "drop_to_push" || session.missStreak >= 2)
-  ) {
-    session.mode = "push";
-    session.missStreak = 0;
-    await speak(LINES.dropToPush);
-    return askScenario(false); // same scenario, push only
-  }
-  // Climb back up: push -> pull -> combine.
-  if (session.mode === "push" && ev.verdict !== "missed") {
-    session.mode = "pull";
-    await speak(LINES.nowPull);
-    return askScenario(false);
-  }
-  if (session.mode === "pull" && ev.verdict !== "missed") {
-    session.mode = "combine";
-    await speak(LINES.recombine);
-    return nextScenario();
-  }
+  const sessionId = await createSession();
+  session = newLocalSession(sessionId);
 
-  // Normal: let them choose.
+  await playAssistantTurn();
+  doneBtn.hidden = false;
+  return beginListen();
+}
+
+async function tryNewConversation() {
+  if (!session) return;
+  abortChat();
+  abortAudio();
+  if (session.listener) session.listener.stop();
+  session.listener = null;
+
+  clearLog();
+  const sessionId = await createSession();
+  session = newLocalSession(sessionId);
+
+  await playAssistantTurn();
+  doneBtn.hidden = false;
+  return beginListen();
+}
+
+function endSession() {
+  abortChat();
+  abortAudio();
+  if (session?.listener) session.listener.stop();
+  // Drop the in-progress "listening" bubble so its waveform stops animating.
+  session?.liveUserBubble?.closest(".bubble-row")?.remove();
+  session = null;
+  setSessionControls(false);
   setOrb("idle");
-  setStatus("Try that one again, or take a fresh sentence?");
-  branchBtns.hidden = false;
-}
-
-async function nextScenario() {
-  branchBtns.hidden = true;
-  setOrb("speaking");
-  let q = session.nextQuestion;
-  session.nextQuestion = null;
-  if (!q) q = await fetchQuestion(session.mode);
-  session.scenario = q.scenario;
-  await askScenario(false);
+  setStatus("Tap start when you're ready.");
 }
 
 // --------------------------------------------------------------------------
 // Buttons
 // --------------------------------------------------------------------------
-startBtn.addEventListener("click", () => start());
+startBtn.addEventListener("click", () => startConversation());
+newConvBtn.addEventListener("click", () => tryNewConversation());
+endBtn.addEventListener("click", () => endSession());
 doneBtn.addEventListener("click", () => {
-  // Manual end-of-turn (covers cases where Deepgram's silence detect lags).
-  if (session && !session.answered) {
-    session.speaking = true;
-    finishTurn(session.listener ? session.listener.transcript() : "");
+  if (session && !session.turnDone && session.listener) {
+    doneBtn.hidden = true;
+    setStatus("Transcribing…");
+    session.listener.finish();
   }
 });
-retryBtn.addEventListener("click", () => {
-  branchBtns.hidden = true;
-  askScenario(true);
-});
-newBtn.addEventListener("click", () => nextScenario());
-resetBtn.addEventListener("click", () => {
-  clearThinkTimer();
-  if (session?.listener) session.listener.stop();
-  session = null;
-  branchBtns.hidden = true;
-  doneBtn.hidden = true;
-  resetBtn.hidden = true;
-  scenarioCard.hidden = true;
-  transcriptWrap.hidden = true;
-  feedbackWrap.hidden = true;
-  metaEl.textContent = "";
-  setOrb("idle");
-  setStatus("Tap start when you're ready.");
-  startBtn.hidden = false;
-});
+
+loadConfig().catch(() => {});

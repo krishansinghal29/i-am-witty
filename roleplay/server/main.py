@@ -1,255 +1,295 @@
-"""Roleplay prototype proxy.
+"""Conversational roleplay proxy.
 
-A thin, latency-first proxy that powers the standalone roleplay coach in
-``roleplay/web``. It deliberately stays *outside* the core app: it never imports
-the DB / auth / HTTP stack. It only:
+Thin FastAPI server: server-side session history, streaming LLM (SSE),
+streaming TTS passthrough, and batch speech-to-text. API keys stay on the
+server; the browser sends a session id + either the latest user message or the
+recorded audio for that turn.
 
-  * mints short-lived Deepgram tokens (so the browser can stream mic audio),
-  * generates a push-pull scenario using the **real** production prompt bundle
-    (imported from ``design/backend``), so questions match production exactly,
-  * runs a *compact* roleplay evaluator (reuses the production criteria, but
-    returns 1-2 speakable lines instead of long HTML), and
-  * proxies ElevenLabs streaming TTS (with an in-memory cache for the static
-    coach lines, which are spoken on every session).
-
-Run it with the backend venv so the prompt bundle + litellm are importable::
-
-    ./run.sh        # from roleplay/
+Providers (chat / dictation / speech) are selected and tuned entirely through
+env vars — see `server/config.py`.
 """
 
 from __future__ import annotations
 
-import hashlib
+import dataclasses
+import json
 import logging
 import os
-import sys
+import uuid
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Literal
+from typing import Any
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+
+from server import character, config, dictation, speech
 
 logger = logging.getLogger("roleplay")
 logging.basicConfig(level=logging.INFO)
 
-# --- paths -----------------------------------------------------------------
-ROLEPLAY_DIR = Path(__file__).resolve().parent.parent          # .../roleplay
-REPO_DIR = ROLEPLAY_DIR.parent                                 # .../i-am-witty
-BACKEND_DIR = REPO_DIR / "design" / "backend"                  # holds prompt bundle + .env
+ROLEPLAY_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = ROLEPLAY_DIR.parent / "design" / "backend"
 WEB_DIR = ROLEPLAY_DIR / "web"
 
-# --- env: backend keys first, then roleplay-local ELEVENLABS ----------------
 load_dotenv(BACKEND_DIR / ".env")
-load_dotenv(ROLEPLAY_DIR / ".env", override=False)
+load_dotenv(ROLEPLAY_DIR / ".env", override=True)
 
-# Make the real prompt bundle importable without pulling in the core app.
-sys.path.insert(0, str(BACKEND_DIR))
-from app.infrastructure.runtime.prompts.push_pull import (  # noqa: E402
-    PROMPT_TEXT,
-    SPEC,
+# Resolve the active providers once, after env is loaded.
+CFG = config.load()
+
+# Each session's persona + full transcript is dumped under server/tmp for debugging.
+TMP_DIR = ROLEPLAY_DIR / "server" / "tmp"
+CONVERSATION_DIR = Path(os.environ.get("ROLEPLAY_CONVO_DIR") or TMP_DIR / "conversations")
+
+_http = httpx.AsyncClient(timeout=60.0)
+# session_id -> {"system": <system prompt>, "history": [<turns>]}
+_sessions: dict[str, dict[str, Any]] = {}
+
+app = FastAPI(title="roleplay-conversation")
+
+logger.info(
+    "providers | chat=%s (%s) | dictation=%s (%s) | speech=%s (%s)",
+    CFG.chat.name, CFG.chat.model,
+    CFG.dictation.name, CFG.dictation.model,
+    CFG.speech.name, CFG.speech.voice,
 )
 
-# --- config ----------------------------------------------------------------
-ELEVENLABS_API_KEY = os.environ.get("ELEVENLABS_API_KEY")
-ELEVENLABS_VOICE_ID = os.environ.get("ROLEPLAY_VOICE_ID", "21m00Tcm4TlvDq8ikWAM")  # Rachel
-ELEVENLABS_MODEL = os.environ.get("ROLEPLAY_TTS_MODEL", "eleven_flash_v2_5")
 
-DEEPGRAM_API_KEY = os.environ.get("DEEPGRAM_API_KEY")
-
-GEN_MODEL = os.environ.get("ROLEPLAY_GEN_MODEL") or os.environ.get(
-    "LLM_GENERATOR_MODEL", "gpt-5.3-chat-latest"
-)
-EVAL_MODEL = os.environ.get("ROLEPLAY_EVAL_MODEL") or os.environ.get(
-    "LLM_EVALUATOR_MODEL", "gpt-5.3-chat-latest"
-)
-
-_http = httpx.AsyncClient(timeout=30.0)
-_tts_cache: dict[str, bytes] = {}
-
-app = FastAPI(title="roleplay-proxy")
-
-
-# --- litellm: configured lazily, exactly like the backend adapter -----------
 def _ensure_litellm():
     import litellm
 
-    litellm.drop_params = True  # tolerate temperature/etc. across providers
+    litellm.drop_params = True
     return litellm
 
 
-# ---------------------------------------------------------------------------
-# Deepgram ephemeral token (browser streams mic audio directly to Deepgram)
-# ---------------------------------------------------------------------------
-@app.post("/api/token")
-async def mint_token():
-    if not DEEPGRAM_API_KEY:
-        return Response("deepgram_not_configured", status_code=500)
-    r = await _http.post(
-        "https://api.deepgram.com/v1/auth/grant",
-        headers={"Authorization": f"Token {DEEPGRAM_API_KEY}"},
-        json={"ttl_seconds": 60},
+def _chat_kwargs(model: str, **extra: Any) -> dict[str, Any]:
+    """litellm.acompletion kwargs for the active chat provider (+ creds)."""
+    kw: dict[str, Any] = {"model": model}
+    if CFG.chat.api_base:
+        kw["api_base"] = CFG.chat.api_base
+    if CFG.chat.api_key:
+        kw["api_key"] = CFG.chat.api_key
+    kw.update(CFG.chat.extra)  # provider-specific tuning (e.g. Sarvam reasoning toggle)
+    kw.update(extra)
+    return kw
+
+
+class TtsIn(BaseModel):
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class ChatStreamIn(BaseModel):
+    session_id: str
+    message: str | None = None
+
+
+def _sse(payload: dict[str, Any]) -> str:
+    return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def _llm_messages(session: dict[str, Any]) -> list[dict[str, str]]:
+    return [{"role": "system", "content": session["system"]}, *session["history"]]
+
+
+def _session_slug(char: "character.Character | None") -> str:
+    """Shared base filename for a session's character + conversation dumps."""
+    ts = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%f")
+    return f"{ts}_{char.name if char else 'fixed'}"
+
+
+def _dump_conversation(session_id: str, session: dict[str, Any]) -> None:
+    """Best-effort dump of the persona + full transcript so far (rewritten each turn)."""
+    char = session.get("char")
+    try:
+        CONVERSATION_DIR.mkdir(parents=True, exist_ok=True)
+        record = {
+            "slug": session["slug"],
+            "session_id": session_id,
+            "updated": datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S_%f"),
+            "character": dataclasses.asdict(char) if char else None,
+            "first_impression": session.get("first_impression"),
+            "system_prompt": session["system"],
+            "history": session["history"],
+        }
+        path = CONVERSATION_DIR / f"{session['slug']}.json"
+        path.write_text(
+            json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+    except Exception:
+        logger.exception("conversation dump failed")
+
+
+async def _build_persona() -> tuple[str, "character.Character | None", str]:
+    """Return (system_prompt, character, first_impression) for a new session."""
+    if CFG.system_prompt_override:
+        return CFG.system_prompt_override, None, ""
+
+    char = character.roll_character()
+    first_impression = character.fallback_first_impression(char)
+    try:
+        litellm = _ensure_litellm()
+        resp = await litellm.acompletion(
+            **_chat_kwargs(CFG.gen_model, messages=character.synth_messages(char),
+                           temperature=1.0, max_tokens=180),
+        )
+        text = (resp.choices[0].message.content or "").strip()
+        if text:
+            first_impression = text
+    except Exception:
+        logger.exception("first-impression synthesis failed; using fallback")
+
+    logger.info(
+        "new persona: %s, %d, %s, from %s | %s | %s",
+        char.name, char.age, char.profession, char.hometown,
+        char.archetype, char.setting,
     )
-    r.raise_for_status()
-    data = r.json()
+    return character.build_system_prompt(char, first_impression), char, first_impression
+
+
+async def _iter_llm_tokens(session: dict[str, Any]):
+    litellm = _ensure_litellm()
+    stream = await litellm.acompletion(
+        **_chat_kwargs(CFG.chat.model, messages=_llm_messages(session),
+                       temperature=0.9, max_tokens=300, stream=True),
+    )
+    async for chunk in stream:
+        delta = chunk.choices[0].delta
+        text = getattr(delta, "content", None) or ""
+        if text:
+            yield text
+
+
+@app.get("/api/config")
+async def get_config():
+    # The client records each turn locally and posts it to /api/transcribe;
+    # utterance_end_ms is the trailing-silence it waits for before finalizing once
+    # the user has started speaking; no_speech_end_ms is the longer grace period it
+    # allows before giving up when the user hasn't spoken at all yet.
     return {
-        "token": data["access_token"],
-        "auth_scheme": "bearer",
-        "expires_in": data.get("expires_in", 60),
+        "utterance_end_ms": CFG.utterance_end_ms,
+        "no_speech_end_ms": CFG.no_speech_end_ms,
+        "dictation": {
+            "provider": CFG.dictation.name,
+            "model": CFG.dictation.model,
+            "language": CFG.dictation.language,
+        },
+        "chat_model": CFG.chat.model,
+        "voice": CFG.speech.voice,
     }
 
 
-# ---------------------------------------------------------------------------
-# Question generation — the REAL production push-pull generator
-# ---------------------------------------------------------------------------
-@app.get("/api/question")
-async def question(mode: str = "combine"):
-    litellm = _ensure_litellm()
-    resp = await litellm.acompletion(
-        model=GEN_MODEL,
-        messages=[
-            {"role": "system", "content": SPEC.generator_system},
-            {"role": "user", "content": SPEC.generator_prompt()},
-        ],
-        temperature=1.0,
-        max_tokens=300,
-        response_format=SPEC.generator_response_schema,
+@app.post("/api/session/new")
+async def new_session():
+    session_id = str(uuid.uuid4())
+    system_prompt, char, first_impression = await _build_persona()
+    session = {
+        "system": system_prompt,
+        "history": [],
+        "char": char,
+        "first_impression": first_impression,
+        "slug": _session_slug(char),
+    }
+    _sessions[session_id] = session
+    _dump_conversation(session_id, session)
+    return {"session_id": session_id}
+
+
+@app.post("/api/chat/stream")
+async def chat_stream(body: ChatStreamIn):
+    session = _sessions.get(body.session_id)
+    if session is None:
+        raise HTTPException(status_code=404, detail="session_not_found")
+
+    history = session["history"]
+    message = (body.message or "").strip()
+    if message:
+        history.append({"role": "user", "content": message})
+    elif history:
+        raise HTTPException(status_code=400, detail="message_required")
+
+    async def generator():
+        reply = ""
+        try:
+            async for token in _iter_llm_tokens(session):
+                reply += token
+                yield _sse({"type": "token", "text": token})
+            reply = reply.strip()
+            if reply:
+                history.append({"role": "assistant", "content": reply})
+            _dump_conversation(body.session_id, session)
+            yield _sse({"type": "done", "reply": reply})
+        except Exception as exc:
+            logger.exception("chat stream failed")
+            yield _sse({"type": "error", "message": str(exc)})
+
+    return StreamingResponse(
+        generator(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
-    content = resp.choices[0].message.content
-    obj = (
-        SPEC.generator_response_schema.model_validate(content)
-        if isinstance(content, (dict, list))
-        else SPEC.generator_response_schema.model_validate_json(content)
-    )
-    scenario = obj.messages[0].content
-    return {"scenario": scenario, "mode": mode}
 
 
-# ---------------------------------------------------------------------------
-# Compact evaluator — production criteria, speakable 1-2 line output
-# ---------------------------------------------------------------------------
-class RoleplayEvaluation(BaseModel):
-    verdict: Literal["nailed", "close", "missed"]
-    spoken_feedback: str
-    struggle: bool
-    suggest: Literal["retry", "new", "drop_to_push"]
+@app.post("/api/transcribe")
+async def transcribe(request: Request):
+    """Batch speech-to-text: raw WAV body in, `{transcript}` out.
 
-
-class EvalIn(BaseModel):
-    scenario: str
-    transcript: str
-    mode: str = "combine"
-
-
-_COMPACT_CONTRACT = """=== YOUR OUTPUT (ROLEPLAY COACH MODE) ===
-You are a warm, encouraging wit coach speaking OUT LOUD to the learner. Return JSON with exactly these fields:
-- "verdict": one of "nailed", "close", "missed".
-- "spoken_feedback": ONE or TWO short sentences, second person, conversational, motivational. It will be SPOKEN ALOUD, so: no markdown, no bullet points, no emoji, no headings. Name the single most useful thing. Stay kind and playful even when they missed.
-- "struggle": true if the attempt badly missed the core mechanic, was empty, or off-topic; otherwise false.
-- "suggest": "retry" (same scenario again), "new" (move to a fresh scenario), or "drop_to_push" (simplify to just the tease because they're clearly struggling with the full thing)."""
-
-_MODE_NOTE = {
-    "combine": "",
-    "push": (
-        "=== SCAFFOLD MODE: PUSH ONLY ===\n"
-        "The learner is ONLY attempting the PUSH — a playful, trivial, about-her tease. "
-        "Evaluate ONLY the tease: is it playful, about HER, and trivial (never hurtful)? "
-        "Ignore the pull completely. Never use suggest=\"drop_to_push\" here; use \"retry\" or \"new\"."
-    ),
-    "pull": (
-        "=== SCAFFOLD MODE: PULL ONLY ===\n"
-        "The learner is ONLY attempting the PULL — a genuine, specific compliment. "
-        "Evaluate ONLY the warmth: is it genuine and specific (not generic or hollow)? "
-        "Ignore the push completely. Never use suggest=\"drop_to_push\" here; use \"retry\" or \"new\"."
-    ),
-}
-
-
-def _build_eval_system(mode: str) -> str:
-    ev = PROMPT_TEXT["evaluator"]
-    parts = [
-        ev["intro"],
-        ev["what_this_exercise_is"],
-        ev["push_pull_techniques"],
-        ev["evaluation_criteria"],
-    ]
-    note = _MODE_NOTE.get(mode, "")
-    if note:
-        parts.append(note)
-    parts.append(_COMPACT_CONTRACT)
-    return "\n\n".join(p.strip("\n") for p in parts if p).strip()
-
-
-@app.post("/api/evaluate")
-async def evaluate(body: EvalIn) -> RoleplayEvaluation:
-    litellm = _ensure_litellm()
-    user_prompt = (
-        f"Scenario: {body.scenario}\n"
-        f'User\'s spoken attempt: "{body.transcript.strip()}"\n'
-        f"Mode: {body.mode}"
-    )
+    The active dictation provider (Deepgram / ElevenLabs Scribe / Sarvam) is
+    chosen by env; see `server/config.py`.
+    """
+    audio = await request.body()
+    if not audio:
+        raise HTTPException(status_code=400, detail="empty_audio")
     try:
-        resp = await litellm.acompletion(
-            model=EVAL_MODEL,
-            messages=[
-                {"role": "system", "content": _build_eval_system(body.mode)},
-                {"role": "user", "content": user_prompt},
-            ],
-            temperature=0.7,
-            max_tokens=300,
-            response_format=RoleplayEvaluation,
-        )
-        content = resp.choices[0].message.content
-        return (
-            RoleplayEvaluation.model_validate(content)
-            if isinstance(content, (dict, list))
-            else RoleplayEvaluation.model_validate_json(content)
-        )
-    except Exception as exc:  # never block the coach on an eval hiccup
-        logger.warning("evaluate failed: %s", exc)
-        return RoleplayEvaluation(
-            verdict="close",
-            spoken_feedback="I lost that one for a second — give it another go.",
-            struggle=False,
-            suggest="retry",
-        )
+        text = await dictation.transcribe(CFG.dictation, audio, _http)
+    except dictation.TranscriptionError as exc:
+        logger.error("transcription failed: %s", exc)
+        raise HTTPException(status_code=502, detail=str(exc))
+    if CFG.romanize_post:
+        text = await dictation.romanize(text, CFG.romanize_key, _http)
+    return {"transcript": text}
 
 
-# ---------------------------------------------------------------------------
-# ElevenLabs streaming TTS (cached: static coach lines repeat every session)
-# ---------------------------------------------------------------------------
-@app.get("/api/tts")
-async def tts(text: str):
-    if not ELEVENLABS_API_KEY:
-        return Response("elevenlabs_not_configured", status_code=500)
+@app.post("/api/tts/stream")
+async def tts_stream(body: TtsIn):
+    if not CFG.speech.api_key:
+        return Response(f"{CFG.speech.name}_not_configured", status_code=500)
 
-    key = hashlib.sha1(
-        f"{ELEVENLABS_VOICE_ID}|{ELEVENLABS_MODEL}|{text}".encode()
-    ).hexdigest()
-    cached = _tts_cache.get(key)
-    if cached is not None:
-        return Response(cached, media_type="audio/mpeg")
+    text = body.text.strip()
+    if not text:
+        return Response("empty_text", status_code=400)
 
+    # Sarvam Bulbul: batch JSON -> base64 WAV. Return the clip as one response;
+    # the client plays each phrase as a complete blob regardless of provider.
+    if CFG.speech.name == "sarvam":
+        try:
+            wav = await speech.synthesize_sarvam(CFG.speech, text, _http)
+        except speech.SpeechError as exc:
+            logger.error("sarvam tts failed: %s", exc)
+            return Response(str(exc), status_code=502)
+        return Response(content=wav, media_type="audio/wav")
+
+    # ElevenLabs: streaming MP3.
     url = (
-        f"https://api.elevenlabs.io/v1/text-to-speech/{ELEVENLABS_VOICE_ID}/stream"
+        f"https://api.elevenlabs.io/v1/text-to-speech/{CFG.speech.voice}/stream"
         "?output_format=mp3_44100_128&optimize_streaming_latency=3"
     )
     payload = {
         "text": text,
-        "model_id": ELEVENLABS_MODEL,
+        "model_id": CFG.speech.model,
         "voice_settings": {"stability": 0.4, "similarity_boost": 0.8},
     }
 
     async def streamer():
-        buf = bytearray()
         async with _http.stream(
             "POST",
             url,
             headers={
-                "xi-api-key": ELEVENLABS_API_KEY,
+                "xi-api-key": CFG.speech.api_key,
                 "content-type": "application/json",
             },
             json=payload,
@@ -259,9 +299,7 @@ async def tts(text: str):
                 logger.error("elevenlabs %s: %s", r.status_code, detail[:300])
                 return
             async for chunk in r.aiter_bytes():
-                buf.extend(chunk)
                 yield chunk
-        _tts_cache[key] = bytes(buf)  # warm the cache for next time
 
     return StreamingResponse(streamer(), media_type="audio/mpeg")
 
@@ -269,14 +307,27 @@ async def tts(text: str):
 @app.get("/api/health")
 async def health():
     return {
-        "elevenlabs": bool(ELEVENLABS_API_KEY),
-        "deepgram": bool(DEEPGRAM_API_KEY),
-        "voice_id": ELEVENLABS_VOICE_ID,
-        "tts_model": ELEVENLABS_MODEL,
-        "gen_model": GEN_MODEL,
-        "eval_model": EVAL_MODEL,
+        "chat": {
+            "provider": CFG.chat.name,
+            "model": CFG.chat.model,
+            "configured": CFG.chat.name == "openai" or bool(CFG.chat.api_key),
+        },
+        "dictation": {
+            "provider": CFG.dictation.name,
+            "model": CFG.dictation.model,
+            "language": CFG.dictation.language,
+            "configured": bool(CFG.dictation.api_key),
+        },
+        "speech": {
+            "provider": CFG.speech.name,
+            "model": CFG.speech.model,
+            "voice": CFG.speech.voice,
+            "configured": bool(CFG.speech.api_key),
+        },
+        "utterance_end_ms": CFG.utterance_end_ms,
+        "no_speech_end_ms": CFG.no_speech_end_ms,
+        "active_sessions": len(_sessions),
     }
 
 
-# Static web app last, so /api/* routes win.
 app.mount("/", StaticFiles(directory=str(WEB_DIR), html=True), name="web")

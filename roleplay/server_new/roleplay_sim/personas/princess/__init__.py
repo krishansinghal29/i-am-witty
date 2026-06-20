@@ -1,0 +1,1 @@
+"""Reference archetype: the Princess."""
