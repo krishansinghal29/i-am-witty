@@ -57,7 +57,7 @@ def _persona_config(r: Rolled, synth: PersonaSynth | None) -> PersonaConfig:
     if synth is not None:
         bible, style = synth.bible, synth.speaking_style
         attracts, repels = synth.attracts, synth.repels
-        mood, fewshot = synth.mood_tonight, synth.fewshot
+        mood, fewshot = synth.mood_tonight, synth.fewshot_dict()
     else:
         # Trait-only fallback: empty bible makes the Actor's character_system build
         # a system prompt from these fields directly.

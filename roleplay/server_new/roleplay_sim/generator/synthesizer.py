@@ -33,13 +33,28 @@ _FORMAT_NOTE = (
 # ---------------------------------------------------------------------------
 # Persona
 # ---------------------------------------------------------------------------
+class FewShotOut(BaseModel):
+    """Closed (fixed-key) few-shot bands. An open dict[str, list[str]] is rejected
+    by OpenAI strict structured-output mode, so each band is its own field."""
+    cold: list[str] = Field(default_factory=list)
+    neutral: list[str] = Field(default_factory=list)
+    testing: list[str] = Field(default_factory=list)
+    qualifying: list[str] = Field(default_factory=list)
+    warm: list[str] = Field(default_factory=list)
+
+
 class PersonaSynth(BaseModel):
     bible: str
     speaking_style: str
     attracts: list[str] = Field(default_factory=list)
     repels: list[str] = Field(default_factory=list)
     mood_tonight: str = ""
-    fewshot: dict[str, list[str]] = Field(default_factory=dict)
+    fewshot: FewShotOut = Field(default_factory=FewShotOut)
+
+    def fewshot_dict(self) -> dict[str, list[str]]:
+        """Band -> example lines (empties dropped) for PersonaConfig.fewshot."""
+        raw = self.fewshot.model_dump()
+        return {b: [ln for ln in raw.get(b, []) if ln.strip()] for b in FEWSHOT_BANDS}
 
 
 _PERSONA_SYSTEM = (
@@ -83,13 +98,10 @@ def persona_messages(rolled: RolledPersona, scene: SceneRoll) -> list[dict[str, 
 async def synthesize_persona(client: LLMClient, rolled: RolledPersona,
                              scene: SceneRoll) -> PersonaSynth:
     model = getattr(client, "model_for_author", lambda: None)()
-    out = await client.complete_structured(
+    return await client.complete_structured(
         persona_messages(rolled, scene), schema=PersonaSynth, model=model,
         temperature=0.9, max_tokens=1100,
     )
-    # Keep only the expected bands, drop empties.
-    out.fewshot = {b: [ln for ln in out.fewshot.get(b, []) if ln.strip()] for b in FEWSHOT_BANDS}
-    return out
 
 
 # ---------------------------------------------------------------------------
