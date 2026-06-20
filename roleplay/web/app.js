@@ -13,6 +13,7 @@ const startBtn = $("startBtn");
 const doneBtn = $("doneBtn");
 const newConvBtn = $("newConvBtn");
 const endBtn = $("endBtn");
+const actionSelect = $("actionSelect");
 
 let config = { utterance_end_ms: 2000, no_speech_end_ms: 6000 };
 let session = null;
@@ -74,11 +75,16 @@ async function createSession() {
 // --------------------------------------------------------------------------
 // Streaming chat (SSE over fetch)
 // --------------------------------------------------------------------------
-async function streamChat({ sessionId, message, onToken, signal }) {
+async function streamChat({ sessionId, message, action, onToken, signal }) {
   const r = await fetch("/api/chat/stream", {
     method: "POST",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ session_id: sessionId, message: message ?? null }),
+    // `action` is ignored by the old server (extra field) and consumed by the new one.
+    body: JSON.stringify({
+      session_id: sessionId,
+      message: message ?? null,
+      action: action ?? null,
+    }),
     signal,
   });
   if (!r.ok) {
@@ -516,6 +522,7 @@ function setSessionControls(active) {
   doneBtn.hidden = !active;
   newConvBtn.hidden = !active;
   endBtn.hidden = !active;
+  if (actionSelect) actionSelect.hidden = !active;
 }
 
 async function playAssistantTurn({ message } = {}) {
@@ -532,14 +539,18 @@ async function playAssistantTurn({ message } = {}) {
   speech.revealed = "";
   const drainer = createTtsDrainer((phrase) => speech.enqueue(phrase));
 
+  // One-shot: the selected action rides with this turn, then resets.
+  const action = actionSelect ? actionSelect.value || null : null;
   const chatDone = streamChat({
     sessionId: session.sessionId,
     message,
+    action,
     signal: chatAbort.signal,
     onToken(chunk) {
       drainer.push(chunk);
     },
   });
+  if (actionSelect) actionSelect.value = "";
 
   const reply = await chatDone;
   drainer.flush();

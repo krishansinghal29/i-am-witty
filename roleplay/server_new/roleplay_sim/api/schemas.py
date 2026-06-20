@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 class ChatStreamIn(BaseModel):
     session_id: str
     message: str | None = None
+    action: str | None = None   # ActionType value (e.g. "sit_down"); optional
 
 
 class TtsIn(BaseModel):

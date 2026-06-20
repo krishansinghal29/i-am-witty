@@ -21,7 +21,9 @@ from fastapi.staticfiles import StaticFiles
 
 from roleplay_sim.api.schemas import ChatStreamIn, NewSessionIn, TtsIn
 from roleplay_sim.domain.config import SceneConfig, SessionConfig
-from roleplay_sim.domain.models import GameState, PlayerTurn
+from roleplay_sim.domain.enums import ActionType
+from roleplay_sim.domain.models import ActionMove, GameState, PlayerTurn
+from roleplay_sim.engine.registry import ACTION_LADDER
 from roleplay_sim.factory import build_llm_simulation
 from roleplay_sim.llm.client import LiteLLMClient
 from roleplay_sim.media import dictation, speech
@@ -46,6 +48,21 @@ def _load_env() -> None:
 
 def _sse(payload: dict[str, Any]) -> str:
     return f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+
+
+def _build_action(name: str | None) -> ActionMove | None:
+    """Map a dropdown action value to a structured ActionMove (ladder + level)."""
+    if not name:
+        return None
+    try:
+        at = ActionType(name)
+    except ValueError:
+        return None
+    lad, level = ACTION_LADDER.get(at, (None, 1))
+    if lad is None:
+        return None
+    step = -1 if at is ActionType.STEP_BACK else 1
+    return ActionMove(type=at, ladder=lad, target_level=level, intended_step=step)
 
 
 def create_app() -> FastAPI:
@@ -90,12 +107,13 @@ def create_app() -> FastAPI:
         if sim is None:
             raise HTTPException(status_code=404, detail="session_not_found")
         message = (body.message or "").strip()
-        if not message:
+        action = _build_action(body.action)
+        if not message and action is None:
             raise HTTPException(status_code=400, detail="message_required")
 
         async def generator():
             try:
-                actor_turn, status = await sim.submit(PlayerTurn(text=message))
+                actor_turn, status = await sim.submit(PlayerTurn(text=message, action=action))
                 reply = actor_turn.text
                 if actor_turn.action:
                     reply = f"{reply} *[{actor_turn.action}]*"
