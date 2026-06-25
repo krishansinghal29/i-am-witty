@@ -26,6 +26,9 @@ interface RolePlayState {
   /** Model misinterpretation of the line the user just answered; shown as a hint
    *  from the second beat onward (null on the opening). */
   currentSample: string | null;
+  /** Multi-phase roleplays only: the move the user should make next ("ask"/"tease",
+   *  "love"/"hate"). Null for single-phase roleplays (no move hint shown). */
+  nextUserMove: string | null;
   /** True while a turn request is in flight. */
   isAwaitingReply: boolean;
   isRecording: boolean;
@@ -36,6 +39,7 @@ interface RolePlayState {
   addMessage: (message: ChatMessage) => void;
   setProgress: (landedCount: number, targetCount: number) => void;
   setSample: (sample: string | null) => void;
+  setNextUserMove: (move: string | null) => void;
   setAwaitingReply: (on: boolean) => void;
   setRecording: (on: boolean) => void;
   setDraft: (text: string) => void;
@@ -50,6 +54,7 @@ const initialState = {
   landedCount: 0,
   targetCount: 5,
   currentSample: null as string | null,
+  nextUserMove: null as string | null,
   isAwaitingReply: false,
   isRecording: false,
   draft: '',
@@ -64,6 +69,7 @@ export const useRolePlayStore = create<RolePlayState>()((set) => ({
     set((state) => ({ messages: [...state.messages, message] })),
   setProgress: (landedCount, targetCount) => set({ landedCount, targetCount }),
   setSample: (sample) => set({ currentSample: sample }),
+  setNextUserMove: (nextUserMove) => set({ nextUserMove }),
   setAwaitingReply: (on) => set({ isAwaitingReply: on }),
   setRecording: (on) => set({ isRecording: on }),
   setDraft: (text) => set({ draft: text }),

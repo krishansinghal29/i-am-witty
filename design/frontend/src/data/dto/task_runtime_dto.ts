@@ -32,6 +32,9 @@ export interface RolePlayOpeningDto {
   target_count: number;
   landed_count: number;
   appearance: string;
+  /** Multi-phase roleplays only (e.g. ask/tease, love/hate): the move the user
+   *  should make on their first turn. Null/absent for single-phase roleplays. */
+  next_user_move?: string | null;
 }
 
 export interface GeneratedPayloadDto {

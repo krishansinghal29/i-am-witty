@@ -91,8 +91,6 @@ reaction to something mundane).
   (`A.Mean.Sum` = mean arousal).
 
 Filter: word in verbs∪adjectives∪nouns · `arousal >= 5.0` · `freq_per_million >= 0.5`.
-**Note:** not register-filtered — it contains profanity / sexual / violent terms;
-run a profanity pass before using it in user-facing seeds.
 
 ### MRC Psycholinguistic Database — `vivid_words.txt`
 

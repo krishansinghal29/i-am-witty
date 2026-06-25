@@ -227,4 +227,6 @@ SPEC = RoleplaySpec(
     build_system=build_system,
     build_opening_user=build_opening_user,
     build_turn_user=build_turn_user,
+    phases=("misread",),
+    graded_phases=frozenset({"misread"}),
 )

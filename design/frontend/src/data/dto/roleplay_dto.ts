@@ -15,6 +15,9 @@ export interface RolePlayTurnDto {
   target_count: number;
   is_complete: boolean;
   sample_answer: string;
+  /** Multi-phase roleplays only: the move the user should make on their NEXT
+   *  turn (e.g. "ask"/"tease", "love"/"hate"). Null for single-phase roleplays. */
+  next_user_move?: string | null;
   audio_base64: string | null;
   audio_content_type: string | null;
 }

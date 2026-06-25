@@ -81,6 +81,7 @@ function mapRolePlayOpening(dto: RolePlayOpeningDto): RolePlayOpening {
     targetCount: dto.target_count,
     landedCount: dto.landed_count,
     appearance: dto.appearance,
+    nextUserMove: dto.next_user_move ?? null,
   };
 }
 

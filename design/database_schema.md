@@ -254,7 +254,6 @@ create table tasks (
 Seed examples:
 - `yes-and`
 - `misinterpretation`
-- `misinterpretation-techniques`
 - `love-hate`
 - `if-by-x-you-mean-y`
 - `question-answer-tease`

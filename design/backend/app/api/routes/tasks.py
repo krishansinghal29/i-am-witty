@@ -104,6 +104,9 @@ class RolePlayOpeningResponse(BaseModel):
     target_count: int
     landed_count: int
     appearance: str
+    # For multi-phase roleplays (e.g. ask/tease, love/hate): what the user should
+    # do on their first turn. Null for single-phase roleplays (no UI move hint).
+    next_user_move: str | None = None
 
 
 class GeneratedPayloadResponse(BaseModel):
@@ -148,6 +151,7 @@ class GeneratedPayloadResponse(BaseModel):
                     target_count=roleplay.target_count,
                     landed_count=roleplay.landed_count,
                     appearance=roleplay.appearance,
+                    next_user_move=roleplay.next_user_move,
                 )
                 if roleplay is not None
                 else None
@@ -269,6 +273,9 @@ class RolePlayTurnResponse(BaseModel):
     target_count: int
     is_complete: bool
     sample_answer: str
+    # For multi-phase roleplays: what the user should do on their NEXT turn
+    # (e.g. "ask"/"tease", "love"/"hate"). Null for single-phase roleplays.
+    next_user_move: str | None = None
     audio_base64: str | None
     audio_content_type: str | None
 
@@ -413,6 +420,7 @@ async def turn_task(
             target_count=turn.target_count,
             is_complete=turn.is_complete,
             sample_answer=turn.sample_answer,
+            next_user_move=turn.next_user_move,
             audio_base64=turn.audio_base64,
             audio_content_type=turn.audio_content_type,
         ),

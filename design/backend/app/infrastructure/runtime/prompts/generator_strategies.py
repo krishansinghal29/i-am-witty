@@ -135,6 +135,38 @@ def verb_seed_generator_prompt() -> str:
     )
 
 
+# Three de-archaicized lists, rotated so the seed varies the SHAPE of the line
+# (an action, a quality, or a concrete object) rather than always handing the
+# generator a verb. That shape variety is what keeps relatable everyday lines
+# from collapsing onto one mould. Person-description lists (vibe / appearance)
+# are deliberately excluded: this drill wants ordinary lines, not lines about
+# how someone looks. All three are common/concrete-filtered, so the seed never
+# leaks an archaic word the way the raw verb list did ("electioneer", "docket").
+_RELATABLE_SEED_LISTS: tuple[tuple[str, str], ...] = (
+    ("verbs_common", "verb"),
+    ("adjectives_common", "adjective"),
+    ("nouns_concrete", "noun"),
+)
+
+
+def relatable_seed_generator_prompt() -> str:
+    """Seed an ordinary, relatable line for the (sexual) misinterpretation drill.
+
+    One random word drawn from a rotated common-POS list, plus a pronoun. The
+    word is framed as loose inspiration — not a hard constraint — so the
+    generator always prioritises a believable line over wedging the seed in.
+    """
+    list_name, pos = random.choice(_RELATABLE_SEED_LISTS)
+    word = random.choice(word_list(list_name))
+    pronoun = random.choice(["I", "you", "we"])
+    return (
+        f'Seed word ({pos}): "{word}". Pronoun to use: "{pronoun}". Let the seed '
+        "word loosely inspire the line — use it naturally if it fits, otherwise "
+        "just borrow its everyday vibe; never force it."
+        + SEED_SIMPLER_LANGUAGE_NOTE
+    )
+
+
 def _weighted_category_pick(categories: Sequence[dict[str, Any]]) -> str:
     if not categories:
         raise ValueError("weighted seed generator categories cannot be empty")

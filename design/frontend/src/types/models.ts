@@ -201,6 +201,9 @@ export interface RolePlayOpening {
   targetCount: number;
   landedCount: number;
   appearance: string;
+  /** Multi-phase roleplays only: what the user does on their first turn
+   *  (e.g. "ask"/"tease", "love"/"hate"). Null for single-phase roleplays. */
+  nextUserMove: string | null;
 }
 
 /** All data needed to drive a task runtime session in the UI. */
@@ -290,6 +293,9 @@ export interface RolePlayTurn {
   isComplete: boolean;
   /** A model misinterpretation of the line the user just answered (coaching). */
   sampleAnswer: string;
+  /** Multi-phase roleplays only: what the user does on their NEXT turn
+   *  (e.g. "ask"/"tease", "love"/"hate"). Null for single-phase roleplays. */
+  nextUserMove: string | null;
   audio: RuntimeAudio;
 }
 

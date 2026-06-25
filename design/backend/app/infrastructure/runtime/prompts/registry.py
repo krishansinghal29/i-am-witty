@@ -6,7 +6,6 @@ from app.infrastructure.runtime.prompts.first_unusual_thing import SPEC as FIRST
 from app.infrastructure.runtime.prompts.if_by_x import SPEC as IF_BY_X
 from app.infrastructure.runtime.prompts.love_hate import SPEC as LOVE_HATE
 from app.infrastructure.runtime.prompts.misinterpretation import SPEC as MISINTERPRETATION
-from app.infrastructure.runtime.prompts.misinterpretation_techniques import SPEC as MISINTERPRETATION_TECHNIQUES
 from app.infrastructure.runtime.prompts.push_pull import SPEC as PUSH_PULL
 from app.infrastructure.runtime.prompts.question_answer_tease import SPEC as QUESTION_ANSWER_TEASE
 from app.infrastructure.runtime.prompts.sex_with_me import SPEC as SEX_WITH_ME_IS_LIKE
@@ -21,7 +20,6 @@ _EXERCISES: dict[str, ExerciseSpec] = {
     for spec in [
         YES_AND,
         MISINTERPRETATION,
-        MISINTERPRETATION_TECHNIQUES,
         LOVE_HATE,
         IF_BY_X,
         QUESTION_ANSWER_TEASE,

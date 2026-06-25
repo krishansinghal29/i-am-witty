@@ -50,31 +50,27 @@ class RolePlayOpening:
     landed_count: int
     appearance: str
     runtime_state: dict
+    # What the user is expected to do on their first turn for multi-phase
+    # roleplays (e.g. "ask" then "tease"). None for single-phase roleplays,
+    # where the UI shows no move hint.
+    next_user_move: str | None = None
 
 
 @dataclass(frozen=True)
 class GeneratedTaskPayload:
     """Generated runtime payload for a task attempt.
 
-    Optional sections vary by task type: scaffolded tasks populate
-    `scaffold_stages`, technique tasks populate `assigned_technique`, roleplay
-    tasks populate `roleplay`, and avatar/audio fields are filled only when the
-    provider produces them.
+    Optional sections vary by task type: technique tasks populate
+    `assigned_technique`, roleplay tasks populate `roleplay`, and avatar/audio
+    fields are filled only when the provider produces them.
     """
 
     prompt: GeneratedPrompt
     assigned_technique: AssignedTechnique | None = None
-    scaffold_stages: tuple[dict, ...] = ()
     audio_base64: str | None = None
     audio_content_type: str | None = None
     avatar_image_url: str | None = None
     roleplay: RolePlayOpening | None = None
-
-
-@dataclass(frozen=True)
-class StageResponse:
-    position: int
-    transcript: str
 
 
 @dataclass(frozen=True)
@@ -85,7 +81,6 @@ class CompleteTaskRuntimeInput:
     prompt_messages: tuple[PromptMessage, ...]
     transcript: str
     assigned_technique: AssignedTechnique | None = None
-    stage_responses: tuple[StageResponse, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -124,6 +119,9 @@ class TurnResult:
     is_complete: bool
     runtime_state: dict
     sample_answer: str = ""
+    # The phase the user is expected to act in on their NEXT turn for
+    # multi-phase roleplays (e.g. "ask"/"tease"). None for single-phase.
+    next_user_move: str | None = None
     audio_base64: str | None = None
     audio_content_type: str | None = None
     completion_metadata: dict = field(default_factory=dict)

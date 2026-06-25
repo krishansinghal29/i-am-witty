@@ -14,6 +14,7 @@ export function mapRolePlayTurn(dto: RolePlayTurnDto): RolePlayTurn {
     targetCount: dto.target_count,
     isComplete: dto.is_complete,
     sampleAnswer: dto.sample_answer,
+    nextUserMove: dto.next_user_move ?? null,
     audio: {
       audioBase64: dto.audio_base64,
       contentType: dto.audio_content_type,

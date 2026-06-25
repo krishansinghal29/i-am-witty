@@ -54,8 +54,12 @@ class RoleplayTaskEngine:
 
     async def generate(self, input: GenerateTaskInput) -> GeneratedTaskPayload:
         spec = get_roleplay_spec(self._backend_key(input.task))
-        verbs = self._sample_verbs(input.task)
+        # A spec either uses a richer seed_factory (composed scene seed) OR the flat
+        # verbs spark — never both. When a factory is set we skip sampling verbs.
+        verbs = [] if spec.seed_factory else self._sample_sparks(input.task, spec)
         target = self._target_count(input.task, spec)
+        safety_max_turns = self._safety_max_turns(input.task, spec)
+        first_phase = spec.phases[0]
 
         character = await generate_character(self._llm, model=self._generator_model)
 
@@ -67,6 +71,8 @@ class RoleplayTaskEngine:
             landed_count=0,
             target_count=target,
             conversation=[],
+            phase=first_phase,
+            seed=spec.seed_factory() if spec.seed_factory else "",
         )
         opening = await self._llm.complete_structured(
             messages=[
@@ -93,8 +99,9 @@ class RoleplayTaskEngine:
                 "verb_cursor": self._next_cursor(0, verbs),
                 "landed_count": 0,
                 "target_count": target,
-                "safety_max_turns": spec.safety_max_turns,
+                "safety_max_turns": safety_max_turns,
                 "turn_count": 0,
+                "phase_index": 0,
                 "brief_heading": opening.brief_heading,
                 "conversation": conversation,
             }
@@ -118,6 +125,8 @@ class RoleplayTaskEngine:
                 landed_count=0,
                 appearance=character.appearance,
                 runtime_state=runtime_state,
+                # The user's first turn acts in phase[0] (e.g. "ask").
+                next_user_move=self._next_user_move(spec, 0),
             ),
         )
 
@@ -134,6 +143,8 @@ class RoleplayTaskEngine:
         target = int(rp.get("target_count") or spec.target_count)
         turn_count = int(rp.get("turn_count", 0))
         safety_max_turns = int(rp.get("safety_max_turns", spec.safety_max_turns))
+        phase_index = int(rp.get("phase_index", 0))
+        current_phase = spec.phases[phase_index % len(spec.phases)]
         character = rp.get("character") or {}
 
         conversation = list(rp.get("conversation") or [])
@@ -147,6 +158,8 @@ class RoleplayTaskEngine:
             landed_count=landed_count,
             target_count=target,
             conversation=conversation,
+            phase=current_phase,
+            seed=spec.seed_factory() if spec.seed_factory else "",
         )
         turn = await self._llm.complete_structured(
             messages=[
@@ -158,8 +171,13 @@ class RoleplayTaskEngine:
             model=self._generator_model,
         )
 
-        new_landed = landed_count + (1 if turn.landed else 0)
+        # Only landings in a graded phase count toward the goal; a landing in an
+        # ungraded phase (e.g. the "ask" turn of question_answer_tease) is ignored
+        # even if the model returns landed=True.
+        phase_is_graded = current_phase in spec.graded_phases
+        new_landed = landed_count + (1 if (turn.landed and phase_is_graded) else 0)
         new_turn_count = turn_count + 1
+        new_phase_index = phase_index + 1
         goal_reached = new_landed >= target
         capped = new_turn_count >= safety_max_turns
         is_complete = bool(turn.is_complete or goal_reached or capped)
@@ -175,6 +193,7 @@ class RoleplayTaskEngine:
                 "landed_count": new_landed,
                 "turn_count": new_turn_count,
                 "target_count": target,
+                "phase_index": new_phase_index,
             }
         }
 
@@ -192,6 +211,8 @@ class RoleplayTaskEngine:
             is_complete=is_complete,
             runtime_state=new_runtime_state,
             sample_answer=turn.sample_answer,
+            # What the user should do on their next turn (None for single-phase).
+            next_user_move=self._next_user_move(spec, new_phase_index),
             audio_base64=audio_base64,
             audio_content_type=audio_content_type,
             completion_metadata={
@@ -223,13 +244,42 @@ class RoleplayTaskEngine:
         return int(target) if isinstance(target, int) and target > 0 else spec.target_count
 
     @staticmethod
-    def _sample_verbs(task) -> list[str]:
+    def _safety_max_turns(task, spec: RoleplaySpec) -> int:
+        content = task.content or {}
+        cap = content.get("safety_max_turns")
+        return int(cap) if isinstance(cap, int) and cap > 0 else spec.safety_max_turns
+
+    @staticmethod
+    def _next_user_move(spec: RoleplaySpec, phase_index: int) -> str | None:
+        """The phase the user will act in on their upcoming turn.
+
+        Returns None for single-phase roleplays (no move hint to show); otherwise
+        the phase name (e.g. "ask"/"tease") at ``phase_index`` in the cycle.
+        """
+        if len(spec.phases) <= 1:
+            return None
+        return spec.phases[phase_index % len(spec.phases)]
+
+    @staticmethod
+    def _sample_sparks(task, spec: RoleplaySpec) -> list[str]:
+        """Sample the per-turn spark words from this roleplay's configured lists.
+
+        The pool is drawn from ``spec.spark_lists`` (defaults to verbs); shit_test,
+        for instance, sources adjectives. Sampled without replacement so the cursor
+        walks 10 distinct sparks across the conversation.
+        """
         rc = task.runtime_config or {}
         cfg = rc.get("verbs") or {}
         count = cfg.get("count") if isinstance(cfg, dict) else None
-        count = count if isinstance(count, int) and count > 0 else _DEFAULT_VERB_COUNT
-        verbs = word_list("verbs")
-        return random.sample(verbs, min(count, len(verbs)))
+        count = count if isinstance(count, int) and count > 0 else spec.spark_count
+        pool: list[str] = []
+        seen: set[str] = set()
+        for name in spec.spark_lists:
+            for word in word_list(name):
+                if word not in seen:
+                    seen.add(word)
+                    pool.append(word)
+        return random.sample(pool, min(count, len(pool)))
 
     @staticmethod
     def _next_cursor(cursor: int, verbs: list[str]) -> int:

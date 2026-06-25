@@ -43,11 +43,13 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
   const isAwaitingReply = useRolePlayStore((s) => s.isAwaitingReply);
   const draft = useRolePlayStore((s) => s.draft);
   const currentSample = useRolePlayStore((s) => s.currentSample);
+  const nextUserMove = useRolePlayStore((s) => s.nextUserMove);
 
   const start = useRolePlayStore((s) => s.start);
   const addMessage = useRolePlayStore((s) => s.addMessage);
   const setProgress = useRolePlayStore((s) => s.setProgress);
   const setSample = useRolePlayStore((s) => s.setSample);
+  const setNextUserMove = useRolePlayStore((s) => s.setNextUserMove);
   const setAwaitingReply = useRolePlayStore((s) => s.setAwaitingReply);
   const setRecording = useRolePlayStore((s) => s.setRecording);
   const setDraft = useRolePlayStore((s) => s.setDraft);
@@ -73,6 +75,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
     if (!opening) return;
     start(payload.attemptId, opening.targetCount);
     setProgress(opening.landedCount, opening.targetCount);
+    setNextUserMove(opening.nextUserMove);
     addMessage({
       id: `she-0`,
       role: 'she',
@@ -173,6 +176,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
         audioContentType: t.audio.contentType,
       });
       setProgress(t.landedCount, t.targetCount);
+      setNextUserMove(t.nextUserMove);
       // (b) Show a model answer for the line they just attempted, from now on.
       setSample(t.sampleAnswer || null);
       if (t.isComplete) {
@@ -193,6 +197,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
     isRecording,
     setAwaitingReply,
     setDraft,
+    setNextUserMove,
     setPhase,
     setProgress,
     setSample,
@@ -233,7 +238,12 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
         <span style={{ ...ICON_BTN, visibility: 'hidden' }} aria-hidden />
       </header>
 
-      <TaskStrip landed={landedCount} target={targetCount} sample={currentSample} />
+      <TaskStrip
+        landed={landedCount}
+        target={targetCount}
+        sample={currentSample}
+        goalTitle={payload.content.responseInstruction}
+      />
 
       <main ref={chatRef} style={CHAT}>
         <div style={CHAT_INNER}>
@@ -247,6 +257,8 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
           {isAwaitingReply && <TypingBubble />}
         </div>
       </main>
+
+      {phase !== 'done' && nextUserMove ? <MoveChip move={nextUserMove} /> : null}
 
       {phase === 'done' ? (
         <DoneBar landed={landedCount} target={targetCount} onDone={finish} />
@@ -277,10 +289,12 @@ function TaskStrip({
   landed,
   target,
   sample,
+  goalTitle,
 }: {
   landed: number;
   target: number;
   sample: string | null;
+  goalTitle: string;
 }) {
   return (
     <div style={STRIP}>
@@ -288,7 +302,7 @@ function TaskStrip({
         <span style={GOAL_ICON} aria-hidden>🎯</span>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={GOAL_LABEL}>Your task</div>
-          <b style={GOAL_TITLE}>Land a misinterpretation</b>
+          <b style={GOAL_TITLE}>{goalTitle}</b>
         </div>
         <span style={{ fontWeight: 800, fontSize: 13, color: colors.active }}>
           {Math.min(landed, target)}
@@ -320,10 +334,37 @@ function TaskStrip({
           </span>
         ) : (
           <span>
-            💡 <b>Misread her line</b> — find another meaning and run with it. Commit, don&rsquo;t explain.
+            💡 <b>Your turn</b> — reply in character. Commit to the bit, don&rsquo;t explain.
           </span>
         )}
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Move chip (multi-phase roleplays: tells the user what to do this turn)
+// ---------------------------------------------------------------------------
+
+/** Human label for a `next_user_move` key. Falls back to a capitalized key so a
+ *  new phase added on the backend still renders something sensible. */
+const MOVE_LABELS: Record<string, string> = {
+  ask: 'Ask her a question',
+  tease: 'Tease her answer',
+  love: 'Say something you love',
+  hate: 'Say something you hate',
+};
+
+function moveLabel(move: string): string {
+  return MOVE_LABELS[move] ?? move.charAt(0).toUpperCase() + move.slice(1);
+}
+
+function MoveChip({ move }: { move: string }) {
+  return (
+    <div style={MOVE_CHIP_WRAP}>
+      <span style={MOVE_CHIP}>
+        👉 Your turn: <b>{moveLabel(move)}</b>
+      </span>
     </div>
   );
 }
@@ -697,6 +738,30 @@ const HINT: CSSProperties = {
   fontSize: 12,
   color: '#7A5A3A',
   lineHeight: 1.4,
+};
+
+const MOVE_CHIP_WRAP: CSSProperties = {
+  display: 'flex',
+  justifyContent: 'center',
+  padding: '0 14px 2px',
+  position: 'relative',
+  zIndex: 4,
+};
+
+const MOVE_CHIP: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 6,
+  padding: '7px 14px',
+  borderRadius: 999,
+  fontSize: 12.5,
+  fontWeight: 700,
+  color: colors.text,
+  background: 'rgba(255, 255, 255, 0.86)',
+  border: '1px solid rgba(249, 115, 22, 0.3)',
+  backdropFilter: 'blur(12px)',
+  WebkitBackdropFilter: 'blur(12px)',
+  boxShadow: '0 4px 12px rgba(17, 24, 39, 0.08)',
 };
 
 const CHAT: CSSProperties = {
