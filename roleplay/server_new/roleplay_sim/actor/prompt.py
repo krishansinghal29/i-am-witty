@@ -24,14 +24,9 @@ SPARK_PROB = float(os.environ.get("ROLEPLAY_SPARK_PROB", "0.3"))
 
 def _transcript(history: Any, n: int = 4) -> str:
     try:
-        win = history.window(n)
+        return history.transcript(n)   # owns pairs + the in-flight pending line
     except Exception:
         return ""
-    out = []
-    for player, her in win:
-        out.append(f"HIM: {player.text}")
-        out.append(f"HER: {her.text}")
-    return "\n".join(out)
 
 
 def _spark(persona: PersonaConfig, rng: random.Random) -> str:
@@ -54,10 +49,14 @@ def build_messages(brief: BehavioralBrief, persona: PersonaConfig, scene: SceneC
     fewshot = select_fewshot(persona, brief.beat)
     fewshot_block = ("\nExamples of how you'd sound right now:\n- " + "\n- ".join(fewshot)) if fewshot else ""
 
+    # A compact venue + look tag — NOT the full first impression. Re-injecting the
+    # vivid opening snapshot every turn over-weights the scene's props and pulls her
+    # into looping the same detail; the snapshot is shown once, at the opening.
+    look = ", ".join(p for p in (scene.style, scene.body_shape, scene.age_hint) if p)
     scene_block = (
         f"Setting: {scene.venue}, {scene.time_of_day}. {scene.approach_context}."
         + (f" Present: {scene.present_company}." if scene.present_company else "")
-        + (f"\nWhat he sees: {scene.first_impression}" if scene.first_impression else "")
+        + (f"\nYou: {look}." if look else "")
     )
     direction = (
         f"Beat (what to do this turn): {beat_line(brief.beat, brief.secondary_beat)}"

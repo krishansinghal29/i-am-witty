@@ -88,6 +88,46 @@ def test_full_view_captures_llm_calls_by_stage():
         assert by_stage["actor_render"]["llm"][0]["response"]  # real prompt/response text
 
 
+def _comfort_from_sources(events: list[dict]) -> float:
+    """Sum every per-source comfort contribution in a turn's timeline."""
+    total = 0.0
+    for e in events:
+        if e["stage"] == "engine.passive_accrual" and "comfort" in e:
+            total += e["comfort"]["delta"]
+        elif e["stage"] in ("engine.move", "engine.turn_hook", "engine.shit_test"):
+            total += e.get("delta", {}).get("emotional", {}).get("comfort", 0.0)
+    return total
+
+
+def test_passive_comfort_is_logged_and_reconciles():
+    # Real engine path so passive_step (comfort + ceilings) actually runs.
+    client = FakeLLMClient(
+        structured={
+            "register": "plotline",
+            "moves": [{"type": "push_pull", "quality": "good", "target": "personality"}],
+            "frame": {"value_posture": "high", "congruence": True},
+            "note": "x", "recap": "y",
+        },
+        text="Hah. *[smirks]*",
+    )
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        rec = _recorder(out, ("detailed",))
+        cfg = SessionConfig(persona=default_persona(), scene=default_scene(),
+                            initial_state=GameState.fresh())
+        sim = build_llm_simulation(cfg, client, recorder=rec)
+        asyncio.run(sim.submit(PlayerTurn(text="you look like trouble")))
+
+        events = _load(out / f"{rec.slug}.detailed.json")["turns"][0]["events"]
+        passive = next(e for e in events if e["stage"] == "engine.passive_accrual")
+        assert "comfort" in passive   # the previously-dropped passive comfort bump
+
+        diff = next(e for e in events if e["stage"] == "state_diff")
+        net = diff["emotional"]["comfort"]["delta"]
+        # per-source deltas must reconcile to the net diff (the point of the log)
+        assert round(_comfort_from_sources(events), 6) == round(net, 6)
+
+
 def test_full_view_skipped_without_llm_capture():
     with tempfile.TemporaryDirectory() as d:
         out = Path(d)

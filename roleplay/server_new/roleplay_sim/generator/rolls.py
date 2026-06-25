@@ -79,10 +79,15 @@ DISTINCTIVE_FEATURE_PROB = 0.15
 
 # --- scene pools (small, inline) --------------------------------------------
 TIMES_OF_DAY = ["late morning", "midday", "afternoon", "early evening", "evening", "late night"]
-PRESENT_COMPANY = [
-    "", "", "alone", "a friend", "two friends", "a small group of friends",
-    "a couple of coworkers", "her sister",
-]
+# Group scenarios are disabled for now: she's always on her own, so every session
+# is a clean one-on-one cold approach (no friends/coworkers to read or work around).
+# Empty company is skipped by the scene block / first-impression / synth prompts.
+# To re-enable group scenes, restore the commented pool below.
+# PRESENT_COMPANY = [
+#     "", "", "alone", "a friend", "two friends", "a small group of friends",
+#     "a couple of coworkers", "her sister",
+# ]
+PRESENT_COMPANY = [""]
 APPROACH_CONTEXTS = [
     "cold approach", "cold approach", "you caught her eye a moment ago",
     "you ended up next to her in a queue", "she's waiting on something",

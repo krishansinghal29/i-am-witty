@@ -28,20 +28,22 @@ _SYSTEM = (
     "telling her how to play this beat (no numbers, no meta, no quotes of dialogue), and "
     "(2) recap — a 2-3 sentence running summary of the interaction so far. Output JSON.\n\n"
     "The beat (with its intent in parens) is what she must do this turn. The dials are her "
-    "current performance levels (each low/med/high); their meaning:\n" + DIAL_DOC
+    "current performance levels (each low/med/high); their meaning:\n" + DIAL_DOC + "\n\n"
+    "Translate the dials honestly, but DON'T make her interrogate or deflect every turn. "
+    "Only direct her to probe, tease, or test when testiness is HIGH or the beat itself is a "
+    "test/brushoff — at low or med testiness most notes should be a plain, grounded reaction, "
+    "not a challenge. Don't tell her to ask a question unless investment is high and it fits. "
+    "If he just asked her something, the note should have her actually respond to it, not dodge "
+    "with a new question. And avoid steering her back to the same topic or deflection the prior "
+    "notes already used."
 )
 
 
 def _transcript(history: Any, n: int = 4) -> str:
     try:
-        win = history.window(n)
+        return history.transcript(n)   # owns pairs + the in-flight pending line
     except Exception:
         return ""
-    lines = []
-    for player, her in win:
-        lines.append(f"HIM: {player.text}")
-        lines.append(f"HER: {her.text}")
-    return "\n".join(lines)
 
 
 class LLMBriefAuthor:

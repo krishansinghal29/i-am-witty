@@ -36,6 +36,10 @@ class Simulation:
 
     async def submit(self, turn: PlayerTurn) -> tuple[ActorTurn, SessionStatus]:
         self.state.flags.turn_count += 1
+        # Make the line he just said visible to the BriefAuthor and Actor this turn.
+        # (History stores completed pairs, so without this the line being replied to
+        # only lands in the transcript on the NEXT turn.) Cleared by history.append.
+        self.history.pending = turn
         # Snapshot pre-update state for the log diff (only when logging; some engines
         # mutate in place, so a copy taken now is the only faithful "before").
         state_before = deepcopy(self.state) if self.recorder is not None else None

@@ -99,15 +99,28 @@ class StateEngineImpl:
         consequences: list[Consequence] = []
         agg = StateDelta()
 
+        # passive_step mutates comfort AND ceilings directly on `new` (not via the
+        # StateDelta), so capture both before/after or the per-source breakdown
+        # won't reconcile to the net state_diff.
+        comfort_before = new.emotional.comfort
         ceil_before = {lad.value: ls.ceiling for lad, ls in new.ladders.items()}
         ladders.passive_step(new, persona)
-        passive = {
+        passive_event: dict[str, Any] = {"kind": "passive_accrual"}
+        if new.emotional.comfort != comfort_before:
+            passive_event["comfort"] = {
+                "from": round(comfort_before, 3),
+                "to": round(new.emotional.comfort, 3),
+                "delta": round(new.emotional.comfort - comfort_before, 3),
+            }
+        ceilings = {
             k: {"from": round(ceil_before[k], 3), "to": round(new.ladders[lad].ceiling, 3)}
             for lad, k in ((lad, lad.value) for lad in new.ladders)
             if ceil_before[k] != new.ladders[lad].ceiling
         }
-        if passive:
-            events.append({"kind": "passive_accrual", "ceilings": passive})
+        if ceilings:
+            passive_event["ceilings"] = ceilings
+        if len(passive_event) > 1:   # something actually accrued
+            events.append(passive_event)
 
         _update_register_counters(new.flags, cls.register)
         events.append({
