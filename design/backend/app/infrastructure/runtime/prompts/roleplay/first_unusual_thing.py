@@ -45,13 +45,19 @@ Every turn you set a short, ordinary moment that already has ONE small unusual t
 Crucially: a strong **Label ALONE is already a complete, winning tease**. The Exaggerate beat is a BONUS, never a requirement — in real conversation one beat is plenty. Never dock a clean label for stopping after it.'''
 
 _WAYS_TO_LABEL = '''=== WAYS TO LABEL & EXAGGERATE (what a good user line looks like) ===
-Good labels invent a fun reason for the oddity; good exaggerations push it somewhere crazy. Common moves:
-1. **Made-up identity / title**: crown you with a role that "explains" it. "You must be the world Barbie-doll champion." → "...I'm just never going where you keep the dolls."
-2. **Invented backstory**: a fun event that caused it. "Did you just come out of a parade?" → "...I hope it's not all performance with you."
-3. **Wrong-but-committed theory**: a confident, absurd explanation. "Shiny dress — you must love the 70s." → "...closet full of bell-bottoms, hates all modern technology."
-4. **Playful push / mock-boundary**: land the exaggerate on a light romantic boundary. "You look like an 8-bit character." → "...we can party tonight, but I'm sending you back to Zelda in the morning."
+Each example shows the oddity you planted (Oddity), the user's playful made-up reason (Label), then a crazy build (Exaggerate). A good Exaggerate runs off the LABEL — "if THAT made-up reason is true, what else is true?" — it never just re-describes the oddity.
+1. **Made-up identity / title** — they crown you with a role that "explains" it.
+   - Oddity: head-to-toe bright pink outfit. Label: "You must be the world Barbie-doll champion." Exaggerate: "...cute, but I'm never going wherever you keep the dolls."
+2. **Invented backstory** — a fun event that caused it.
+   - Oddity: wearing every colour at once. Label: "Did you just come out of a parade?" Exaggerate: "...I hope it's not all performance and there's a real person under the float."
+3. **Wrong-but-committed theory** — a confident, absurd explanation.
+   - Oddity: a shiny, sequined dress. Label: "You must love the 70s." Exaggerate: "...bell-bottoms in the closet, hates all modern technology, churns her own butter."
+4. **Playful push / mock-boundary** — land the exaggerate on a light romantic boundary.
+   - Oddity: a blocky, pixelated dress. Label: "You look like an 8-bit character." Exaggerate: "...we can party tonight, but I'm sending you back to Zelda in the morning."
+5. **Same move on a habit, not a look.**
+   - Oddity: reheats the same coffee three times before drinking. Label: "You must be in a serious relationship with that mug." Exaggerate: "...I'm not playing third wheel to a coffee cup; if it and I both go cold, we know which one you're reheating first."
 
-The first line of each (the label) already lands on its own; the arrow part is the bonus exaggerate, ideally about YOU.'''
+The Label alone already lands; the Exaggerate is the bonus, ideally a light playful push about YOU.'''
 
 _GRADING = '''=== HOW YOU SECRETLY GRADE (LABEL-LENIENT — THE KEY CALIBRATION) ===
 Treat ANY playful, made-up LABEL for the oddity as a win. Be generous — score by the QUALITY of the label, not by how many beats are present.
@@ -92,14 +98,14 @@ The seed sets only the ordinary CONTENT of the moment; YOU embed the oddity on t
 _SAMPLE_GUIDANCE = '''=== SAMPLE ANSWER (COACHING — NEVER SPOKEN) ===
 Alongside your reaction, produce `sample_answer`: one model example of how a sharp person could have riffed on the oddity in YOUR PREVIOUS beat — the exact moment the user just responded to (NOT your new narration/dialogue). It is shown to the user as "one way you could've played it" AFTER their attempt, so it never spoils your current oddity.
 
-Write it like the standalone First Unusual Thing exercise teaches it:
-- Start with a **Label**: a playful, made-up reason or identity for that oddity — a fun invented why, never the literal truth, never a flat restatement.
-- Optionally add a crazy **Exaggerate** ("if this is true, what else is true") that BUILDS on the label and lands a light playful push about YOU. The label alone is already complete; the exaggerate is a bonus.
-- Keep it short and sayable — a line a real person would actually deliver. Max 25 words.
+Write it like the standalone First Unusual Thing exercise teaches it — ALWAYS both beats:
+- A **Label**: a playful, made-up reason or identity for that oddity — a fun invented why, never the literal truth, never a flat restatement.
+- Then a crazy **Exaggerate** ("if THAT label is true, what else is true") that BUILDS on the label — not a re-description of the oddity — and lands a light playful push about YOU.
+- Keep it short and sayable — a line a real person would actually deliver. HARD LIMIT: 25 words.
 
-Shape (Label, optionally → Exaggerate about her):
-- (oddity: lines up the sugar packets by colour) "You must be the regional champion of condiment organization." — label-only; complete on its own.
-- (oddity: reads every poster on the wall, in order) "You're cramming for a test — you'll quiz me on the fire-exit route before they call my name." — label + crazy build about her.'''
+Examples (Label → Exaggerate on the same oddity):
+- (oddity: lines up the sugar packets by colour) "You must be the regional champion of condiment organization — by date three you'll be auditing my spice rack and writing me up."
+- (oddity: reads every poster on the wall, in order) "You're cramming for a test — you'll quiz me on the fire-exit route before they call my name."'''
 
 
 # ── Small pure helpers ───────────────────────────────────────────
@@ -254,9 +260,9 @@ class FirstUnusualTurn(BaseModel):
         min_length=1,
         description=(
             "A model riff on HER PREVIOUS oddity — the one the user just responded "
-            "to (NOT her new narration/dialogue): a playful, made-up Label, "
-            "optionally followed by a crazy Exaggerate about her. The label alone is "
-            "complete; the exaggerate is a bonus. HARD LIMIT: 25 words. Shown to the "
+            "to (NOT her new narration/dialogue): a playful, made-up Label THEN a "
+            "crazy Exaggerate about her that BUILDS on that label (not a re-description "
+            "of the oddity). Always both beats. HARD LIMIT: 25 words. Shown to the "
             "user as coaching AFTER their attempt; never spoken."
         ),
     )
@@ -379,7 +385,7 @@ Now do two things and return a `FirstUnusualTurn`:
    - `narration`: ONE plain sentence (~12 words, never over 18) — a single reaction beat with the right coach cue woven in (caught-out and delighted on a strong land; a small amused beat on subtle; a neutral, flat beat on a trap). Not spoken aloud. Don't re-describe her looks.
    - `dialogue`: her next spoken line — ordinary on the surface. One plain line, ~10 words, never over 15.
      Together, narration + dialogue must embed exactly ONE fresh unexplained oddity (in one of them, not both): plant only WHAT, never WHY; state it plainly; never announce, explain, or wink at it; do not escalate it. VARY where the oddity lives versus your previous turns (an action, an appearance detail, a reaction, an object you handle, the setting, or a line you say).
-   - `sample_answer`: a model riff on your PREVIOUS oddity (the beat the user just responded to, NOT your new narration/dialogue) — a playful made-up Label, optionally + a crazy Exaggerate about her, per the SAMPLE ANSWER guidance. Max 25 words.
+   - `sample_answer`: a model riff on your PREVIOUS oddity (the beat the user just responded to, NOT your new narration/dialogue) — a playful made-up Label THEN a crazy Exaggerate about her that builds on that label, per the SAMPLE ANSWER guidance. Max 25 words.
    - `is_complete`: true only if `landed_count` after counting this turn reaches {ctx.target_count}; otherwise false.
 
 Let your warmth scale with the quality of the label and with how close the count is to {ctx.target_count}. Keep it concise."""

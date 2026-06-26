@@ -17,7 +17,7 @@ from app.infrastructure.runtime.prompts.spec import ExerciseSpec
 
 # Local override: the scene already contains the unusual thing, so each sample
 # answer models the learner's two beats — Label (the made-up why) and Exaggerate
-# (the crazy build). Answer 1 is label-only, to show a single label already lands.
+# (the crazy build off that label). Every answer shows both beats.
 FIRST_UNUSUAL_THING_OUTPUT_CONTRACT = '''=== STRUCTURED OUTPUT CONTRACT (CRITICAL) ===
 The response schema has exactly these fields:
 - feedback: HTML formatted feedback using the exact 4-section structure above: What Landed, The Trap, Level Up, Mindset Shift.
@@ -26,24 +26,22 @@ The response schema has exactly these fields:
 Rules:
 - feedback MUST follow the exact 4-section structure defined above.
 - sample_answer must contain exactly 3 answers, separated by <br><br>.
-- Each answer begins with its number (<b>1.</b>, <b>2.</b>, <b>3.</b>) followed by <br>, then its labeled beats separated by <br>:
+- Each answer begins with its number (<b>1.</b>, <b>2.</b>, <b>3.</b>) followed by <br>, then exactly two lines separated by <br>, in this order:
   <b>Label:</b> <a playful, made-up reason for the scene's given unusual thing>
-  <b>Exaggerate:</b> <the crazy "if this is true, what else is true" build, ideally landing a light playful push about her>
-- Answer 1 is LABEL-ONLY: it has the <b>Label:</b> line and NO <b>Exaggerate:</b> line — a complete short tease on its own.
-- Answers 2 and 3 each have BOTH a <b>Label:</b> line and an <b>Exaggerate:</b> line.
-- Keep each line short and punchy — something you'd actually say. No text outside the labeled lines.
+  <b>Exaggerate:</b> <the crazy "if this is true, what else is true" build off THAT label, ideally landing a light playful push about her>
+- EVERY answer has both lines. Keep each line short and punchy — something you'd actually say. No text outside the two labeled lines.
 
-Example of the exact formatting:
-<b>1.</b><br><b>Label:</b> you must be the regional champion of waiting rooms<br><br><b>2.</b><br><b>Label:</b> you read posters like they're classified files<br><b>Exaggerate:</b> by date three you'll have the fire-exit map memorized and you'll quiz me before they call my name'''
+Example of ONE answer (scene: "She reads every poster on the waiting-room wall, in order"):
+<b>1.</b><br><b>Label:</b> you read these posters like they're classified files<br><b>Exaggerate:</b> by date three you'll have the fire-exit map memorized and you'll quiz me before they call my name'''
 
 
 SAMPLE_ANSWER_GUIDELINES = build_sample_answer_guidelines(
     [
-        "First: an improved version of the user's attempt — keep their angle, sharpen the label. Show it LABEL-ONLY (no exaggerate line) to prove a single clean label already lands",
-        "Second: a fresh take — a different playful label, then a crazy exaggerate that builds on it",
+        "First: an improved version of the user's attempt — keep their angle, sharpen the label, then add a crazy exaggerate",
+        "Second: a fresh take — a different playful label plus a crazy exaggerate that builds on it",
         "Third: another fresh take — yet another label + exaggerate",
     ],
-    'The scene already contains the unusual thing, so these answers model what the LEARNER adds: a <b>Label</b> (a playful, made-up reason for the oddity, never the literal truth) and, for answers 2 and 3, an <b>Exaggerate</b> ("if this is true, what else is true", pushed crazy, ideally landing a light playful push about her). Keep each line short and sayable. See the structured output contract below for the exact <br> structure.',
+    'The scene already contains the unusual thing, so these answers model what the LEARNER adds, in TWO lines: a <b>Label</b> (a playful, made-up reason for the oddity, never the literal truth) and an <b>Exaggerate</b> ("if this is true, what else is true" run off THAT label, pushed crazy, ideally landing a light playful push about her). Every answer has both lines. Keep each line short and sayable. See the structured output contract below for the exact <br> structure.',
 )
 
 FEEDBACK_STYLE = build_feedback_style(
@@ -78,7 +76,7 @@ Crucially: a strong Label ALONE is already a complete, winning tease. The Exagge
         "the_process": '''=== THE MOVE (OBSERVE [given] -> LABEL -> EXAGGERATE) ===
 1. **Observe** (given): the scene already hands over the one unusual thing. Nothing to find or invent.
 2. **Label**: invent a playful reason for it — a fun made-up why or identity, often a cheeky accusation ("you must be...", "did you just..."). The label by itself is already a tease.
-3. **Exaggerate**: run "if this is true, what else is true?" and push it past plausible into crazy — ideally about HER, landing a light playful push.
+3. **Exaggerate**: run "if THAT made-up reason is true, what else is true?" and push it past plausible into crazy — ideally about HER, landing a light playful push. The build extends the LABEL; it must NOT jump back and re-describe the observation (that's just the same beat twice).
 
 Reward what's there: Label-only is a full pass; Label + a crazy Exaggerate is the bonus. Never dock a clean tease for stopping after the label.''',
         "what_counts": '''=== WHAT COUNTS ===
@@ -103,13 +101,28 @@ Examples (Scene = the GIVEN unusual thing):
 ❌ Scene: "She reads every poster on the waiting-room wall, in order." → "You really love reading, you must be a big reader." → SAME THING THRICE / FLAT (restates, and the literal label kills the fun).
 ✅ "You're cramming for the test, aren't you — you'll quiz me on the fire-exit route before they call my name." → invented why + crazy build.''',
         "label_exaggerate_techniques": '''=== WAYS TO LABEL & EXAGGERATE ===
-Good labels invent a fun reason for the oddity; good exaggerations push it somewhere crazy. Common moves:
-1. **Made-up identity / title**: crown her with a role that "explains" it. "You must be the world Barbie-doll champion." -> "...I'm just never going where you keep the dolls, that's too freaky."
-2. **Invented backstory**: a fun event that caused it. "Did you just come out of a parade?" -> "...I hope it's not all performance with you."
-3. **Wrong-but-committed theory**: a confident, absurd explanation. "Shiny dress — you must love the 70s." -> "...closet full of bell-bottoms, does psychedelic mushrooms, hates all modern technology."
-4. **Playful push / mock-boundary**: land the exaggerate on a light romantic boundary. "You look like an 8-bit character." -> "...we can party tonight, but I'm sending you back to Zelda in the morning."
+Each example shows the scene's given unusual thing (Observe), a playful made-up reason (Label), then a crazy build (Exaggerate). The Exaggerate always runs off the LABEL — "if THAT made-up reason is true, what else is true?" — it never just re-describes the observation.
 
-The first line of each (the label) already lands on its own; the arrow part is the bonus exaggerate.''',
+1. **Made-up identity / title** — crown her with a role that "explains" it.
+   - Observe: "She's in a head-to-toe bright pink outfit."
+   - Label: "You must be the world Barbie-doll champion."
+   - Exaggerate: "Cute — but I'm never going wherever you keep the dolls, that's too freaky."
+2. **Invented backstory** — a fun event that caused it.
+   - Observe: "She's wearing every color at once."
+   - Label: "Did you just come out of a parade?"
+   - Exaggerate: "I hope it's not all performance and there's a real person under the float."
+3. **Wrong-but-committed theory** — a confident, absurd explanation.
+   - Observe: "She's in a shiny, sequined dress."
+   - Label: "You must love the 70s."
+   - Exaggerate: "Closet full of bell-bottoms, hates all modern technology, probably churns her own butter."
+4. **Playful push / mock-boundary** — land the exaggerate on a light romantic boundary.
+   - Observe: "Her dress is all blocky, pixelated squares."
+   - Label: "You look like an 8-bit character."
+   - Exaggerate: "We can party tonight, but I'm sending you back to Zelda in the morning."
+5. **Same move on a habit, not a look.**
+   - Observe: "She reheats the same cup of coffee three times before she'll drink it."
+   - Label: "You must be in a serious relationship with that mug."
+   - Exaggerate: "I'm not playing third wheel to a coffee cup — if it and I both go cold, we both know which one you're reheating first."''',
         "evaluation_criteria": '''=== EVALUATION CRITERIA ===
 1. **Engaged the oddity**: Did they riff on the scene's given unusual thing (not ignore it for something unrelated)?
 2. **Label present & playful**: Is there a made-up, fun reason for the oddity — not a flat restatement, not the literal truth? This is the floor, and a strong label here alone earns a top score.
