@@ -11,12 +11,14 @@ import { Capacitor } from '@capacitor/core';
 import {
   homeOutline,
   flameOutline,
+  chatbubbleEllipsesOutline,
   personOutline,
 } from 'ionicons/icons';
 import { OnboardingGuard } from '@/app/guards/onboarding_guard';
 import { ErrorBoundary } from '@/app/error_boundary';
 import { HomePage } from '@/screens/home/home_page';
 import { PracticePage } from '@/screens/practice/practice_page';
+import { RoleplayPage } from '@/screens/roleplay/roleplay_page';
 import { ProfilePage } from '@/screens/profile/profile_page';
 import { OnboardingFlowPage } from '@/screens/onboarding/onboarding_flow_page';
 import { LandingPage } from '@/screens/landing/landing_page';
@@ -50,6 +52,15 @@ export function AppTabs() {
           />
           <Route
             exact
+            path="/app/roleplay"
+            render={() => (
+              <ErrorBoundary>
+                <RoleplayPage />
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            exact
             path="/app/profile"
             render={() => (
               <ErrorBoundary>
@@ -69,6 +80,10 @@ export function AppTabs() {
           <IonTabButton tab="practice" href="/app/practice">
             <IonIcon icon={flameOutline} />
             <IonLabel>Practice</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="roleplay" href="/app/roleplay">
+            <IonIcon icon={chatbubbleEllipsesOutline} />
+            <IonLabel>Role play</IonLabel>
           </IonTabButton>
           <IonTabButton tab="profile" href="/app/profile">
             <IonIcon icon={personOutline} />

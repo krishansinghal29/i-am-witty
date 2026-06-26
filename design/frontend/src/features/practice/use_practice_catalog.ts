@@ -2,8 +2,9 @@
  * Practice-catalog view-model.
  *
  * Reads `/v1/catalog` (`queryKeys.catalog`) and exposes the items plus a small
- * client-side access-tier filter (all / free / premium). Tap-to-open and
- * paywall decisions live in the screen; this hook owns data + filtering only.
+ * client-side format filter (roleplay-version / normal exercises). Tap-to-open
+ * and paywall decisions live in the screen; this hook owns data + filtering
+ * only.
  */
 
 import { useMemo, useState } from 'react';
@@ -12,12 +13,15 @@ import { useRiffyApi } from '@/app/providers';
 import { queryKeys } from '@/state/query_keys';
 import type { CatalogItem } from '@/types/models';
 
-/** Client-side filter over the catalog by access tier. */
-export type CatalogFilter = 'all' | 'free' | 'premium';
+/** task_type_id of the roleplay-version exercises (vs. the normal voice ones). */
+const ROLEPLAY_TASK_TYPE_ID = 'roleplay';
+
+/** Client-side filter over the catalog by exercise format. */
+export type CatalogFilter = 'roleplay' | 'normal';
 
 export function usePracticeCatalog() {
   const api = useRiffyApi();
-  const [filter, setFilter] = useState<CatalogFilter>('all');
+  const [filter, setFilter] = useState<CatalogFilter>('roleplay');
 
   const { data, isLoading, isError, refetch } = useQuery({
     queryKey: queryKeys.catalog,
@@ -26,11 +30,13 @@ export function usePracticeCatalog() {
 
   const items = useMemo<CatalogItem[]>(() => {
     const all = data ?? [];
+    const isRoleplay = (item: CatalogItem) =>
+      item.task.taskTypeId === ROLEPLAY_TASK_TYPE_ID;
     switch (filter) {
-      case 'free':
-        return all.filter((item) => !item.requiresPremium);
-      case 'premium':
-        return all.filter((item) => item.requiresPremium);
+      case 'roleplay':
+        return all.filter(isRoleplay);
+      case 'normal':
+        return all.filter((item) => !isRoleplay(item));
       default:
         return all;
     }

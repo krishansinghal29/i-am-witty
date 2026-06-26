@@ -116,9 +116,8 @@ const LOCK_BADGE: CSSProperties = {
 };
 
 const FILTERS: { key: CatalogFilter; label: string }[] = [
-  { key: 'all', label: 'All' },
-  { key: 'free', label: 'Free' },
-  { key: 'premium', label: 'Riffy+' },
+  { key: 'roleplay', label: 'Roleplay' },
+  { key: 'normal', label: 'Standard' },
 ];
 
 function chipStyle(active: boolean): CSSProperties {
