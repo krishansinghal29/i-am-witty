@@ -107,6 +107,13 @@ export function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
     },
     avatarImageUrl: dto.avatar_image_url,
     roleplay: dto.roleplay != null ? mapRolePlayOpening(dto.roleplay) : null,
+    audioUrl: dto.audio_url ?? null,
+    transcript: dto.transcript ?? null,
+    captions: (dto.captions ?? []).map((c) => ({
+      start: c.start,
+      end: c.end,
+      text: c.text,
+    })),
   };
 }
 

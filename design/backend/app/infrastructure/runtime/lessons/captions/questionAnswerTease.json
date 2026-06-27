@@ -1,0 +1,2385 @@
+{
+  "transcript": "Question, answer, tease. Here's the pattern that kills conversations. You ask, she answers. You ask, she answers. Question, answer. Question, answer. Like an interview. And it's boring. The tease is how you break it. The bridge from making conversation into flirting. Truth is, asking questions isn't your strongest move. It puts you in the interviewer's chair with her just handing over facts. And every, oh, nice, me too, is agreeing too much. Safe, needy, forgettable. But you'll ask questions anyway. So when you do, turn it to your advantage. The second she answers, don't reach for the next question. Tease the answer instead. Like this. She tells you she's a lawyer. Dead answer. Instead of, oh, cool. You go, a lawyer. I should have known by how much you like to argue. But here's the key. Don't just comment. Exaggerate. Coffee for breakfast? I bet you're a bit of a workaholic. It's just a flat logical comment. Coffee for breakfast, amphetamines for lunch, probably cocaine for dinner. That's a tease. It's so over the top, she knows you're kidding. That's exactly why you get away with it. That's the whole move. A little exaggeration, plus giving her a little bit of shit in a playful way. It's not a 100% nice either. That edge is the point. But there's a line. You sounded like you were lying just then isn't a tease. That's an accusation. The tease teases. It never actually stings. Here's the part most people miss. The best tease often isn't about what she said. It's about how she said it. You ask what she does for fun, she hesitates. I guess I like to read. Don't tease the reading, tease the hesitation. You don't even sound convinced. That's the higher gear, the delivery, the vibe around the answer, not the words. Why does it land? A tease is a quiet challenge, far more subtle than flat out asking, less cheesy, less try hard. Challenge her a little and she wants to rise to it, to prove you wrong, to impress you. It never feels like a tactic. It just feels like it happened. This goes well past dating. The person who can take a dead one word answer and spin something playful out of it, instead of marching through a checklist of questions, is the one a room warms to. A light tease reads as ease, an interview reads as nerves. Here's the drill. A few minutes a day, take any flat answer and tease it. Exaggerate one truest thing or aim at the vibe, keep it playful. Keep at it and it stops being something you reach for and becomes second nature. The comeback just shows up. So put in the reps. That's how a dead question turns into the thing she's trying to win instead of an interview that goes nowhere.",
+  "cues": [
+    {
+      "start": 0.16,
+      "end": 0.66,
+      "text": "Question,"
+    },
+    {
+      "start": 0.72,
+      "end": 1.22,
+      "text": "answer,"
+    },
+    {
+      "start": 1.44,
+      "end": 1.94,
+      "text": "tease."
+    },
+    {
+      "start": 4.08,
+      "end": 4.4,
+      "text": "Here's"
+    },
+    {
+      "start": 4.4,
+      "end": 4.48,
+      "text": "the"
+    },
+    {
+      "start": 4.48,
+      "end": 4.8,
+      "text": "pattern"
+    },
+    {
+      "start": 4.8,
+      "end": 5.12,
+      "text": "that"
+    },
+    {
+      "start": 5.12,
+      "end": 5.6,
+      "text": "kills"
+    },
+    {
+      "start": 5.6,
+      "end": 6.1,
+      "text": "conversations."
+    },
+    {
+      "start": 6.56,
+      "end": 6.88,
+      "text": "You"
+    },
+    {
+      "start": 6.88,
+      "end": 7.38,
+      "text": "ask,"
+    },
+    {
+      "start": 7.44,
+      "end": 7.68,
+      "text": "she"
+    },
+    {
+      "start": 7.68,
+      "end": 8.18,
+      "text": "answers."
+    },
+    {
+      "start": 8.48,
+      "end": 8.8,
+      "text": "You"
+    },
+    {
+      "start": 8.8,
+      "end": 9.28,
+      "text": "ask,"
+    },
+    {
+      "start": 9.28,
+      "end": 9.52,
+      "text": "she"
+    },
+    {
+      "start": 9.52,
+      "end": 10.02,
+      "text": "answers."
+    },
+    {
+      "start": 10.4,
+      "end": 10.88,
+      "text": "Question,"
+    },
+    {
+      "start": 10.88,
+      "end": 11.36,
+      "text": "answer."
+    },
+    {
+      "start": 11.36,
+      "end": 11.86,
+      "text": "Question,"
+    },
+    {
+      "start": 11.92,
+      "end": 12.42,
+      "text": "answer."
+    },
+    {
+      "start": 12.685,
+      "end": 12.925,
+      "text": "Like"
+    },
+    {
+      "start": 12.925,
+      "end": 13.005,
+      "text": "an"
+    },
+    {
+      "start": 13.005,
+      "end": 13.505,
+      "text": "interview."
+    },
+    {
+      "start": 13.965,
+      "end": 14.285,
+      "text": "And"
+    },
+    {
+      "start": 14.285,
+      "end": 14.685,
+      "text": "it's"
+    },
+    {
+      "start": 14.685,
+      "end": 15.185,
+      "text": "boring."
+    },
+    {
+      "start": 16.445,
+      "end": 16.685,
+      "text": "The"
+    },
+    {
+      "start": 16.685,
+      "end": 17.005,
+      "text": "tease"
+    },
+    {
+      "start": 17.005,
+      "end": 17.165,
+      "text": "is"
+    },
+    {
+      "start": 17.165,
+      "end": 17.325,
+      "text": "how"
+    },
+    {
+      "start": 17.325,
+      "end": 17.485,
+      "text": "you"
+    },
+    {
+      "start": 17.485,
+      "end": 17.725,
+      "text": "break"
+    },
+    {
+      "start": 17.725,
+      "end": 18.225,
+      "text": "it."
+    },
+    {
+      "start": 18.285,
+      "end": 18.445,
+      "text": "The"
+    },
+    {
+      "start": 18.445,
+      "end": 18.845,
+      "text": "bridge"
+    },
+    {
+      "start": 18.845,
+      "end": 19.005,
+      "text": "from"
+    },
+    {
+      "start": 19.005,
+      "end": 19.405,
+      "text": "making"
+    },
+    {
+      "start": 19.405,
+      "end": 19.905,
+      "text": "conversation"
+    },
+    {
+      "start": 20.045,
+      "end": 20.365,
+      "text": "into"
+    },
+    {
+      "start": 20.365,
+      "end": 20.865,
+      "text": "flirting."
+    },
+    {
+      "start": 22.525,
+      "end": 22.845,
+      "text": "Truth"
+    },
+    {
+      "start": 22.845,
+      "end": 23.325,
+      "text": "is,"
+    },
+    {
+      "start": 23.325,
+      "end": 23.725,
+      "text": "asking"
+    },
+    {
+      "start": 23.725,
+      "end": 24.205,
+      "text": "questions"
+    },
+    {
+      "start": 24.205,
+      "end": 24.525,
+      "text": "isn't"
+    },
+    {
+      "start": 24.525,
+      "end": 24.685,
+      "text": "your"
+    },
+    {
+      "start": 24.685,
+      "end": 25.085,
+      "text": "strongest"
+    },
+    {
+      "start": 25.085,
+      "end": 25.585,
+      "text": "move."
+    },
+    {
+      "start": 25.7,
+      "end": 25.94,
+      "text": "It"
+    },
+    {
+      "start": 25.94,
+      "end": 26.1,
+      "text": "puts"
+    },
+    {
+      "start": 26.1,
+      "end": 26.5,
+      "text": "you"
+    },
+    {
+      "start": 26.5,
+      "end": 26.66,
+      "text": "in"
+    },
+    {
+      "start": 26.66,
+      "end": 26.82,
+      "text": "the"
+    },
+    {
+      "start": 26.82,
+      "end": 27.32,
+      "text": "interviewer's"
+    },
+    {
+      "start": 27.46,
+      "end": 27.7,
+      "text": "chair"
+    },
+    {
+      "start": 27.7,
+      "end": 27.94,
+      "text": "with"
+    },
+    {
+      "start": 27.94,
+      "end": 28.18,
+      "text": "her"
+    },
+    {
+      "start": 28.18,
+      "end": 28.5,
+      "text": "just"
+    },
+    {
+      "start": 28.5,
+      "end": 28.82,
+      "text": "handing"
+    },
+    {
+      "start": 28.82,
+      "end": 29.06,
+      "text": "over"
+    },
+    {
+      "start": 29.06,
+      "end": 29.56,
+      "text": "facts."
+    },
+    {
+      "start": 29.78,
+      "end": 30.1,
+      "text": "And"
+    },
+    {
+      "start": 30.1,
+      "end": 30.58,
+      "text": "every,"
+    },
+    {
+      "start": 30.58,
+      "end": 30.9,
+      "text": "oh,"
+    },
+    {
+      "start": 30.9,
+      "end": 31.3,
+      "text": "nice,"
+    },
+    {
+      "start": 31.3,
+      "end": 31.62,
+      "text": "me"
+    },
+    {
+      "start": 31.62,
+      "end": 32.02,
+      "text": "too,"
+    },
+    {
+      "start": 32.02,
+      "end": 32.34,
+      "text": "is"
+    },
+    {
+      "start": 32.34,
+      "end": 32.82,
+      "text": "agreeing"
+    },
+    {
+      "start": 32.82,
+      "end": 33.06,
+      "text": "too"
+    },
+    {
+      "start": 33.06,
+      "end": 33.56,
+      "text": "much."
+    },
+    {
+      "start": 33.94,
+      "end": 34.44,
+      "text": "Safe,"
+    },
+    {
+      "start": 34.66,
+      "end": 35.16,
+      "text": "needy,"
+    },
+    {
+      "start": 35.22,
+      "end": 35.72,
+      "text": "forgettable."
+    },
+    {
+      "start": 37.06,
+      "end": 37.38,
+      "text": "But"
+    },
+    {
+      "start": 37.38,
+      "end": 37.7,
+      "text": "you'll"
+    },
+    {
+      "start": 37.7,
+      "end": 37.86,
+      "text": "ask"
+    },
+    {
+      "start": 37.86,
+      "end": 38.34,
+      "text": "questions"
+    },
+    {
+      "start": 38.34,
+      "end": 38.84,
+      "text": "anyway."
+    },
+    {
+      "start": 39.135,
+      "end": 39.375,
+      "text": "So"
+    },
+    {
+      "start": 39.375,
+      "end": 39.615,
+      "text": "when"
+    },
+    {
+      "start": 39.615,
+      "end": 39.855,
+      "text": "you"
+    },
+    {
+      "start": 39.855,
+      "end": 40.255,
+      "text": "do,"
+    },
+    {
+      "start": 40.255,
+      "end": 40.495,
+      "text": "turn"
+    },
+    {
+      "start": 40.495,
+      "end": 40.655,
+      "text": "it"
+    },
+    {
+      "start": 40.655,
+      "end": 40.815,
+      "text": "to"
+    },
+    {
+      "start": 40.815,
+      "end": 41.055,
+      "text": "your"
+    },
+    {
+      "start": 41.055,
+      "end": 41.555,
+      "text": "advantage."
+    },
+    {
+      "start": 42.095,
+      "end": 42.335,
+      "text": "The"
+    },
+    {
+      "start": 42.335,
+      "end": 42.735,
+      "text": "second"
+    },
+    {
+      "start": 42.735,
+      "end": 42.895,
+      "text": "she"
+    },
+    {
+      "start": 42.895,
+      "end": 43.395,
+      "text": "answers,"
+    },
+    {
+      "start": 43.535,
+      "end": 43.855,
+      "text": "don't"
+    },
+    {
+      "start": 43.855,
+      "end": 44.095,
+      "text": "reach"
+    },
+    {
+      "start": 44.095,
+      "end": 44.255,
+      "text": "for"
+    },
+    {
+      "start": 44.255,
+      "end": 44.335,
+      "text": "the"
+    },
+    {
+      "start": 44.335,
+      "end": 44.575,
+      "text": "next"
+    },
+    {
+      "start": 44.575,
+      "end": 45.075,
+      "text": "question."
+    },
+    {
+      "start": 45.535,
+      "end": 45.855,
+      "text": "Tease"
+    },
+    {
+      "start": 45.855,
+      "end": 46.015,
+      "text": "the"
+    },
+    {
+      "start": 46.015,
+      "end": 46.335,
+      "text": "answer"
+    },
+    {
+      "start": 46.335,
+      "end": 46.835,
+      "text": "instead."
+    },
+    {
+      "start": 47.935,
+      "end": 48.255,
+      "text": "Like"
+    },
+    {
+      "start": 48.255,
+      "end": 48.755,
+      "text": "this."
+    },
+    {
+      "start": 49.375,
+      "end": 49.535,
+      "text": "She"
+    },
+    {
+      "start": 49.535,
+      "end": 49.775,
+      "text": "tells"
+    },
+    {
+      "start": 49.775,
+      "end": 49.935,
+      "text": "you"
+    },
+    {
+      "start": 49.935,
+      "end": 50.175,
+      "text": "she's"
+    },
+    {
+      "start": 50.175,
+      "end": 50.335,
+      "text": "a"
+    },
+    {
+      "start": 50.335,
+      "end": 50.835,
+      "text": "lawyer."
+    },
+    {
+      "start": 50.975,
+      "end": 51.295,
+      "text": "Dead"
+    },
+    {
+      "start": 51.295,
+      "end": 51.795,
+      "text": "answer."
+    },
+    {
+      "start": 52.33,
+      "end": 52.69,
+      "text": "Instead"
+    },
+    {
+      "start": 52.69,
+      "end": 53.05,
+      "text": "of,"
+    },
+    {
+      "start": 53.05,
+      "end": 53.45,
+      "text": "oh,"
+    },
+    {
+      "start": 53.45,
+      "end": 53.95,
+      "text": "cool."
+    },
+    {
+      "start": 54.01,
+      "end": 54.25,
+      "text": "You"
+    },
+    {
+      "start": 54.25,
+      "end": 54.75,
+      "text": "go,"
+    },
+    {
+      "start": 55.05,
+      "end": 55.29,
+      "text": "a"
+    },
+    {
+      "start": 55.29,
+      "end": 55.79,
+      "text": "lawyer."
+    },
+    {
+      "start": 56.09,
+      "end": 56.25,
+      "text": "I"
+    },
+    {
+      "start": 56.25,
+      "end": 56.41,
+      "text": "should"
+    },
+    {
+      "start": 56.41,
+      "end": 56.57,
+      "text": "have"
+    },
+    {
+      "start": 56.57,
+      "end": 57.07,
+      "text": "known"
+    },
+    {
+      "start": 57.13,
+      "end": 57.37,
+      "text": "by"
+    },
+    {
+      "start": 57.37,
+      "end": 57.53,
+      "text": "how"
+    },
+    {
+      "start": 57.53,
+      "end": 57.77,
+      "text": "much"
+    },
+    {
+      "start": 57.77,
+      "end": 57.93,
+      "text": "you"
+    },
+    {
+      "start": 57.93,
+      "end": 58.09,
+      "text": "like"
+    },
+    {
+      "start": 58.09,
+      "end": 58.17,
+      "text": "to"
+    },
+    {
+      "start": 58.17,
+      "end": 58.67,
+      "text": "argue."
+    },
+    {
+      "start": 60.01,
+      "end": 60.25,
+      "text": "But"
+    },
+    {
+      "start": 60.25,
+      "end": 60.57,
+      "text": "here's"
+    },
+    {
+      "start": 60.57,
+      "end": 60.73,
+      "text": "the"
+    },
+    {
+      "start": 60.73,
+      "end": 61.23,
+      "text": "key."
+    },
+    {
+      "start": 61.29,
+      "end": 61.61,
+      "text": "Don't"
+    },
+    {
+      "start": 61.61,
+      "end": 61.85,
+      "text": "just"
+    },
+    {
+      "start": 61.85,
+      "end": 62.35,
+      "text": "comment."
+    },
+    {
+      "start": 62.73,
+      "end": 63.23,
+      "text": "Exaggerate."
+    },
+    {
+      "start": 63.93,
+      "end": 64.33,
+      "text": "Coffee"
+    },
+    {
+      "start": 64.33,
+      "end": 64.49,
+      "text": "for"
+    },
+    {
+      "start": 64.49,
+      "end": 64.99,
+      "text": "breakfast?"
+    },
+    {
+      "start": 65.555,
+      "end": 65.715,
+      "text": "I"
+    },
+    {
+      "start": 65.715,
+      "end": 65.875,
+      "text": "bet"
+    },
+    {
+      "start": 65.875,
+      "end": 66.115,
+      "text": "you're"
+    },
+    {
+      "start": 66.115,
+      "end": 66.195,
+      "text": "a"
+    },
+    {
+      "start": 66.195,
+      "end": 66.355,
+      "text": "bit"
+    },
+    {
+      "start": 66.355,
+      "end": 66.395,
+      "text": "of"
+    },
+    {
+      "start": 66.395,
+      "end": 66.435,
+      "text": "a"
+    },
+    {
+      "start": 66.435,
+      "end": 66.935,
+      "text": "workaholic."
+    },
+    {
+      "start": 67.395,
+      "end": 67.555,
+      "text": "It's"
+    },
+    {
+      "start": 67.555,
+      "end": 67.795,
+      "text": "just"
+    },
+    {
+      "start": 67.795,
+      "end": 67.875,
+      "text": "a"
+    },
+    {
+      "start": 67.875,
+      "end": 68.275,
+      "text": "flat"
+    },
+    {
+      "start": 68.275,
+      "end": 68.775,
+      "text": "logical"
+    },
+    {
+      "start": 68.835,
+      "end": 69.335,
+      "text": "comment."
+    },
+    {
+      "start": 69.875,
+      "end": 70.275,
+      "text": "Coffee"
+    },
+    {
+      "start": 70.275,
+      "end": 70.435,
+      "text": "for"
+    },
+    {
+      "start": 70.435,
+      "end": 70.915,
+      "text": "breakfast,"
+    },
+    {
+      "start": 70.915,
+      "end": 71.415,
+      "text": "amphetamines"
+    },
+    {
+      "start": 71.555,
+      "end": 71.715,
+      "text": "for"
+    },
+    {
+      "start": 71.715,
+      "end": 72.115,
+      "text": "lunch,"
+    },
+    {
+      "start": 72.115,
+      "end": 72.595,
+      "text": "probably"
+    },
+    {
+      "start": 72.595,
+      "end": 73.095,
+      "text": "cocaine"
+    },
+    {
+      "start": 73.155,
+      "end": 73.315,
+      "text": "for"
+    },
+    {
+      "start": 73.315,
+      "end": 73.815,
+      "text": "dinner."
+    },
+    {
+      "start": 74.115,
+      "end": 74.515,
+      "text": "That's"
+    },
+    {
+      "start": 74.515,
+      "end": 74.675,
+      "text": "a"
+    },
+    {
+      "start": 74.675,
+      "end": 75.175,
+      "text": "tease."
+    },
+    {
+      "start": 75.555,
+      "end": 75.875,
+      "text": "It's"
+    },
+    {
+      "start": 75.875,
+      "end": 76.195,
+      "text": "so"
+    },
+    {
+      "start": 76.195,
+      "end": 76.355,
+      "text": "over"
+    },
+    {
+      "start": 76.355,
+      "end": 76.515,
+      "text": "the"
+    },
+    {
+      "start": 76.515,
+      "end": 76.915,
+      "text": "top,"
+    },
+    {
+      "start": 76.915,
+      "end": 77.155,
+      "text": "she"
+    },
+    {
+      "start": 77.155,
+      "end": 77.475,
+      "text": "knows"
+    },
+    {
+      "start": 77.475,
+      "end": 77.715,
+      "text": "you're"
+    },
+    {
+      "start": 77.715,
+      "end": 78.215,
+      "text": "kidding."
+    },
+    {
+      "start": 78.4,
+      "end": 78.64,
+      "text": "That's"
+    },
+    {
+      "start": 78.64,
+      "end": 79.12,
+      "text": "exactly"
+    },
+    {
+      "start": 79.12,
+      "end": 79.28,
+      "text": "why"
+    },
+    {
+      "start": 79.28,
+      "end": 79.44,
+      "text": "you"
+    },
+    {
+      "start": 79.44,
+      "end": 79.6,
+      "text": "get"
+    },
+    {
+      "start": 79.6,
+      "end": 79.84,
+      "text": "away"
+    },
+    {
+      "start": 79.84,
+      "end": 80.0,
+      "text": "with"
+    },
+    {
+      "start": 80.0,
+      "end": 80.5,
+      "text": "it."
+    },
+    {
+      "start": 81.2,
+      "end": 81.52,
+      "text": "That's"
+    },
+    {
+      "start": 81.52,
+      "end": 81.68,
+      "text": "the"
+    },
+    {
+      "start": 81.68,
+      "end": 81.92,
+      "text": "whole"
+    },
+    {
+      "start": 81.92,
+      "end": 82.4,
+      "text": "move."
+    },
+    {
+      "start": 82.4,
+      "end": 82.56,
+      "text": "A"
+    },
+    {
+      "start": 82.56,
+      "end": 82.88,
+      "text": "little"
+    },
+    {
+      "start": 82.88,
+      "end": 83.38,
+      "text": "exaggeration,"
+    },
+    {
+      "start": 83.68,
+      "end": 84.16,
+      "text": "plus"
+    },
+    {
+      "start": 84.16,
+      "end": 84.4,
+      "text": "giving"
+    },
+    {
+      "start": 84.4,
+      "end": 84.72,
+      "text": "her"
+    },
+    {
+      "start": 84.72,
+      "end": 84.8,
+      "text": "a"
+    },
+    {
+      "start": 84.8,
+      "end": 84.96,
+      "text": "little"
+    },
+    {
+      "start": 84.96,
+      "end": 85.12,
+      "text": "bit"
+    },
+    {
+      "start": 85.12,
+      "end": 85.2,
+      "text": "of"
+    },
+    {
+      "start": 85.2,
+      "end": 85.52,
+      "text": "shit"
+    },
+    {
+      "start": 85.52,
+      "end": 85.68,
+      "text": "in"
+    },
+    {
+      "start": 85.68,
+      "end": 85.76,
+      "text": "a"
+    },
+    {
+      "start": 85.76,
+      "end": 86.24,
+      "text": "playful"
+    },
+    {
+      "start": 86.24,
+      "end": 86.74,
+      "text": "way."
+    },
+    {
+      "start": 86.88,
+      "end": 87.12,
+      "text": "It's"
+    },
+    {
+      "start": 87.12,
+      "end": 87.36,
+      "text": "not"
+    },
+    {
+      "start": 87.36,
+      "end": 87.44,
+      "text": "a"
+    },
+    {
+      "start": 87.44,
+      "end": 88.08,
+      "text": "100%"
+    },
+    {
+      "start": 88.08,
+      "end": 88.4,
+      "text": "nice"
+    },
+    {
+      "start": 88.4,
+      "end": 88.88,
+      "text": "either."
+    },
+    {
+      "start": 88.88,
+      "end": 89.12,
+      "text": "That"
+    },
+    {
+      "start": 89.12,
+      "end": 89.44,
+      "text": "edge"
+    },
+    {
+      "start": 89.44,
+      "end": 89.68,
+      "text": "is"
+    },
+    {
+      "start": 89.68,
+      "end": 89.76,
+      "text": "the"
+    },
+    {
+      "start": 89.76,
+      "end": 90.26,
+      "text": "point."
+    },
+    {
+      "start": 91.2,
+      "end": 91.44,
+      "text": "But"
+    },
+    {
+      "start": 91.44,
+      "end": 91.68,
+      "text": "there's"
+    },
+    {
+      "start": 91.68,
+      "end": 91.84,
+      "text": "a"
+    },
+    {
+      "start": 91.84,
+      "end": 92.34,
+      "text": "line."
+    },
+    {
+      "start": 92.685,
+      "end": 92.845,
+      "text": "You"
+    },
+    {
+      "start": 92.845,
+      "end": 93.245,
+      "text": "sounded"
+    },
+    {
+      "start": 93.245,
+      "end": 93.405,
+      "text": "like"
+    },
+    {
+      "start": 93.405,
+      "end": 93.565,
+      "text": "you"
+    },
+    {
+      "start": 93.565,
+      "end": 93.725,
+      "text": "were"
+    },
+    {
+      "start": 93.725,
+      "end": 94.045,
+      "text": "lying"
+    },
+    {
+      "start": 94.045,
+      "end": 94.205,
+      "text": "just"
+    },
+    {
+      "start": 94.205,
+      "end": 94.525,
+      "text": "then"
+    },
+    {
+      "start": 94.525,
+      "end": 94.925,
+      "text": "isn't"
+    },
+    {
+      "start": 94.925,
+      "end": 95.085,
+      "text": "a"
+    },
+    {
+      "start": 95.085,
+      "end": 95.565,
+      "text": "tease."
+    },
+    {
+      "start": 95.565,
+      "end": 95.805,
+      "text": "That's"
+    },
+    {
+      "start": 95.805,
+      "end": 96.045,
+      "text": "an"
+    },
+    {
+      "start": 96.045,
+      "end": 96.545,
+      "text": "accusation."
+    },
+    {
+      "start": 97.165,
+      "end": 97.405,
+      "text": "The"
+    },
+    {
+      "start": 97.405,
+      "end": 97.905,
+      "text": "tease"
+    },
+    {
+      "start": 98.045,
+      "end": 98.545,
+      "text": "teases."
+    },
+    {
+      "start": 98.765,
+      "end": 99.005,
+      "text": "It"
+    },
+    {
+      "start": 99.005,
+      "end": 99.325,
+      "text": "never"
+    },
+    {
+      "start": 99.325,
+      "end": 99.725,
+      "text": "actually"
+    },
+    {
+      "start": 99.725,
+      "end": 100.225,
+      "text": "stings."
+    },
+    {
+      "start": 101.645,
+      "end": 101.965,
+      "text": "Here's"
+    },
+    {
+      "start": 101.965,
+      "end": 102.045,
+      "text": "the"
+    },
+    {
+      "start": 102.045,
+      "end": 102.365,
+      "text": "part"
+    },
+    {
+      "start": 102.365,
+      "end": 102.605,
+      "text": "most"
+    },
+    {
+      "start": 102.605,
+      "end": 102.845,
+      "text": "people"
+    },
+    {
+      "start": 102.845,
+      "end": 103.345,
+      "text": "miss."
+    },
+    {
+      "start": 103.645,
+      "end": 103.885,
+      "text": "The"
+    },
+    {
+      "start": 103.885,
+      "end": 104.205,
+      "text": "best"
+    },
+    {
+      "start": 104.205,
+      "end": 104.525,
+      "text": "tease"
+    },
+    {
+      "start": 104.525,
+      "end": 104.845,
+      "text": "often"
+    },
+    {
+      "start": 104.845,
+      "end": 105.165,
+      "text": "isn't"
+    },
+    {
+      "start": 105.165,
+      "end": 105.405,
+      "text": "about"
+    },
+    {
+      "start": 105.405,
+      "end": 105.565,
+      "text": "what"
+    },
+    {
+      "start": 105.565,
+      "end": 105.725,
+      "text": "she"
+    },
+    {
+      "start": 105.725,
+      "end": 106.045,
+      "text": "said."
+    },
+    {
+      "start": 106.045,
+      "end": 106.365,
+      "text": "It's"
+    },
+    {
+      "start": 106.365,
+      "end": 106.685,
+      "text": "about"
+    },
+    {
+      "start": 106.685,
+      "end": 106.925,
+      "text": "how"
+    },
+    {
+      "start": 106.925,
+      "end": 107.165,
+      "text": "she"
+    },
+    {
+      "start": 107.165,
+      "end": 107.325,
+      "text": "said"
+    },
+    {
+      "start": 107.325,
+      "end": 107.825,
+      "text": "it."
+    },
+    {
+      "start": 108.09,
+      "end": 108.33,
+      "text": "You"
+    },
+    {
+      "start": 108.33,
+      "end": 108.57,
+      "text": "ask"
+    },
+    {
+      "start": 108.57,
+      "end": 108.73,
+      "text": "what"
+    },
+    {
+      "start": 108.73,
+      "end": 108.89,
+      "text": "she"
+    },
+    {
+      "start": 108.89,
+      "end": 109.05,
+      "text": "does"
+    },
+    {
+      "start": 109.05,
+      "end": 109.29,
+      "text": "for"
+    },
+    {
+      "start": 109.29,
+      "end": 109.69,
+      "text": "fun,"
+    },
+    {
+      "start": 109.69,
+      "end": 109.93,
+      "text": "she"
+    },
+    {
+      "start": 109.93,
+      "end": 110.43,
+      "text": "hesitates."
+    },
+    {
+      "start": 110.89,
+      "end": 111.05,
+      "text": "I"
+    },
+    {
+      "start": 111.05,
+      "end": 111.29,
+      "text": "guess"
+    },
+    {
+      "start": 111.29,
+      "end": 111.37,
+      "text": "I"
+    },
+    {
+      "start": 111.37,
+      "end": 111.61,
+      "text": "like"
+    },
+    {
+      "start": 111.61,
+      "end": 111.77,
+      "text": "to"
+    },
+    {
+      "start": 111.77,
+      "end": 112.27,
+      "text": "read."
+    },
+    {
+      "start": 113.21,
+      "end": 113.53,
+      "text": "Don't"
+    },
+    {
+      "start": 113.53,
+      "end": 113.85,
+      "text": "tease"
+    },
+    {
+      "start": 113.85,
+      "end": 113.93,
+      "text": "the"
+    },
+    {
+      "start": 113.93,
+      "end": 114.43,
+      "text": "reading,"
+    },
+    {
+      "start": 114.65,
+      "end": 114.97,
+      "text": "tease"
+    },
+    {
+      "start": 114.97,
+      "end": 115.13,
+      "text": "the"
+    },
+    {
+      "start": 115.13,
+      "end": 115.63,
+      "text": "hesitation."
+    },
+    {
+      "start": 116.09,
+      "end": 116.25,
+      "text": "You"
+    },
+    {
+      "start": 116.25,
+      "end": 116.49,
+      "text": "don't"
+    },
+    {
+      "start": 116.49,
+      "end": 116.73,
+      "text": "even"
+    },
+    {
+      "start": 116.73,
+      "end": 116.97,
+      "text": "sound"
+    },
+    {
+      "start": 116.97,
+      "end": 117.47,
+      "text": "convinced."
+    },
+    {
+      "start": 118.17,
+      "end": 118.49,
+      "text": "That's"
+    },
+    {
+      "start": 118.49,
+      "end": 118.73,
+      "text": "the"
+    },
+    {
+      "start": 118.73,
+      "end": 119.05,
+      "text": "higher"
+    },
+    {
+      "start": 119.05,
+      "end": 119.53,
+      "text": "gear,"
+    },
+    {
+      "start": 119.53,
+      "end": 119.77,
+      "text": "the"
+    },
+    {
+      "start": 119.77,
+      "end": 120.27,
+      "text": "delivery,"
+    },
+    {
+      "start": 120.33,
+      "end": 120.57,
+      "text": "the"
+    },
+    {
+      "start": 120.57,
+      "end": 120.89,
+      "text": "vibe"
+    },
+    {
+      "start": 120.89,
+      "end": 121.13,
+      "text": "around"
+    },
+    {
+      "start": 121.13,
+      "end": 121.29,
+      "text": "the"
+    },
+    {
+      "start": 121.29,
+      "end": 121.79,
+      "text": "answer,"
+    },
+    {
+      "start": 121.85,
+      "end": 122.09,
+      "text": "not"
+    },
+    {
+      "start": 122.09,
+      "end": 122.25,
+      "text": "the"
+    },
+    {
+      "start": 122.25,
+      "end": 122.75,
+      "text": "words."
+    },
+    {
+      "start": 124.035,
+      "end": 124.275,
+      "text": "Why"
+    },
+    {
+      "start": 124.275,
+      "end": 124.435,
+      "text": "does"
+    },
+    {
+      "start": 124.435,
+      "end": 124.595,
+      "text": "it"
+    },
+    {
+      "start": 124.595,
+      "end": 125.095,
+      "text": "land?"
+    },
+    {
+      "start": 125.475,
+      "end": 125.795,
+      "text": "A"
+    },
+    {
+      "start": 125.795,
+      "end": 126.115,
+      "text": "tease"
+    },
+    {
+      "start": 126.115,
+      "end": 126.275,
+      "text": "is"
+    },
+    {
+      "start": 126.275,
+      "end": 126.515,
+      "text": "a"
+    },
+    {
+      "start": 126.515,
+      "end": 126.835,
+      "text": "quiet"
+    },
+    {
+      "start": 126.835,
+      "end": 127.335,
+      "text": "challenge,"
+    },
+    {
+      "start": 127.635,
+      "end": 127.875,
+      "text": "far"
+    },
+    {
+      "start": 127.875,
+      "end": 128.035,
+      "text": "more"
+    },
+    {
+      "start": 128.035,
+      "end": 128.355,
+      "text": "subtle"
+    },
+    {
+      "start": 128.355,
+      "end": 128.595,
+      "text": "than"
+    },
+    {
+      "start": 128.595,
+      "end": 128.835,
+      "text": "flat"
+    },
+    {
+      "start": 128.835,
+      "end": 129.075,
+      "text": "out"
+    },
+    {
+      "start": 129.075,
+      "end": 129.575,
+      "text": "asking,"
+    },
+    {
+      "start": 129.715,
+      "end": 130.035,
+      "text": "less"
+    },
+    {
+      "start": 130.035,
+      "end": 130.535,
+      "text": "cheesy,"
+    },
+    {
+      "start": 130.675,
+      "end": 130.995,
+      "text": "less"
+    },
+    {
+      "start": 130.995,
+      "end": 131.235,
+      "text": "try"
+    },
+    {
+      "start": 131.235,
+      "end": 131.735,
+      "text": "hard."
+    },
+    {
+      "start": 132.115,
+      "end": 132.435,
+      "text": "Challenge"
+    },
+    {
+      "start": 132.435,
+      "end": 132.675,
+      "text": "her"
+    },
+    {
+      "start": 132.675,
+      "end": 132.755,
+      "text": "a"
+    },
+    {
+      "start": 132.755,
+      "end": 132.995,
+      "text": "little"
+    },
+    {
+      "start": 132.995,
+      "end": 133.155,
+      "text": "and"
+    },
+    {
+      "start": 133.155,
+      "end": 133.315,
+      "text": "she"
+    },
+    {
+      "start": 133.315,
+      "end": 133.555,
+      "text": "wants"
+    },
+    {
+      "start": 133.555,
+      "end": 133.715,
+      "text": "to"
+    },
+    {
+      "start": 133.715,
+      "end": 134.035,
+      "text": "rise"
+    },
+    {
+      "start": 134.035,
+      "end": 134.195,
+      "text": "to"
+    },
+    {
+      "start": 134.195,
+      "end": 134.435,
+      "text": "it,"
+    },
+    {
+      "start": 134.435,
+      "end": 134.675,
+      "text": "to"
+    },
+    {
+      "start": 134.675,
+      "end": 134.915,
+      "text": "prove"
+    },
+    {
+      "start": 134.915,
+      "end": 135.075,
+      "text": "you"
+    },
+    {
+      "start": 135.075,
+      "end": 135.555,
+      "text": "wrong,"
+    },
+    {
+      "start": 135.555,
+      "end": 135.795,
+      "text": "to"
+    },
+    {
+      "start": 135.795,
+      "end": 136.195,
+      "text": "impress"
+    },
+    {
+      "start": 136.195,
+      "end": 136.65,
+      "text": "you."
+    },
+    {
+      "start": 136.97,
+      "end": 137.21,
+      "text": "It"
+    },
+    {
+      "start": 137.21,
+      "end": 137.61,
+      "text": "never"
+    },
+    {
+      "start": 137.61,
+      "end": 137.85,
+      "text": "feels"
+    },
+    {
+      "start": 137.85,
+      "end": 137.93,
+      "text": "like"
+    },
+    {
+      "start": 137.93,
+      "end": 138.09,
+      "text": "a"
+    },
+    {
+      "start": 138.09,
+      "end": 138.57,
+      "text": "tactic."
+    },
+    {
+      "start": 138.57,
+      "end": 138.73,
+      "text": "It"
+    },
+    {
+      "start": 138.73,
+      "end": 138.97,
+      "text": "just"
+    },
+    {
+      "start": 138.97,
+      "end": 139.21,
+      "text": "feels"
+    },
+    {
+      "start": 139.21,
+      "end": 139.29,
+      "text": "like"
+    },
+    {
+      "start": 139.29,
+      "end": 139.37,
+      "text": "it"
+    },
+    {
+      "start": 139.37,
+      "end": 139.87,
+      "text": "happened."
+    },
+    {
+      "start": 140.97,
+      "end": 141.21,
+      "text": "This"
+    },
+    {
+      "start": 141.21,
+      "end": 141.53,
+      "text": "goes"
+    },
+    {
+      "start": 141.53,
+      "end": 141.85,
+      "text": "well"
+    },
+    {
+      "start": 141.85,
+      "end": 142.17,
+      "text": "past"
+    },
+    {
+      "start": 142.17,
+      "end": 142.67,
+      "text": "dating."
+    },
+    {
+      "start": 142.89,
+      "end": 143.05,
+      "text": "The"
+    },
+    {
+      "start": 143.05,
+      "end": 143.37,
+      "text": "person"
+    },
+    {
+      "start": 143.37,
+      "end": 143.53,
+      "text": "who"
+    },
+    {
+      "start": 143.53,
+      "end": 143.69,
+      "text": "can"
+    },
+    {
+      "start": 143.69,
+      "end": 143.93,
+      "text": "take"
+    },
+    {
+      "start": 143.93,
+      "end": 144.09,
+      "text": "a"
+    },
+    {
+      "start": 144.09,
+      "end": 144.57,
+      "text": "dead"
+    },
+    {
+      "start": 144.57,
+      "end": 144.81,
+      "text": "one"
+    },
+    {
+      "start": 144.81,
+      "end": 145.05,
+      "text": "word"
+    },
+    {
+      "start": 145.05,
+      "end": 145.53,
+      "text": "answer"
+    },
+    {
+      "start": 145.53,
+      "end": 145.85,
+      "text": "and"
+    },
+    {
+      "start": 145.85,
+      "end": 146.09,
+      "text": "spin"
+    },
+    {
+      "start": 146.09,
+      "end": 146.49,
+      "text": "something"
+    },
+    {
+      "start": 146.49,
+      "end": 146.89,
+      "text": "playful"
+    },
+    {
+      "start": 146.89,
+      "end": 147.05,
+      "text": "out"
+    },
+    {
+      "start": 147.05,
+      "end": 147.21,
+      "text": "of"
+    },
+    {
+      "start": 147.21,
+      "end": 147.53,
+      "text": "it,"
+    },
+    {
+      "start": 147.53,
+      "end": 147.93,
+      "text": "instead"
+    },
+    {
+      "start": 147.93,
+      "end": 148.09,
+      "text": "of"
+    },
+    {
+      "start": 148.09,
+      "end": 148.41,
+      "text": "marching"
+    },
+    {
+      "start": 148.41,
+      "end": 148.57,
+      "text": "through"
+    },
+    {
+      "start": 148.57,
+      "end": 148.65,
+      "text": "a"
+    },
+    {
+      "start": 148.65,
+      "end": 149.13,
+      "text": "checklist"
+    },
+    {
+      "start": 149.13,
+      "end": 149.21,
+      "text": "of"
+    },
+    {
+      "start": 149.21,
+      "end": 149.71,
+      "text": "questions,"
+    },
+    {
+      "start": 150.01,
+      "end": 150.17,
+      "text": "is"
+    },
+    {
+      "start": 150.17,
+      "end": 150.33,
+      "text": "the"
+    },
+    {
+      "start": 150.33,
+      "end": 150.73,
+      "text": "one"
+    },
+    {
+      "start": 150.73,
+      "end": 150.89,
+      "text": "a"
+    },
+    {
+      "start": 150.89,
+      "end": 151.37,
+      "text": "room"
+    },
+    {
+      "start": 151.37,
+      "end": 151.77,
+      "text": "warms"
+    },
+    {
+      "start": 151.77,
+      "end": 152.27,
+      "text": "to."
+    },
+    {
+      "start": 152.675,
+      "end": 152.835,
+      "text": "A"
+    },
+    {
+      "start": 152.835,
+      "end": 153.075,
+      "text": "light"
+    },
+    {
+      "start": 153.075,
+      "end": 153.475,
+      "text": "tease"
+    },
+    {
+      "start": 153.475,
+      "end": 153.715,
+      "text": "reads"
+    },
+    {
+      "start": 153.715,
+      "end": 154.035,
+      "text": "as"
+    },
+    {
+      "start": 154.035,
+      "end": 154.535,
+      "text": "ease,"
+    },
+    {
+      "start": 154.595,
+      "end": 154.835,
+      "text": "an"
+    },
+    {
+      "start": 154.835,
+      "end": 155.335,
+      "text": "interview"
+    },
+    {
+      "start": 155.475,
+      "end": 155.715,
+      "text": "reads"
+    },
+    {
+      "start": 155.715,
+      "end": 156.035,
+      "text": "as"
+    },
+    {
+      "start": 156.035,
+      "end": 156.535,
+      "text": "nerves."
+    },
+    {
+      "start": 157.635,
+      "end": 157.955,
+      "text": "Here's"
+    },
+    {
+      "start": 157.955,
+      "end": 158.115,
+      "text": "the"
+    },
+    {
+      "start": 158.115,
+      "end": 158.615,
+      "text": "drill."
+    },
+    {
+      "start": 158.755,
+      "end": 158.915,
+      "text": "A"
+    },
+    {
+      "start": 158.915,
+      "end": 159.155,
+      "text": "few"
+    },
+    {
+      "start": 159.155,
+      "end": 159.475,
+      "text": "minutes"
+    },
+    {
+      "start": 159.475,
+      "end": 159.555,
+      "text": "a"
+    },
+    {
+      "start": 159.555,
+      "end": 159.875,
+      "text": "day,"
+    },
+    {
+      "start": 159.875,
+      "end": 160.195,
+      "text": "take"
+    },
+    {
+      "start": 160.195,
+      "end": 160.435,
+      "text": "any"
+    },
+    {
+      "start": 160.435,
+      "end": 160.755,
+      "text": "flat"
+    },
+    {
+      "start": 160.755,
+      "end": 161.075,
+      "text": "answer"
+    },
+    {
+      "start": 161.075,
+      "end": 161.315,
+      "text": "and"
+    },
+    {
+      "start": 161.315,
+      "end": 161.555,
+      "text": "tease"
+    },
+    {
+      "start": 161.555,
+      "end": 162.035,
+      "text": "it."
+    },
+    {
+      "start": 162.035,
+      "end": 162.535,
+      "text": "Exaggerate"
+    },
+    {
+      "start": 162.755,
+      "end": 162.995,
+      "text": "one"
+    },
+    {
+      "start": 162.995,
+      "end": 163.395,
+      "text": "truest"
+    },
+    {
+      "start": 163.395,
+      "end": 163.795,
+      "text": "thing"
+    },
+    {
+      "start": 163.795,
+      "end": 164.115,
+      "text": "or"
+    },
+    {
+      "start": 164.115,
+      "end": 164.355,
+      "text": "aim"
+    },
+    {
+      "start": 164.355,
+      "end": 164.435,
+      "text": "at"
+    },
+    {
+      "start": 164.435,
+      "end": 164.595,
+      "text": "the"
+    },
+    {
+      "start": 164.595,
+      "end": 165.075,
+      "text": "vibe,"
+    },
+    {
+      "start": 165.075,
+      "end": 165.315,
+      "text": "keep"
+    },
+    {
+      "start": 165.315,
+      "end": 165.475,
+      "text": "it"
+    },
+    {
+      "start": 165.475,
+      "end": 165.975,
+      "text": "playful."
+    },
+    {
+      "start": 166.72,
+      "end": 166.96,
+      "text": "Keep"
+    },
+    {
+      "start": 166.96,
+      "end": 167.04,
+      "text": "at"
+    },
+    {
+      "start": 167.04,
+      "end": 167.28,
+      "text": "it"
+    },
+    {
+      "start": 167.28,
+      "end": 167.52,
+      "text": "and"
+    },
+    {
+      "start": 167.52,
+      "end": 167.68,
+      "text": "it"
+    },
+    {
+      "start": 167.68,
+      "end": 168.0,
+      "text": "stops"
+    },
+    {
+      "start": 168.0,
+      "end": 168.24,
+      "text": "being"
+    },
+    {
+      "start": 168.24,
+      "end": 168.48,
+      "text": "something"
+    },
+    {
+      "start": 168.48,
+      "end": 168.64,
+      "text": "you"
+    },
+    {
+      "start": 168.64,
+      "end": 168.88,
+      "text": "reach"
+    },
+    {
+      "start": 168.88,
+      "end": 169.12,
+      "text": "for"
+    },
+    {
+      "start": 169.12,
+      "end": 169.36,
+      "text": "and"
+    },
+    {
+      "start": 169.36,
+      "end": 169.84,
+      "text": "becomes"
+    },
+    {
+      "start": 169.84,
+      "end": 170.24,
+      "text": "second"
+    },
+    {
+      "start": 170.24,
+      "end": 170.74,
+      "text": "nature."
+    },
+    {
+      "start": 170.96,
+      "end": 171.12,
+      "text": "The"
+    },
+    {
+      "start": 171.12,
+      "end": 171.62,
+      "text": "comeback"
+    },
+    {
+      "start": 171.68,
+      "end": 172.0,
+      "text": "just"
+    },
+    {
+      "start": 172.0,
+      "end": 172.24,
+      "text": "shows"
+    },
+    {
+      "start": 172.24,
+      "end": 172.74,
+      "text": "up."
+    },
+    {
+      "start": 173.44,
+      "end": 173.68,
+      "text": "So"
+    },
+    {
+      "start": 173.68,
+      "end": 173.84,
+      "text": "put"
+    },
+    {
+      "start": 173.84,
+      "end": 174.0,
+      "text": "in"
+    },
+    {
+      "start": 174.0,
+      "end": 174.16,
+      "text": "the"
+    },
+    {
+      "start": 174.16,
+      "end": 174.66,
+      "text": "reps."
+    },
+    {
+      "start": 174.8,
+      "end": 175.12,
+      "text": "That's"
+    },
+    {
+      "start": 175.12,
+      "end": 175.28,
+      "text": "how"
+    },
+    {
+      "start": 175.28,
+      "end": 175.44,
+      "text": "a"
+    },
+    {
+      "start": 175.44,
+      "end": 175.76,
+      "text": "dead"
+    },
+    {
+      "start": 175.76,
+      "end": 176.08,
+      "text": "question"
+    },
+    {
+      "start": 176.08,
+      "end": 176.32,
+      "text": "turns"
+    },
+    {
+      "start": 176.32,
+      "end": 176.56,
+      "text": "into"
+    },
+    {
+      "start": 176.56,
+      "end": 176.72,
+      "text": "the"
+    },
+    {
+      "start": 176.72,
+      "end": 176.88,
+      "text": "thing"
+    },
+    {
+      "start": 176.88,
+      "end": 177.12,
+      "text": "she's"
+    },
+    {
+      "start": 177.12,
+      "end": 177.44,
+      "text": "trying"
+    },
+    {
+      "start": 177.44,
+      "end": 177.52,
+      "text": "to"
+    },
+    {
+      "start": 177.52,
+      "end": 178.02,
+      "text": "win"
+    },
+    {
+      "start": 178.08,
+      "end": 178.48,
+      "text": "instead"
+    },
+    {
+      "start": 178.48,
+      "end": 178.56,
+      "text": "of"
+    },
+    {
+      "start": 178.56,
+      "end": 178.8,
+      "text": "an"
+    },
+    {
+      "start": 178.8,
+      "end": 179.28,
+      "text": "interview"
+    },
+    {
+      "start": 179.28,
+      "end": 179.44,
+      "text": "that"
+    },
+    {
+      "start": 179.44,
+      "end": 179.76,
+      "text": "goes"
+    },
+    {
+      "start": 179.76,
+      "end": 180.26,
+      "text": "nowhere."
+    }
+  ]
+}

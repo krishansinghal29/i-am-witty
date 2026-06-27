@@ -1,0 +1,970 @@
+{
+  "transcript": "Welcome. I'm glad you're here. Let me make you a promise. Put in the practice, really put in the reps, and you will get better at this. Better at conversation, smoother with women, more confident. Not maybe. You will. And here's why I can promise that. The reason you freeze up, the reason your mind goes blank isn't a lack of charm or wit. It's your brain trying to protect you. In a silence, it whispers, stay quiet. Stay quiet. You can't fix that in the moment under pressure. You fix it the way you build any skill, reps, a few minutes a day until the right thing just comes out on its own. So here's what we'll work on together. First, never running out of words, so you're never stuck in an awkward silence. Then, attraction, the moves that create a real spark that turn a polite chat into something she doesn't want to end. And then bonding, really vibing with her, so it stops feeling like effort and starts feeling like a connection. That's the deal. You bring the reps, and that promise takes care of itself. Let's get to work.",
+  "cues": [
+    {
+      "start": 0.16,
+      "end": 0.66,
+      "text": "Welcome."
+    },
+    {
+      "start": 0.8,
+      "end": 0.96,
+      "text": "I'm"
+    },
+    {
+      "start": 0.96,
+      "end": 1.28,
+      "text": "glad"
+    },
+    {
+      "start": 1.28,
+      "end": 1.52,
+      "text": "you're"
+    },
+    {
+      "start": 1.52,
+      "end": 2.02,
+      "text": "here."
+    },
+    {
+      "start": 3.76,
+      "end": 4.0,
+      "text": "Let"
+    },
+    {
+      "start": 4.0,
+      "end": 4.16,
+      "text": "me"
+    },
+    {
+      "start": 4.16,
+      "end": 4.32,
+      "text": "make"
+    },
+    {
+      "start": 4.32,
+      "end": 4.56,
+      "text": "you"
+    },
+    {
+      "start": 4.56,
+      "end": 4.72,
+      "text": "a"
+    },
+    {
+      "start": 4.72,
+      "end": 5.22,
+      "text": "promise."
+    },
+    {
+      "start": 5.44,
+      "end": 5.68,
+      "text": "Put"
+    },
+    {
+      "start": 5.68,
+      "end": 5.76,
+      "text": "in"
+    },
+    {
+      "start": 5.76,
+      "end": 5.92,
+      "text": "the"
+    },
+    {
+      "start": 5.92,
+      "end": 6.42,
+      "text": "practice,"
+    },
+    {
+      "start": 6.64,
+      "end": 7.04,
+      "text": "really"
+    },
+    {
+      "start": 7.04,
+      "end": 7.28,
+      "text": "put"
+    },
+    {
+      "start": 7.28,
+      "end": 7.36,
+      "text": "in"
+    },
+    {
+      "start": 7.36,
+      "end": 7.52,
+      "text": "the"
+    },
+    {
+      "start": 7.52,
+      "end": 8.02,
+      "text": "reps,"
+    },
+    {
+      "start": 8.08,
+      "end": 8.32,
+      "text": "and"
+    },
+    {
+      "start": 8.32,
+      "end": 8.48,
+      "text": "you"
+    },
+    {
+      "start": 8.48,
+      "end": 8.72,
+      "text": "will"
+    },
+    {
+      "start": 8.72,
+      "end": 8.96,
+      "text": "get"
+    },
+    {
+      "start": 8.96,
+      "end": 9.28,
+      "text": "better"
+    },
+    {
+      "start": 9.28,
+      "end": 9.36,
+      "text": "at"
+    },
+    {
+      "start": 9.36,
+      "end": 9.86,
+      "text": "this."
+    },
+    {
+      "start": 9.92,
+      "end": 10.24,
+      "text": "Better"
+    },
+    {
+      "start": 10.24,
+      "end": 10.48,
+      "text": "at"
+    },
+    {
+      "start": 10.48,
+      "end": 10.98,
+      "text": "conversation,"
+    },
+    {
+      "start": 11.36,
+      "end": 11.76,
+      "text": "smoother"
+    },
+    {
+      "start": 11.76,
+      "end": 11.92,
+      "text": "with"
+    },
+    {
+      "start": 11.92,
+      "end": 12.42,
+      "text": "women,"
+    },
+    {
+      "start": 12.56,
+      "end": 12.8,
+      "text": "more"
+    },
+    {
+      "start": 12.8,
+      "end": 13.3,
+      "text": "confident."
+    },
+    {
+      "start": 13.6,
+      "end": 13.92,
+      "text": "Not"
+    },
+    {
+      "start": 13.92,
+      "end": 14.42,
+      "text": "maybe."
+    },
+    {
+      "start": 14.56,
+      "end": 14.8,
+      "text": "You"
+    },
+    {
+      "start": 14.8,
+      "end": 15.3,
+      "text": "will."
+    },
+    {
+      "start": 16.895,
+      "end": 17.215,
+      "text": "And"
+    },
+    {
+      "start": 17.215,
+      "end": 17.455,
+      "text": "here's"
+    },
+    {
+      "start": 17.455,
+      "end": 17.615,
+      "text": "why"
+    },
+    {
+      "start": 17.615,
+      "end": 17.695,
+      "text": "I"
+    },
+    {
+      "start": 17.695,
+      "end": 17.935,
+      "text": "can"
+    },
+    {
+      "start": 17.935,
+      "end": 18.255,
+      "text": "promise"
+    },
+    {
+      "start": 18.255,
+      "end": 18.755,
+      "text": "that."
+    },
+    {
+      "start": 18.975,
+      "end": 19.215,
+      "text": "The"
+    },
+    {
+      "start": 19.215,
+      "end": 19.535,
+      "text": "reason"
+    },
+    {
+      "start": 19.535,
+      "end": 19.695,
+      "text": "you"
+    },
+    {
+      "start": 19.695,
+      "end": 20.015,
+      "text": "freeze"
+    },
+    {
+      "start": 20.015,
+      "end": 20.415,
+      "text": "up,"
+    },
+    {
+      "start": 20.415,
+      "end": 20.575,
+      "text": "the"
+    },
+    {
+      "start": 20.575,
+      "end": 20.895,
+      "text": "reason"
+    },
+    {
+      "start": 20.895,
+      "end": 21.055,
+      "text": "your"
+    },
+    {
+      "start": 21.055,
+      "end": 21.295,
+      "text": "mind"
+    },
+    {
+      "start": 21.295,
+      "end": 21.535,
+      "text": "goes"
+    },
+    {
+      "start": 21.535,
+      "end": 22.035,
+      "text": "blank"
+    },
+    {
+      "start": 22.175,
+      "end": 22.495,
+      "text": "isn't"
+    },
+    {
+      "start": 22.495,
+      "end": 22.575,
+      "text": "a"
+    },
+    {
+      "start": 22.575,
+      "end": 22.815,
+      "text": "lack"
+    },
+    {
+      "start": 22.815,
+      "end": 23.055,
+      "text": "of"
+    },
+    {
+      "start": 23.055,
+      "end": 23.375,
+      "text": "charm"
+    },
+    {
+      "start": 23.375,
+      "end": 23.695,
+      "text": "or"
+    },
+    {
+      "start": 23.695,
+      "end": 24.195,
+      "text": "wit."
+    },
+    {
+      "start": 24.415,
+      "end": 24.655,
+      "text": "It's"
+    },
+    {
+      "start": 24.655,
+      "end": 24.895,
+      "text": "your"
+    },
+    {
+      "start": 24.895,
+      "end": 25.295,
+      "text": "brain"
+    },
+    {
+      "start": 25.295,
+      "end": 25.535,
+      "text": "trying"
+    },
+    {
+      "start": 25.535,
+      "end": 25.695,
+      "text": "to"
+    },
+    {
+      "start": 25.695,
+      "end": 26.015,
+      "text": "protect"
+    },
+    {
+      "start": 26.015,
+      "end": 26.515,
+      "text": "you."
+    },
+    {
+      "start": 26.655,
+      "end": 26.815,
+      "text": "In"
+    },
+    {
+      "start": 26.815,
+      "end": 26.975,
+      "text": "a"
+    },
+    {
+      "start": 26.975,
+      "end": 27.455,
+      "text": "silence,"
+    },
+    {
+      "start": 27.455,
+      "end": 27.615,
+      "text": "it"
+    },
+    {
+      "start": 27.615,
+      "end": 28.115,
+      "text": "whispers,"
+    },
+    {
+      "start": 28.415,
+      "end": 28.815,
+      "text": "stay"
+    },
+    {
+      "start": 28.815,
+      "end": 29.315,
+      "text": "quiet."
+    },
+    {
+      "start": 29.455,
+      "end": 29.855,
+      "text": "Stay"
+    },
+    {
+      "start": 29.855,
+      "end": 30.355,
+      "text": "quiet."
+    },
+    {
+      "start": 31.81,
+      "end": 32.05,
+      "text": "You"
+    },
+    {
+      "start": 32.05,
+      "end": 32.29,
+      "text": "can't"
+    },
+    {
+      "start": 32.29,
+      "end": 32.61,
+      "text": "fix"
+    },
+    {
+      "start": 32.61,
+      "end": 32.77,
+      "text": "that"
+    },
+    {
+      "start": 32.77,
+      "end": 32.93,
+      "text": "in"
+    },
+    {
+      "start": 32.93,
+      "end": 33.01,
+      "text": "the"
+    },
+    {
+      "start": 33.01,
+      "end": 33.41,
+      "text": "moment"
+    },
+    {
+      "start": 33.41,
+      "end": 33.73,
+      "text": "under"
+    },
+    {
+      "start": 33.73,
+      "end": 34.23,
+      "text": "pressure."
+    },
+    {
+      "start": 34.45,
+      "end": 34.61,
+      "text": "You"
+    },
+    {
+      "start": 34.61,
+      "end": 34.85,
+      "text": "fix"
+    },
+    {
+      "start": 34.85,
+      "end": 35.01,
+      "text": "it"
+    },
+    {
+      "start": 35.01,
+      "end": 35.09,
+      "text": "the"
+    },
+    {
+      "start": 35.09,
+      "end": 35.25,
+      "text": "way"
+    },
+    {
+      "start": 35.25,
+      "end": 35.41,
+      "text": "you"
+    },
+    {
+      "start": 35.41,
+      "end": 35.81,
+      "text": "build"
+    },
+    {
+      "start": 35.81,
+      "end": 36.05,
+      "text": "any"
+    },
+    {
+      "start": 36.05,
+      "end": 36.55,
+      "text": "skill,"
+    },
+    {
+      "start": 36.61,
+      "end": 37.11,
+      "text": "reps,"
+    },
+    {
+      "start": 37.25,
+      "end": 37.41,
+      "text": "a"
+    },
+    {
+      "start": 37.41,
+      "end": 37.57,
+      "text": "few"
+    },
+    {
+      "start": 37.57,
+      "end": 37.97,
+      "text": "minutes"
+    },
+    {
+      "start": 37.97,
+      "end": 38.05,
+      "text": "a"
+    },
+    {
+      "start": 38.05,
+      "end": 38.37,
+      "text": "day"
+    },
+    {
+      "start": 38.37,
+      "end": 38.77,
+      "text": "until"
+    },
+    {
+      "start": 38.77,
+      "end": 38.93,
+      "text": "the"
+    },
+    {
+      "start": 38.93,
+      "end": 39.17,
+      "text": "right"
+    },
+    {
+      "start": 39.17,
+      "end": 39.41,
+      "text": "thing"
+    },
+    {
+      "start": 39.41,
+      "end": 39.73,
+      "text": "just"
+    },
+    {
+      "start": 39.73,
+      "end": 39.97,
+      "text": "comes"
+    },
+    {
+      "start": 39.97,
+      "end": 40.29,
+      "text": "out"
+    },
+    {
+      "start": 40.29,
+      "end": 40.37,
+      "text": "on"
+    },
+    {
+      "start": 40.37,
+      "end": 40.61,
+      "text": "its"
+    },
+    {
+      "start": 40.61,
+      "end": 41.11,
+      "text": "own."
+    },
+    {
+      "start": 42.37,
+      "end": 42.53,
+      "text": "So"
+    },
+    {
+      "start": 42.53,
+      "end": 42.85,
+      "text": "here's"
+    },
+    {
+      "start": 42.85,
+      "end": 43.01,
+      "text": "what"
+    },
+    {
+      "start": 43.01,
+      "end": 43.17,
+      "text": "we'll"
+    },
+    {
+      "start": 43.17,
+      "end": 43.41,
+      "text": "work"
+    },
+    {
+      "start": 43.41,
+      "end": 43.57,
+      "text": "on"
+    },
+    {
+      "start": 43.57,
+      "end": 44.07,
+      "text": "together."
+    },
+    {
+      "start": 44.585,
+      "end": 45.085,
+      "text": "First,"
+    },
+    {
+      "start": 45.145,
+      "end": 45.545,
+      "text": "never"
+    },
+    {
+      "start": 45.545,
+      "end": 45.785,
+      "text": "running"
+    },
+    {
+      "start": 45.785,
+      "end": 45.945,
+      "text": "out"
+    },
+    {
+      "start": 45.945,
+      "end": 46.105,
+      "text": "of"
+    },
+    {
+      "start": 46.105,
+      "end": 46.585,
+      "text": "words,"
+    },
+    {
+      "start": 46.585,
+      "end": 46.825,
+      "text": "so"
+    },
+    {
+      "start": 46.825,
+      "end": 47.145,
+      "text": "you're"
+    },
+    {
+      "start": 47.145,
+      "end": 47.465,
+      "text": "never"
+    },
+    {
+      "start": 47.465,
+      "end": 47.785,
+      "text": "stuck"
+    },
+    {
+      "start": 47.785,
+      "end": 47.945,
+      "text": "in"
+    },
+    {
+      "start": 47.945,
+      "end": 48.185,
+      "text": "an"
+    },
+    {
+      "start": 48.185,
+      "end": 48.505,
+      "text": "awkward"
+    },
+    {
+      "start": 48.505,
+      "end": 49.005,
+      "text": "silence."
+    },
+    {
+      "start": 50.025,
+      "end": 50.525,
+      "text": "Then,"
+    },
+    {
+      "start": 50.665,
+      "end": 51.165,
+      "text": "attraction,"
+    },
+    {
+      "start": 51.465,
+      "end": 51.625,
+      "text": "the"
+    },
+    {
+      "start": 51.625,
+      "end": 51.945,
+      "text": "moves"
+    },
+    {
+      "start": 51.945,
+      "end": 52.105,
+      "text": "that"
+    },
+    {
+      "start": 52.105,
+      "end": 52.425,
+      "text": "create"
+    },
+    {
+      "start": 52.425,
+      "end": 52.585,
+      "text": "a"
+    },
+    {
+      "start": 52.585,
+      "end": 52.905,
+      "text": "real"
+    },
+    {
+      "start": 52.905,
+      "end": 53.405,
+      "text": "spark"
+    },
+    {
+      "start": 53.465,
+      "end": 53.705,
+      "text": "that"
+    },
+    {
+      "start": 53.705,
+      "end": 53.945,
+      "text": "turn"
+    },
+    {
+      "start": 53.945,
+      "end": 54.105,
+      "text": "a"
+    },
+    {
+      "start": 54.105,
+      "end": 54.505,
+      "text": "polite"
+    },
+    {
+      "start": 54.505,
+      "end": 54.745,
+      "text": "chat"
+    },
+    {
+      "start": 54.745,
+      "end": 55.065,
+      "text": "into"
+    },
+    {
+      "start": 55.065,
+      "end": 55.465,
+      "text": "something"
+    },
+    {
+      "start": 55.465,
+      "end": 55.625,
+      "text": "she"
+    },
+    {
+      "start": 55.625,
+      "end": 55.945,
+      "text": "doesn't"
+    },
+    {
+      "start": 55.945,
+      "end": 56.185,
+      "text": "want"
+    },
+    {
+      "start": 56.185,
+      "end": 56.345,
+      "text": "to"
+    },
+    {
+      "start": 56.345,
+      "end": 56.73,
+      "text": "end."
+    },
+    {
+      "start": 57.77,
+      "end": 58.01,
+      "text": "And"
+    },
+    {
+      "start": 58.01,
+      "end": 58.33,
+      "text": "then"
+    },
+    {
+      "start": 58.33,
+      "end": 58.83,
+      "text": "bonding,"
+    },
+    {
+      "start": 59.13,
+      "end": 59.53,
+      "text": "really"
+    },
+    {
+      "start": 59.53,
+      "end": 59.85,
+      "text": "vibing"
+    },
+    {
+      "start": 59.85,
+      "end": 60.01,
+      "text": "with"
+    },
+    {
+      "start": 60.01,
+      "end": 60.33,
+      "text": "her,"
+    },
+    {
+      "start": 60.33,
+      "end": 60.49,
+      "text": "so"
+    },
+    {
+      "start": 60.49,
+      "end": 60.73,
+      "text": "it"
+    },
+    {
+      "start": 60.73,
+      "end": 61.05,
+      "text": "stops"
+    },
+    {
+      "start": 61.05,
+      "end": 61.37,
+      "text": "feeling"
+    },
+    {
+      "start": 61.37,
+      "end": 61.53,
+      "text": "like"
+    },
+    {
+      "start": 61.53,
+      "end": 61.93,
+      "text": "effort"
+    },
+    {
+      "start": 61.93,
+      "end": 62.17,
+      "text": "and"
+    },
+    {
+      "start": 62.17,
+      "end": 62.41,
+      "text": "starts"
+    },
+    {
+      "start": 62.41,
+      "end": 62.81,
+      "text": "feeling"
+    },
+    {
+      "start": 62.81,
+      "end": 62.97,
+      "text": "like"
+    },
+    {
+      "start": 62.97,
+      "end": 63.13,
+      "text": "a"
+    },
+    {
+      "start": 63.13,
+      "end": 63.63,
+      "text": "connection."
+    },
+    {
+      "start": 65.05,
+      "end": 65.45,
+      "text": "That's"
+    },
+    {
+      "start": 65.45,
+      "end": 65.61,
+      "text": "the"
+    },
+    {
+      "start": 65.61,
+      "end": 66.11,
+      "text": "deal."
+    },
+    {
+      "start": 66.17,
+      "end": 66.41,
+      "text": "You"
+    },
+    {
+      "start": 66.41,
+      "end": 66.57,
+      "text": "bring"
+    },
+    {
+      "start": 66.57,
+      "end": 66.73,
+      "text": "the"
+    },
+    {
+      "start": 66.73,
+      "end": 67.21,
+      "text": "reps,"
+    },
+    {
+      "start": 67.21,
+      "end": 67.45,
+      "text": "and"
+    },
+    {
+      "start": 67.45,
+      "end": 67.61,
+      "text": "that"
+    },
+    {
+      "start": 67.61,
+      "end": 68.01,
+      "text": "promise"
+    },
+    {
+      "start": 68.01,
+      "end": 68.25,
+      "text": "takes"
+    },
+    {
+      "start": 68.25,
+      "end": 68.41,
+      "text": "care"
+    },
+    {
+      "start": 68.41,
+      "end": 68.57,
+      "text": "of"
+    },
+    {
+      "start": 68.57,
+      "end": 69.07,
+      "text": "itself."
+    },
+    {
+      "start": 69.37,
+      "end": 69.61,
+      "text": "Let's"
+    },
+    {
+      "start": 69.61,
+      "end": 69.85,
+      "text": "get"
+    },
+    {
+      "start": 69.85,
+      "end": 69.93,
+      "text": "to"
+    },
+    {
+      "start": 69.93,
+      "end": 70.322,
+      "text": "work."
+    }
+  ]
+}

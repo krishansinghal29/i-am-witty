@@ -14,6 +14,7 @@ export const queryKeys = {
   config: ['config'] as const,
   home: ['home'] as const,
   catalog: ['practice', 'catalog'] as const,
+  lessons: ['lessons', 'catalog'] as const,
   taskRuntime: (taskId: string) => ['task', 'runtime', taskId] as const,
   access: ['entitlement', 'access'] as const,
   offerings: ['subscription', 'offerings'] as const, // RevenueCat SDK, client-side

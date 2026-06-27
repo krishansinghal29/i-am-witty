@@ -43,6 +43,24 @@ class TaskCatalogService:
             )
         return items
 
+    async def get_lessons(self, app_user_id: uuid.UUID) -> list[CatalogItem]:
+        """List audio lessons for the Lesson tab (intro first, then exercises).
+
+        Lessons live outside the practice catalog; access flags are still
+        evaluated so a future premium lesson locks correctly, though lessons are
+        free today and never count against the daily limit.
+        """
+        access = await self._entitlements.get_access_state(app_user_id)
+        lessons = await self._tasks.list_active_lessons()
+        return [
+            CatalogItem(
+                task=t,
+                requires_premium=(d := evaluate_task_access(t, access)).requires_premium,
+                is_locked=not d.allowed,
+            )
+            for t in lessons
+        ]
+
     async def get_task_detail(
         self, app_user_id: uuid.UUID, task_id: uuid.UUID
     ) -> CatalogItem:

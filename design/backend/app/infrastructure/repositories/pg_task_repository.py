@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.task import Task, TaskAccessTier, TaskStatus
-from app.domain.models.task_type import TaskType
+from app.domain.models.task_type import LESSON_TASK_TYPE_ID, TaskType
 from app.infrastructure.db.orm.tasks import Task as OrmTask
 from app.infrastructure.db.orm.tasks import TaskStatus as OrmTaskStatus
 from app.infrastructure.db.orm.tasks import TaskType as OrmTaskType
@@ -19,9 +19,26 @@ class PgTaskRepository:
         self._session = session
 
     async def list_active_catalog(self) -> list[Task]:
+        # Lessons are excluded here so they never enter the practice catalog or
+        # the daily plan; they are listed via `list_active_lessons`.
         stmt = (
             select(OrmTask)
-            .where(OrmTask.status == OrmTaskStatus.active)
+            .where(
+                OrmTask.status == OrmTaskStatus.active,
+                OrmTask.task_type_id != LESSON_TASK_TYPE_ID,
+            )
+            .order_by(OrmTask.sort_order)
+        )
+        rows = (await self._session.execute(stmt)).scalars().all()
+        return [self._to_domain(row) for row in rows]
+
+    async def list_active_lessons(self) -> list[Task]:
+        stmt = (
+            select(OrmTask)
+            .where(
+                OrmTask.status == OrmTaskStatus.active,
+                OrmTask.task_type_id == LESSON_TASK_TYPE_ID,
+            )
             .order_by(OrmTask.sort_order)
         )
         rows = (await self._session.execute(stmt)).scalars().all()

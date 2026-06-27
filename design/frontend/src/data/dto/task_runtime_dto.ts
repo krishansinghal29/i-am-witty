@@ -37,6 +37,12 @@ export interface RolePlayOpeningDto {
   next_user_move?: string | null;
 }
 
+export interface CaptionCueDto {
+  start: number;
+  end: number;
+  text: string;
+}
+
 export interface GeneratedPayloadDto {
   prompt: PromptDto;
   assigned_technique: TechniqueDto | null;
@@ -44,6 +50,10 @@ export interface GeneratedPayloadDto {
   audio_content_type: string | null;
   avatar_image_url: string | null;
   roleplay?: RolePlayOpeningDto | null;
+  /** Lesson tasks only: hosted audio + (optionally time-aligned) transcript. */
+  audio_url?: string | null;
+  transcript?: string | null;
+  captions?: CaptionCueDto[] | null;
 }
 
 export interface FeedbackTabsDto {

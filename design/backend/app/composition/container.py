@@ -51,6 +51,7 @@ from app.infrastructure.repositories.pg_task_repository import PgTaskRepository
 from app.infrastructure.repositories.pg_usage_repository import PgUsageRepository
 from app.infrastructure.repositories.pg_user_repository import PgUserRepository
 from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
+from app.infrastructure.runtime.lesson_engine import LessonTaskEngine
 from app.infrastructure.runtime.roleplay_engine import RoleplayTaskEngine
 from app.infrastructure.runtime.voice_prompt_engine import VoicePromptTaskEngine
 from app.ports.integrations.analytics import Analytics
@@ -94,10 +95,14 @@ def build_integrations(settings: Settings) -> Integrations:
         generator_model=settings.llm_generator_model,
         tts_voice=settings.tts_voice,
     )
+    # Lessons need no LLM/TTS — just the hosted-audio base URL and the committed
+    # caption resources read from disk.
+    lesson_engine = LessonTaskEngine(audio_base_url=settings.lesson_audio_base_url)
     runtime_engines = TaskRuntimeEngineResolver(
         {
             "voice_prompt_v1": voice_prompt_engine,
             "roleplay_v1": roleplay_engine,
+            "lesson_v1": lesson_engine,
         }
     )
     return Integrations(

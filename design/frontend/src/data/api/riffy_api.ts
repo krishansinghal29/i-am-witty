@@ -81,6 +81,9 @@ export interface RiffyApi {
   /** Fetch the full task catalog. */
   getCatalog(): Promise<CatalogItem[]>;
 
+  /** Fetch the audio lessons for the Lesson tab (intro first). */
+  getLessons(): Promise<CatalogItem[]>;
+
   /**
    * Fetch the runtime payload needed to play a task.
    * Defaults to source `'practice_library'` when not provided.
@@ -177,6 +180,11 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
 
     async getCatalog() {
       const dtos = await http.get<CatalogItemDto[]>(endpoints.catalog);
+      return dtos.map(mapCatalogItem);
+    },
+
+    async getLessons() {
+      const dtos = await http.get<CatalogItemDto[]>(endpoints.lessons);
       return dtos.map(mapCatalogItem);
     },
 

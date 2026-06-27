@@ -16,6 +16,9 @@ export const endpoints = {
   // Catalog
   catalog: '/v1/catalog',
 
+  // Lessons (audio lessons — separate tab, non-metered)
+  lessons: '/v1/lessons',
+
   // Task runtime & lifecycle
   taskRuntime: (taskId: string) => `/v1/tasks/${taskId}/runtime`,
   startTask: (taskId: string) => `/v1/tasks/${taskId}/start`,

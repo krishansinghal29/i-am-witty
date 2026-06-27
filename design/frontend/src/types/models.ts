@@ -206,6 +206,17 @@ export interface RolePlayOpening {
   nextUserMove: string | null;
 }
 
+/**
+ * One time-aligned caption fragment for a lesson. `start`/`end` are seconds
+ * into the audio; `text` is the word spoken in that window. The Lesson view
+ * highlights the active cue as playback advances (the karaoke pattern).
+ */
+export interface CaptionCue {
+  start: number;
+  end: number;
+  text: string;
+}
+
 /** All data needed to drive a task runtime session in the UI. */
 export interface RuntimePayload {
   prompt: Prompt;
@@ -213,6 +224,10 @@ export interface RuntimePayload {
   audio: RuntimeAudio;
   avatarImageUrl: string | null;
   roleplay: RolePlayOpening | null;
+  /** Lesson tasks only: hosted audio file + (optionally synced) transcript. */
+  audioUrl: string | null;
+  transcript: string | null;
+  captions: CaptionCue[];
 }
 
 /** Labels for the two feedback tabs shown on the Reflect phase. */

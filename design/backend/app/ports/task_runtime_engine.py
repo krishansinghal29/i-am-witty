@@ -57,12 +57,29 @@ class RolePlayOpening:
 
 
 @dataclass(frozen=True)
+class CaptionCue:
+    """One time-aligned caption fragment for a pre-recorded lesson.
+
+    `start`/`end` are seconds into the audio; `text` is the word (or short
+    phrase) spoken during that window. The client highlights the active cue as
+    playback advances (the karaoke pattern), so cues are word-level for smooth
+    sync. Produced offline by forced alignment, not at request time.
+    """
+
+    start: float
+    end: float
+    text: str
+
+
+@dataclass(frozen=True)
 class GeneratedTaskPayload:
     """Generated runtime payload for a task attempt.
 
     Optional sections vary by task type: technique tasks populate
-    `assigned_technique`, roleplay tasks populate `roleplay`, and avatar/audio
-    fields are filled only when the provider produces them.
+    `assigned_technique`, roleplay tasks populate `roleplay`, avatar/audio
+    fields are filled only when the provider produces them, and lesson tasks
+    populate `audio_url` + `transcript` + `captions` (a pre-recorded audio
+    lesson, no generation).
     """
 
     prompt: GeneratedPrompt
@@ -71,6 +88,12 @@ class GeneratedTaskPayload:
     audio_content_type: str | None = None
     avatar_image_url: str | None = None
     roleplay: RolePlayOpening | None = None
+    # Lesson tasks: a hosted audio file plus its (optionally time-aligned)
+    # transcript. `audio_url` streams from the CDN (range requests supported);
+    # `captions` is empty until the offline alignment pass produces cues.
+    audio_url: str | None = None
+    transcript: str | None = None
+    captions: tuple[CaptionCue, ...] = ()
 
 
 @dataclass(frozen=True)

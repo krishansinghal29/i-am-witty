@@ -118,7 +118,11 @@ const LOCK_BADGE: CSSProperties = {
 const FILTERS: { key: CatalogFilter; label: string }[] = [
   { key: 'roleplay', label: 'Roleplay' },
   { key: 'normal', label: 'Standard' },
+  { key: 'lessons', label: 'Lessons' },
 ];
+
+/** task_type_id of audio lessons — tapped without the free-limit gate. */
+const LESSON_TASK_TYPE_ID = 'lesson';
 
 function chipStyle(active: boolean): CSSProperties {
   return {
@@ -153,7 +157,9 @@ export function PracticePage() {
       openPaywall('catalog_locked');
       return;
     }
-    if (!gateTaskStart()) return;
+    // Lessons are non-metered — skip the free-limit gate. Exercises still gate.
+    const isLesson = item.task.taskTypeId === LESSON_TASK_TYPE_ID;
+    if (!isLesson && !gateTaskStart()) return;
 
     const params = new URLSearchParams({ source: 'practice_library' });
     history.push(`/task/${item.task.id}?${params.toString()}`);

@@ -109,6 +109,14 @@ class RolePlayOpeningResponse(BaseModel):
     next_user_move: str | None = None
 
 
+class CaptionCueResponse(BaseModel):
+    """One time-aligned caption fragment (lesson karaoke captions)."""
+
+    start: float
+    end: float
+    text: str
+
+
 class GeneratedPayloadResponse(BaseModel):
     """Generated runtime payload for a freshly started attempt."""
 
@@ -118,6 +126,10 @@ class GeneratedPayloadResponse(BaseModel):
     audio_content_type: str | None
     avatar_image_url: str | None
     roleplay: RolePlayOpeningResponse | None = None
+    # Lesson tasks only: hosted audio + (optionally time-aligned) transcript.
+    audio_url: str | None = None
+    transcript: str | None = None
+    captions: list[CaptionCueResponse] = []
 
     @classmethod
     def from_payload(cls, payload: GeneratedTaskPayload) -> GeneratedPayloadResponse:
@@ -143,6 +155,12 @@ class GeneratedPayloadResponse(BaseModel):
             audio_base64=payload.audio_base64,
             audio_content_type=payload.audio_content_type,
             avatar_image_url=payload.avatar_image_url,
+            audio_url=payload.audio_url,
+            transcript=payload.transcript,
+            captions=[
+                CaptionCueResponse(start=c.start, end=c.end, text=c.text)
+                for c in payload.captions
+            ],
             roleplay=(
                 RolePlayOpeningResponse(
                     brief_heading=roleplay.brief_heading,
@@ -325,6 +343,22 @@ async def get_catalog(
 ) -> list[CatalogItemResponse]:
     """List the practice catalog with per-user access flags."""
     items = await container.task_catalog_service.get_practice_catalog(user.id)
+    return [
+        CatalogItemResponse(
+            task=TaskResponse.from_task(item.task),
+            requires_premium=item.requires_premium,
+            is_locked=item.is_locked,
+        )
+        for item in items
+    ]
+
+
+@router.get("/lessons", response_model=list[CatalogItemResponse])
+async def get_lessons(
+    container: ContainerDep, user: CurrentUser
+) -> list[CatalogItemResponse]:
+    """List audio lessons for the Lesson tab (intro first). Non-metered."""
+    items = await container.task_catalog_service.get_lessons(user.id)
     return [
         CatalogItemResponse(
             task=TaskResponse.from_task(item.task),

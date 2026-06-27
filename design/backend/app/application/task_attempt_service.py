@@ -240,7 +240,9 @@ class TaskAttemptService:
             raise AccessDeniedError(decision.reason or "premium_required")
 
         fl = await self._free_limit_for(user, access)
-        if not fl.allowed:
+        # Non-metered task types (lessons) never hit the free-daily-task gate;
+        # `fl` is still returned so the client can show the unchanged balance.
+        if self._is_metered(task_type) and not fl.allowed:
             raise PaywallRequiredError(fl.reason or "free_limit_reached")
 
         async with self._uow.transaction():
@@ -290,6 +292,12 @@ class TaskAttemptService:
         # Release the read transaction before any network call so STT/LLM
         # latency never holds a DB transaction open.
         await self._uow.rollback()
+
+        # Lessons are non-metered consumption: nothing to transcribe or grade,
+        # and completion must not touch free-tier usage or the streak. Mark the
+        # attempt "listened" via the light path and return.
+        if not self._is_metered(task_type):
+            return await self._finalize_lesson(user, attempt, access)
 
         # Rebuild the prompt the user responded to (persisted at generate time)
         # so the evaluator grades against the right scenario/technique.
@@ -440,6 +448,62 @@ class TaskAttemptService:
         )
         fl = evaluate_free_limit(state2, access)
         return completed, fl, streak
+
+    @staticmethod
+    def _is_metered(task_type: TaskType) -> bool:
+        """Whether completing this task type counts against the free daily cap.
+
+        Metered is the default; a task type opts out by setting
+        ``metered: false`` in its metadata (lessons do). Non-metered types skip
+        the free-limit gate on start and the usage/streak side-effects on
+        completion.
+        """
+        return (task_type.metadata or {}).get("metered", True) is not False
+
+    async def _finalize_lesson(
+        self,
+        user: AppUser,
+        attempt: TaskAttempt,
+        access: AccessState,
+    ) -> CompleteTaskResult:
+        """Complete a lesson attempt with no metered side-effects.
+
+        Marks the attempt "listened" (and advances a daily-plan item if one was
+        ever linked) but — unlike ``finalize_completion`` — never increments
+        free-tier usage, the streak, or day activity. There is nothing to
+        evaluate, so the returned result carries empty feedback.
+        """
+        async with self._uow.transaction():
+            completed = await self._attempts.complete_attempt(
+                CompleteAttemptInput(
+                    attempt_id=attempt.id,
+                    completion_metadata={"kind": "lesson"},
+                )
+            )
+            if attempt.daily_plan_item_id is not None:
+                await self._plans.mark_item_completed(
+                    MarkPlanItemCompletedInput(
+                        app_user_id=attempt.app_user_id,
+                        plan_item_id=attempt.daily_plan_item_id,
+                        attempt_id=attempt.id,
+                    )
+                )
+
+        fl = await self._free_limit_for(user, access)
+        result = TaskRuntimeResult(
+            style_label=None,
+            feedback_html="",
+            sample_answer_html="",
+            completion_metadata={"kind": "lesson"},
+        )
+        return CompleteTaskResult(
+            completed,
+            result,
+            fl,
+            RoundProgress(completed=1, total=1),
+            is_session_complete=True,
+            streak=None,
+        )
 
     async def turn_task(
         self,

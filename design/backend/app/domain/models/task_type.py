@@ -2,6 +2,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+# Task type id for pre-recorded audio lessons. Lessons are consumption, not
+# practice: they are surfaced through their own endpoint/tab, kept out of the
+# practice catalog and the daily plan, and are non-metered (see `metered`
+# in their type metadata).
+LESSON_TASK_TYPE_ID = "lesson"
+
 
 @dataclass(frozen=True)
 class TaskType:

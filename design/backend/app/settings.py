@@ -56,6 +56,12 @@ class Settings(BaseSettings):
     tts_voice: str = "nova"
     tts_request_timeout_seconds: float = 20.0
 
+    # Lessons: pre-recorded audio explainers hosted as static files on the CDN
+    # (Firebase Hosting, which honours HTTP range requests so the client streams
+    # and seeks). The lesson engine builds each audio URL as
+    # `{lesson_audio_base_url}/{audio_key}.mp3`; no key is ever generated.
+    lesson_audio_base_url: str = "https://riffy.pro/audio/lessons"
+
     # Capgo OTA (self-hosted): the app's @capgo/capacitor-updater checks this
     # backend (POST /v1/ota/check) for new web-layer bundles, so we never use
     # (or pay for) Capgo's cloud. `ota_enabled=False` is the instant kill switch

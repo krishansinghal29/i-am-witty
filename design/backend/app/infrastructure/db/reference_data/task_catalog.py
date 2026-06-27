@@ -47,6 +47,25 @@ TASK_TYPES: list[dict] = [
             "supports_turns": True,
         },
     },
+    {
+        "id": "lesson",
+        "display_name": "Lesson",
+        "description": "A pre-recorded audio lesson with a synced transcript. Listen-only.",
+        "ui_schema_key": "lesson_listen_v1",
+        "runtime_engine_key": "lesson_v1",
+        "default_duration_seconds": None,
+        "is_active": True,
+        "sort_order": 30,
+        # `metered: False` exempts lessons from the free-daily-task cap and from
+        # the usage/streak side-effects on completion.
+        "type_metadata": {
+            "is_lesson": True,
+            "metered": False,
+            "supports_tts": False,
+            "supports_avatar": False,
+            "supports_assigned_technique": False,
+        },
+    },
 ]
 
 TASKS: list[dict] = [
@@ -779,5 +798,106 @@ TASKS: list[dict] = [
             "target_count": 5,
         },
     },
+]
+
+
+# --- Audio lessons -----------------------------------------------------------
+# Pre-recorded explainer audio (one per exercise) plus a standalone intro that
+# sorts first. `audio_key` is the stem of both the hosted mp3
+# (`{base}/{audio_key}.mp3`) and the committed caption resource
+# (`runtime/lessons/captions/{audio_key}.json`). Durations are the measured
+# lengths of the shipped (sped-up) files. Lessons are free and non-metered.
+_LESSON_SPECS: list[dict] = [
+    {
+        "audio_key": "intro",
+        "title": "Welcome",
+        "description": "How this works — and a promise: put in the reps, and you get better.",
+        "duration_seconds": 70,
+    },
+    {
+        "audio_key": "pushPull",
+        "title": "Push / Pull",
+        "description": "The core of flirting — a positive and a negative, held in tension.",
+        "duration_seconds": 167,
+    },
+    {
+        "audio_key": "yesAnd",
+        "title": "Yes, And…",
+        "description": "Accept the premise and build it into something more fun.",
+        "duration_seconds": 165,
+    },
+    {
+        "audio_key": "misinterpretation",
+        "title": "Misinterpretation",
+        "description": "Find an unexpected reading in an ordinary sentence.",
+        "duration_seconds": 159,
+    },
+    {
+        "audio_key": "loveHate",
+        "title": "Love / Hate",
+        "description": "Pick a side and express a strong opinion with personality.",
+        "duration_seconds": 149,
+    },
+    {
+        "audio_key": "ifByXYouMeanY",
+        "title": "If by X you mean Y…",
+        "description": "Reframe criticism into something confident and compelling.",
+        "duration_seconds": 163,
+    },
+    {
+        "audio_key": "questionAnswerTease",
+        "title": "Question, Answer, Tease",
+        "description": "Turn a direct answer into a playful tease.",
+        "duration_seconds": 180,
+    },
+    {
+        "audio_key": "vibing",
+        "title": "Vibing",
+        "description": "Match emotion, validate the feeling, and build momentum.",
+        "duration_seconds": 165,
+    },
+    {
+        "audio_key": "firstUnusualThing",
+        "title": "First Unusual Thing",
+        "description": "Introduce one grounded tilt into an ordinary scene.",
+        "duration_seconds": 163,
+    },
+    {
+        "audio_key": "shitTest",
+        "title": "Shit Test",
+        "description": "Stay cool when she tests you and turn the challenge into attraction.",
+        "duration_seconds": 164,
+    },
+    {
+        "audio_key": "sexualMisinterpretation",
+        "title": "Sexual Misinterpretation",
+        "description": "Hear the suggestive meaning in an innocent line and run with it.",
+        "duration_seconds": 149,
+    },
+    {
+        "audio_key": "sexWithMeIsLike",
+        "title": "Sex With Me Is Like…",
+        "description": "Finish the analogy with a punchline that lands.",
+        "duration_seconds": 155,
+    },
+]
+
+TASKS += [
+    {
+        "slug": f"lesson-{spec['audio_key']}",
+        "title": spec["title"],
+        "description": spec["description"],
+        "task_type_id": "lesson",
+        "duration_seconds": spec["duration_seconds"],
+        "thumbnail_key": f"lesson-{spec['audio_key']}",
+        "image_key": f"lesson-{spec['audio_key']}",
+        "access_tier": "free",
+        "status": "active",
+        # Intro first (sort_order 5), then one lesson per exercise.
+        "sort_order": 5 + index * 10,
+        "content": {"kind": "lesson", "audio_key": spec["audio_key"]},
+        "runtime_config": {},
+    }
+    for index, spec in enumerate(_LESSON_SPECS)
 ]
 
