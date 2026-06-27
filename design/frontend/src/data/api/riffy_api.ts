@@ -11,6 +11,7 @@ import {
   CatalogItem,
   CompleteTaskResult,
   HomeView,
+  NextRoundResult,
   NotificationDevice,
   Session,
   StartTaskResult,
@@ -29,7 +30,7 @@ import { PublicConfigDto } from '@/data/dto/config_dto';
 import { HomeDto } from '@/data/dto/home_dto';
 import { CatalogItemDto } from '@/data/dto/catalog_dto';
 import { TaskRuntimeDto } from '@/data/dto/task_runtime_dto';
-import { CompleteTaskDto, StartTaskDto } from '@/data/dto/attempt_dto';
+import { CompleteTaskDto, NextRoundDto, StartTaskDto } from '@/data/dto/attempt_dto';
 import { TurnTaskDto } from '@/data/dto/roleplay_dto';
 import { AccessDto } from '@/data/dto/entitlement_dto';
 import { DeviceDto, SupportDto } from '@/data/dto/comms_dto';
@@ -41,7 +42,11 @@ import { mapAppConfig } from '@/data/mappers/config_mapper';
 import { mapHome } from '@/data/mappers/home_mapper';
 import { mapCatalogItem } from '@/data/mappers/catalog_mapper';
 import { mapTaskRuntime } from '@/data/mappers/task_runtime_mapper';
-import { mapCompleteResult, mapStartResult } from '@/data/mappers/attempt_mapper';
+import {
+  mapCompleteResult,
+  mapNextRoundResult,
+  mapStartResult,
+} from '@/data/mappers/attempt_mapper';
 import { mapTurnResult } from '@/data/mappers/roleplay_mapper';
 import { mapAccess } from '@/data/mappers/entitlement_mapper';
 import {
@@ -107,6 +112,12 @@ export interface RiffyApi {
     attemptId: string,
     body: { clientTranscript?: string },
   ): Promise<TurnTaskResult>;
+
+  /**
+   * Generate the next rep's scenario for a multi-rep (single-shot) attempt.
+   * Backs the "Next" button; returns a fresh prompt + the unchanged rep counter.
+   */
+  nextRound(attemptId: string): Promise<NextRoundResult>;
 
   /** Mint a short-lived transcription token for the device. */
   mintTranscriptionToken(): Promise<TranscriptionToken>;
@@ -210,6 +221,11 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
           : {}),
       });
       return mapTurnResult(dto);
+    },
+
+    async nextRound(attemptId) {
+      const dto = await http.post<NextRoundDto>(endpoints.nextRound(attemptId));
+      return mapNextRoundResult(dto);
     },
 
     async mintTranscriptionToken() {

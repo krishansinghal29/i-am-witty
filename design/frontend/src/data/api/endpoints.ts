@@ -21,6 +21,7 @@ export const endpoints = {
   startTask: (taskId: string) => `/v1/tasks/${taskId}/start`,
   completeTask: (attemptId: string) => `/v1/attempts/${attemptId}/complete`,
   turnAttempt: (attemptId: string) => `/v1/attempts/${attemptId}/turn`,
+  nextRound: (attemptId: string) => `/v1/attempts/${attemptId}/next-round`,
 
   // Transcription
   transcriptionTokens: '/v1/transcription-tokens',

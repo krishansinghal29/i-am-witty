@@ -1,5 +1,7 @@
 /** Wire shapes for task attempt (start / complete) endpoints (snake_case). */
 
+import { GeneratedPayloadDto, RoundsDto } from './task_runtime_dto';
+
 export interface FreeLimitDto {
   allowed: boolean;
   should_paywall: boolean;
@@ -32,7 +34,17 @@ export interface CompleteTaskDto {
   status: string;
   result: EvaluationDto;
   free_limit: FreeLimitDto;
-  streak: StreakDto;
+  rounds: RoundsDto;
+  is_session_complete: boolean;
+  streak: StreakDto | null;
+}
+
+export interface NextRoundDto {
+  attempt_id: string;
+  status: string;
+  payload: GeneratedPayloadDto;
+  rounds: RoundsDto;
+  free_limit: FreeLimitDto;
 }
 
 // ---------------------------------------------------------------------------

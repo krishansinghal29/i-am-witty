@@ -6,6 +6,7 @@ export * from './streak_chip';
 export * from './week_strip';
 export * from './plan_path';
 export * from './celebration';
+export * from './exercise_progress_strip';
 export * from './state_views';
 export * from './spark_loader';
 export * from './boot_loading_screen';

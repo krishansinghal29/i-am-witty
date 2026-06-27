@@ -11,6 +11,7 @@ from app.application.exceptions import (
     PaywallRequiredError,
     ValidationError,
 )
+from app.application.runtime_state import rounds_from_state, serialize_runtime_state
 from app.application.transcription_service import TranscriptionService
 from app.application.unit_of_work import UnitOfWork
 from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
@@ -53,6 +54,8 @@ from app.ports.repositories.user_repository import UserRepository
 from app.ports.task_runtime_engine import (
     AssignedTechnique,
     CompleteTaskRuntimeInput,
+    GeneratedTaskPayload,
+    GenerateTaskInput,
     PromptMessage,
     TaskRuntimeResult,
     TurnResult,
@@ -102,11 +105,33 @@ class StartTaskResult:
 
 
 @dataclass(frozen=True)
+class RoundProgress:
+    """Progress through a multi-rep session (``completed`` of ``total`` reps)."""
+
+    completed: int
+    total: int
+
+
+@dataclass(frozen=True)
 class CompleteTaskResult:
     attempt: TaskAttempt
     result: TaskRuntimeResult
     free_limit: FreeLimitDecision
-    streak: StreakUpdate
+    rounds: RoundProgress
+    is_session_complete: bool
+    # Populated only on the rep that completes the session (when the shared
+    # completion side-effects run); ``None`` for intermediate reps.
+    streak: StreakUpdate | None
+
+
+@dataclass(frozen=True)
+class NextRoundResult:
+    """A freshly generated scenario for the next rep within the same attempt."""
+
+    attempt: TaskAttempt
+    payload: GeneratedTaskPayload
+    rounds: RoundProgress
+    free_limit: FreeLimitDecision
 
 
 @dataclass(frozen=True)
@@ -289,7 +314,29 @@ class TaskAttemptService:
             )
         )
 
-        # PHASE 3 — atomic multi-table write (shared with the roleplay turn path).
+        # PHASE 3 — advance the rep counter; only the last rep finalizes.
+        completed_rounds, total_rounds = rounds_from_state(attempt.runtime_state)
+        new_completed = completed_rounds + 1
+        is_session_complete = new_completed >= total_rounds
+        progress = RoundProgress(completed=new_completed, total=total_rounds)
+
+        if not is_session_complete:
+            # Intermediate rep: persist progress, keep the attempt `started`, and
+            # skip the shared completion side-effects (streak/usage fire once, on
+            # the final rep — mirroring the roleplay turn path).
+            new_state = dict(attempt.runtime_state or {})
+            new_state["rounds"] = {
+                "total": total_rounds,
+                "completed": new_completed,
+            }
+            async with self._uow.transaction():
+                await self._attempts.attach_runtime_state(attempt_id, new_state)
+            fl = await self._free_limit_for(user, access)
+            return CompleteTaskResult(
+                attempt, runtime_result, fl, progress, False, None
+            )
+
+        # Final rep — atomic multi-table write (shared with the roleplay turn path).
         completion_meta = {
             **runtime_result.completion_metadata,
             "style_label": runtime_result.style_label,
@@ -302,7 +349,9 @@ class TaskAttemptService:
             access=access,
             completion_metadata=completion_meta,
         )
-        return CompleteTaskResult(completed, runtime_result, fl, streak)
+        return CompleteTaskResult(
+            completed, runtime_result, fl, progress, True, streak
+        )
 
     async def finalize_completion(
         self,
@@ -455,3 +504,62 @@ class TaskAttemptService:
 
         fl = await self._free_limit_for(user, access)
         return TurnTaskResult(attempt, turn, fl, None)
+
+    async def next_round(
+        self,
+        app_user_id: uuid.UUID,
+        attempt_id: uuid.UUID,
+    ) -> NextRoundResult:
+        """Generate a fresh scenario for the next rep within the same attempt.
+
+        Called by the "Next" button after an intermediate rep's feedback. Runs a
+        new generation (LLM + optional TTS), overwrites the attempt's persisted
+        prompt while preserving the rep counter, and returns the new payload so
+        the user can record again. Never finalizes — completion happens on the
+        final ``complete_task``.
+        """
+        # PHASE 1 — reads (inside the request's open read transaction).
+        user = await self._users.find_by_id(app_user_id)
+        if user is None:
+            raise NotFoundError("user_not_found")
+
+        attempt = await self._attempts.find_by_id(attempt_id)
+        if attempt is None or attempt.app_user_id != app_user_id:
+            raise NotFoundError("attempt_not_found")
+        if attempt.status == TaskAttemptStatus.completed:
+            raise ConflictError("already_completed")
+
+        completed_rounds, total_rounds = rounds_from_state(attempt.runtime_state)
+        if completed_rounds >= total_rounds:
+            raise ConflictError("session_complete")
+
+        task = await self._tasks.find_by_id(attempt.task_id)
+        task_type = await self._tasks.get_task_type(task.task_type_id)
+        access = await self._entitlements.get_access_state(app_user_id)
+
+        # Release the read transaction before the generation call.
+        await self._uow.rollback()
+
+        engine = self._engines.for_task_type(task_type)
+        payload = await engine.generate(
+            GenerateTaskInput(
+                task=task,
+                task_type=task_type,
+                attempt_id=attempt_id,
+            )
+        )
+
+        # Overwrite the prompt for this rep while preserving progress so the next
+        # `complete_task` grades the new scenario and advances the same counter.
+        new_state = serialize_runtime_state(payload, total_rounds)
+        new_state["rounds"]["completed"] = completed_rounds
+        async with self._uow.transaction():
+            await self._attempts.attach_runtime_state(attempt_id, new_state)
+
+        fl = await self._free_limit_for(user, access)
+        return NextRoundResult(
+            attempt,
+            payload,
+            RoundProgress(completed=completed_rounds, total=total_rounds),
+            fl,
+        )

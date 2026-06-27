@@ -11,7 +11,7 @@ import { IonIcon } from '@ionic/react';
 import { close as closeIcon, send as sendIcon, mic as micIcon, play as playIcon } from 'ionicons/icons';
 
 import { colors, gradients } from '@/theme/tokens';
-import { Button, Celebration } from '@/components/ui';
+import { Button, Celebration, ExerciseProgressStrip } from '@/components/ui';
 import { useIntegrations } from '@/app/providers';
 import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { useAttemptTurn } from '@/features/task_runtime/use_attempt_turn';
@@ -309,24 +309,12 @@ function TaskStrip({
           <span style={{ color: colors.faint, fontWeight: 700, fontSize: 12 }}> / {target}</span>
         </span>
       </div>
-      <div style={{ display: 'flex', gap: 5, marginTop: 10 }}>
-        {Array.from({ length: target }).map((_, i) => (
-          <span
-            key={i}
-            style={{
-              flex: 1,
-              height: 5,
-              borderRadius: 3,
-              background:
-                i < landed
-                  ? gradients.activeTab
-                  : i === landed
-                    ? 'rgba(10, 143, 242, 0.3)'
-                    : 'rgba(43, 47, 58, 0.12)',
-            }}
-          />
-        ))}
-      </div>
+      <ExerciseProgressStrip
+        completed={landed}
+        total={target}
+        showCount={false}
+        style={{ marginTop: 10 }}
+      />
       <div style={HINT}>
         {sample ? (
           <span>

@@ -4,6 +4,7 @@ import {
   CompleteTaskResult,
   EvaluationResult,
   FreeLimit,
+  NextRoundResult,
   StartTaskResult,
   Streak,
 } from '@/types/models';
@@ -11,9 +12,11 @@ import {
   CompleteTaskDto,
   EvaluationDto,
   FreeLimitDto,
+  NextRoundDto,
   StartTaskDto,
   StreakDto,
 } from '@/data/dto/attempt_dto';
+import { mapPayload, mapRounds } from './task_runtime_mapper';
 
 export function mapFreeLimit(dto: FreeLimitDto): FreeLimit {
   return {
@@ -56,6 +59,18 @@ export function mapCompleteResult(dto: CompleteTaskDto): CompleteTaskResult {
     status: dto.status,
     result: mapEvaluation(dto.result),
     freeLimit: mapFreeLimit(dto.free_limit),
-    streak: mapStreak(dto.streak),
+    rounds: mapRounds(dto.rounds),
+    isSessionComplete: dto.is_session_complete,
+    streak: dto.streak != null ? mapStreak(dto.streak) : null,
+  };
+}
+
+export function mapNextRoundResult(dto: NextRoundDto): NextRoundResult {
+  return {
+    attemptId: dto.attempt_id,
+    status: dto.status,
+    payload: mapPayload(dto.payload),
+    rounds: mapRounds(dto.rounds),
+    freeLimit: mapFreeLimit(dto.free_limit),
   };
 }

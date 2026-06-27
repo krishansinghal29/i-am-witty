@@ -10,27 +10,30 @@ import {
 } from 'ionicons/icons';
 
 import { colors } from '@/theme/tokens';
-import { Button } from '@/components/ui';
+import { Button, ExerciseProgressStrip } from '@/components/ui';
 import { useIntegrations } from '@/app/providers';
 import { useFreeLimit } from '@/features/entitlement/use_free_limit';
+import { useAttemptNextRound } from '@/features/task_runtime/use_attempt_next_round';
 import { useRuntimeStore } from '@/state/stores/runtime_store';
 import type {
   TranscriptionSession,
   TranscriptionWarmup,
 } from '@/integrations/ports/transcription_gateway';
-import type { TaskRuntime } from '@/types/models';
+import type { Rounds, RuntimePayload, TaskRuntime } from '@/types/models';
 
 import type { AttemptController, VoiceCompleteBody } from '../../contract';
-import { phaseSteps } from './phase_machine';
-import { PhaseBar } from './phase_bar';
 import { FeedbackPanel } from './feedback_panel';
 import { ReflectRecap } from './reflect_recap';
 
 export interface VoicePromptShellProps {
   payload: TaskRuntime;
   attempt: AttemptController<VoiceCompleteBody>;
-  /** Prompt rendering for the Respond phase (role-chipped messages, technique). */
-  promptArea: ReactNode;
+  /**
+   * Renders the Respond-phase prompt (role-chipped messages, technique) from the
+   * CURRENT rep's runtime payload. A function — not a static node — because a
+   * multi-rep session swaps in a fresh scenario on each "Next".
+   */
+  renderPrompt: (runtime: RuntimePayload) => ReactNode;
   /** Emoji/glyph for the Brief hero. */
   briefIcon?: ReactNode;
 }
@@ -129,12 +132,13 @@ function joinSpeech(base: string, spoken: string): string {
 export function VoicePromptShell({
   payload,
   attempt,
-  promptArea,
+  renderPrompt,
   briefIcon,
 }: VoicePromptShellProps) {
   const history = useHistory();
   const { transcription } = useIntegrations();
   const { handleFreeLimit } = useFreeLimit();
+  const nextRoundCtl = useAttemptNextRound(payload.attemptId);
 
   const phase = useRuntimeStore((s) => s.phase);
   const isRecording = useRuntimeStore((s) => s.isRecording);
@@ -162,8 +166,12 @@ export function VoicePromptShell({
   const stopPromiseRef = useRef<Promise<void> | null>(null);
   const actionInFlightRef = useRef(false);
 
+  // The active rep's scenario + the session counter. Held locally (not read
+  // straight off props) so "Next" can swap in a fresh prompt without a reload.
+  const [runtime, setRuntime] = useState<RuntimePayload>(payload.payload);
+  const [rounds, setRounds] = useState<Rounds>(payload.rounds);
+
   const content = payload.content;
-  const runtime = payload.payload;
   const limit = content.recordingLimitSeconds > 0 ? content.recordingLimitSeconds : 30;
 
   const clearTimer = useCallback(() => {
@@ -263,14 +271,18 @@ export function VoicePromptShell({
     }
   }, [runtime.audio.audioBase64, runtime.audio.contentType]);
 
-  // Reset the machine whenever a new attempt loads.
+  // Reset the machine whenever a new attempt loads. Keyed on attemptId only —
+  // a "Next" prompt swap keeps the same attempt, so it must not reset here.
   useEffect(() => {
     startAttempt(payload.attemptId);
+    setRuntime(payload.payload);
+    setRounds(payload.rounds);
     actionInFlightRef.current = false;
     autoplayedRef.current = false;
     setRemainingSeconds(0);
     setLocalError(null);
     setPromptDone(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [payload.attemptId, startAttempt]);
 
   // Auto-voice the prompt once when entering Respond (user gesture from Start).
@@ -348,7 +360,8 @@ export function VoicePromptShell({
       const text =
         useRuntimeStore.getState().transcript.trim() || NO_RESPONSE_PLACEHOLDER;
       try {
-        await attempt.complete({ clientTranscript: text });
+        const result = await attempt.complete({ clientTranscript: text });
+        setRounds(result.rounds);
         setPhase('reflect');
       } catch {
         // attempt.status === 'error' surfaces above the input bar.
@@ -357,6 +370,27 @@ export function VoicePromptShell({
       actionInFlightRef.current = false;
     }
   }, [attempt, clearTimer, setPhase, stopRecording]);
+
+  // "Next" between reps: pull a fresh scenario, swap it in, and re-arm Respond.
+  const onNext = useCallback(async () => {
+    if (actionInFlightRef.current) return;
+    actionInFlightRef.current = true;
+    setLocalError(null);
+    try {
+      const res = await nextRoundCtl.nextRound();
+      setRuntime(res.payload);
+      setRounds(res.rounds);
+      setTranscript('');
+      setRemainingSeconds(0);
+      autoplayedRef.current = false;
+      setPromptDone(false);
+      setPhase('respond');
+    } catch {
+      setLocalError('Couldn’t load the next one. Give it another try.');
+    } finally {
+      actionInFlightRef.current = false;
+    }
+  }, [nextRoundCtl, setPhase, setTranscript]);
 
   useEffect(() => {
     clearTimer();
@@ -412,12 +446,12 @@ export function VoicePromptShell({
         </button>
       </header>
 
-      <PhaseBar
-        steps={phaseSteps()}
-        current={phase}
-        onSelect={phase === 'reflect' ? undefined : onPhaseSelect}
+      <ExerciseProgressStrip
+        completed={rounds.completed}
+        total={rounds.total}
+        label="Reps"
+        style={ROUNDS_STRIP}
       />
-      <div style={{ height: 1, background: colors.line, margin: '0 18px' }} />
 
       <main style={SCROLL}>
         {phase === 'brief' && (
@@ -431,7 +465,7 @@ export function VoicePromptShell({
 
         {phase === 'respond' && (
           <div className="riffy-rise" style={{ display: 'flex', flexDirection: 'column' }}>
-            {promptArea}
+            {renderPrompt(runtime)}
 
             {content.responseInstruction && (
               <div style={CUE_CHIP}>
@@ -479,6 +513,10 @@ export function VoicePromptShell({
           phase={phase}
           onStart={() => setPhase('respond')}
           onDone={finish}
+          onNext={() => void onNext()}
+          sessionComplete={attempt.result?.isSessionComplete ?? true}
+          nextLoading={nextRoundCtl.isSubmitting}
+          error={localError}
         />
       )}
     </div>
@@ -724,13 +762,27 @@ function FooterBar({
   phase,
   onStart,
   onDone,
+  onNext,
+  sessionComplete,
+  nextLoading,
+  error,
 }: {
   phase: 'brief' | 'respond' | 'reflect';
   onStart: () => void;
   onDone: () => void;
+  onNext: () => void;
+  /** False mid-session: the Reflect footer offers "Next" instead of "Done". */
+  sessionComplete: boolean;
+  nextLoading: boolean;
+  error: string | null;
 }) {
   return (
     <footer style={{ display: 'flex', flexDirection: 'column' }}>
+      {phase === 'reflect' && !sessionComplete && error && (
+        <p style={{ color: colors.red, fontSize: 12.5, textAlign: 'center', padding: '0 18px 4px' }}>
+          {error}
+        </p>
+      )}
       <div style={FOOTER}>
         {phase === 'brief' && (
           <Button variant="primary" block onClick={onStart}>
@@ -738,11 +790,16 @@ function FooterBar({
           </Button>
         )}
 
-        {phase === 'reflect' && (
-          <Button variant="primary" block onClick={onDone}>
-            Done
-          </Button>
-        )}
+        {phase === 'reflect' &&
+          (sessionComplete ? (
+            <Button variant="primary" block onClick={onDone}>
+              Done
+            </Button>
+          ) : (
+            <Button variant="accent" block loading={nextLoading} onClick={onNext}>
+              Next round
+            </Button>
+          ))}
       </div>
     </footer>
   );
@@ -751,6 +808,10 @@ function FooterBar({
 // ---------------------------------------------------------------------------
 // Respond-dock styles (mirrors the roleplay input bar)
 // ---------------------------------------------------------------------------
+
+const ROUNDS_STRIP: CSSProperties = {
+  padding: '12px 18px 0',
+};
 
 const DOCK: CSSProperties = {
   display: 'flex',

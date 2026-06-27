@@ -63,6 +63,7 @@ TASKS: list[dict] = [
         "sort_order": 20,
         "content": {
             "exercise_key": "questionAnswerTease",
+            "total_rounds": 5,
             "prompt_label": "Question",
             "prompt_roles": ["You", "She"],
             "response_instruction": "Tease her answer playfully without insulting or interviewing.",
@@ -105,6 +106,7 @@ TASKS: list[dict] = [
             "response_instruction": "Land one push-pull line — tease something trivial, mean the compliment.",
             "recording_limit_seconds": 60,
             "assigned_technique_mode": "none",
+            "total_rounds": 5,
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -144,6 +146,7 @@ TASKS: list[dict] = [
         "sort_order": 40,
         "content": {
             "exercise_key": "yesAnd",
+            "total_rounds": 5,
             "prompt_label": "Premise",
             "prompt_roles": ["She"],
             "response_instruction": "Accept the premise and add something that makes it more fun.",
@@ -181,6 +184,7 @@ TASKS: list[dict] = [
         "sort_order": 50,
         "content": {
             "exercise_key": "misinterpretation",
+            "total_rounds": 5,
             "prompt_label": "Tease/Statement",
             "prompt_roles": ["She"],
             "response_instruction": "Misread the sentence and commit to that alternative meaning.",
@@ -218,6 +222,7 @@ TASKS: list[dict] = [
         "sort_order": 60,
         "content": {
             "exercise_key": "loveHate",
+            "total_rounds": 5,
             "prompt_label": "Topic",
             "prompt_roles": ["Topic"],
             "response_instruction": "Choose love or hate and make the stance vivid.",
@@ -255,6 +260,7 @@ TASKS: list[dict] = [
         "sort_order": 70,
         "content": {
             "exercise_key": "ifByXYouMeanY",
+            "total_rounds": 5,
             "prompt_label": "Statement",
             "prompt_roles": ["She"],
             "response_instruction": "Use the If by X you mean Y structure to transform the criticism.",
@@ -297,6 +303,7 @@ TASKS: list[dict] = [
         "sort_order": 80,
         "content": {
             "exercise_key": "vibing",
+            "total_rounds": 5,
             "prompt_label": "Story",
             "prompt_roles": ["Storyteller"],
             "response_instruction": "Respond with warmth, curiosity, and matching energy.",
@@ -334,6 +341,7 @@ TASKS: list[dict] = [
         "sort_order": 100,
         "content": {
             "exercise_key": "firstUnusualThing",
+            "total_rounds": 5,
             "prompt_label": "Scene",
             "prompt_roles": ["She"],
             "response_instruction": "Name one unusual thing in the scene, then say what else is true if that's true.",
@@ -380,6 +388,7 @@ TASKS: list[dict] = [
         "sort_order": 110,
         "content": {
             "exercise_key": "shitTest",
+            "total_rounds": 5,
             "prompt_label": "Tease/Statement",
             "prompt_roles": ["She"],
             "response_instruction": "Pass the test: stay unfazed and play. Own it, flip it, or tease back — don't get defensive or try to please.",
@@ -417,6 +426,7 @@ TASKS: list[dict] = [
         "sort_order": 120,
         "content": {
             "exercise_key": "sexualMisinterpretation",
+            "total_rounds": 5,
             "prompt_label": "Tease/Statement",
             "prompt_roles": ["She"],
             "response_instruction": "Respond as if you heard the suggestive meaning — commit, keep it clever.",

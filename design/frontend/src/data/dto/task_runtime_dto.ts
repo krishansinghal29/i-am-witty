@@ -58,6 +58,11 @@ export interface ContentDto {
   feedback_tabs: FeedbackTabsDto;
 }
 
+export interface RoundsDto {
+  completed: number;
+  total: number;
+}
+
 export interface TaskRuntimeDto {
   attempt_id: string;
   task: TaskDto;
@@ -65,6 +70,8 @@ export interface TaskRuntimeDto {
   /** Optional for backward compatibility with older/partial responses. */
   content?: Partial<ContentDto> | null;
   payload: GeneratedPayloadDto;
+  /** Optional/absent on older responses; defaults to a single round. */
+  rounds?: RoundsDto | null;
 }
 
 // ---------------------------------------------------------------------------

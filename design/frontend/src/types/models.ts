@@ -233,6 +233,16 @@ export interface RuntimeContent {
   feedbackTabs: FeedbackTabs;
 }
 
+/**
+ * Multi-rep session progress for single-shot exercises repeated N times within
+ * one attempt. `total === 1` is the classic single-shot case (the progress bar
+ * is hidden).
+ */
+export interface Rounds {
+  completed: number;
+  total: number;
+}
+
 /** Top-level response from the `/v1/tasks/:id/runtime` endpoint. */
 export interface TaskRuntime {
   attemptId: string;
@@ -240,6 +250,7 @@ export interface TaskRuntime {
   taskType: TaskType;
   content: RuntimeContent;
   payload: RuntimePayload;
+  rounds: Rounds;
 }
 
 /** Free-tier usage gate returned alongside task start/complete responses. */
@@ -271,7 +282,22 @@ export interface CompleteTaskResult {
   status: string;
   result: EvaluationResult;
   freeLimit: FreeLimit;
-  streak: Streak;
+  /** Progress after this rep. `completed === total` ⇒ session finished. */
+  rounds: Rounds;
+  /** True on the rep that finished the session (the one that ran finalize). */
+  isSessionComplete: boolean;
+  /** Populated only on the rep that completes the session; null otherwise. */
+  streak: Streak | null;
+}
+
+/** Response from the `/v1/attempts/:id/next-round` endpoint. */
+export interface NextRoundResult {
+  attemptId: string;
+  status: string;
+  /** Freshly generated scenario for the next rep (replaces the prompt/audio). */
+  payload: RuntimePayload;
+  rounds: Rounds;
+  freeLimit: FreeLimit;
 }
 
 /** Response from the `/v1/tasks/:id/start` endpoint. */

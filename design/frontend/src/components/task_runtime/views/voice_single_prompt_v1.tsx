@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { colors, radius } from '@/theme/tokens';
+import type { RuntimePayload } from '@/types/models';
 import type { TaskRuntimeViewProps } from '../contract';
 import { VoicePromptShell } from '../families/voice_prompt/voice_prompt_shell';
 import { PromptThread } from '../families/voice_prompt/prompt_thread';
@@ -15,9 +16,9 @@ const TECHNIQUE_CARD: CSSProperties = {
 
 /** Type 1: one prompt, one spoken response, optional assigned technique. */
 export function VoiceSinglePromptV1({ payload, attempt }: TaskRuntimeViewProps) {
-  const { prompt, assignedTechnique } = payload.payload;
-
-  const promptArea = (
+  // Built from the CURRENT rep's runtime so a multi-rep "Next" re-renders the
+  // new scenario (prompt + technique), not the one this attempt opened with.
+  const renderPrompt = ({ prompt, assignedTechnique }: RuntimePayload) => (
     <>
       <PromptThread messages={prompt.messages} />
       {assignedTechnique && (
@@ -42,7 +43,7 @@ export function VoiceSinglePromptV1({ payload, attempt }: TaskRuntimeViewProps) 
     <VoicePromptShell
       payload={payload}
       attempt={attempt}
-      promptArea={promptArea}
+      renderPrompt={renderPrompt}
       briefIcon="🎭"
     />
   );

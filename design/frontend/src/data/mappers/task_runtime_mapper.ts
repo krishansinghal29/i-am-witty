@@ -5,6 +5,7 @@ import {
   Prompt,
   PromptMessage,
   RolePlayOpening,
+  Rounds,
   RuntimeContent,
   RuntimePayload,
   TaskRuntime,
@@ -16,11 +17,20 @@ import {
   MessageDto,
   PromptDto,
   RolePlayOpeningDto,
+  RoundsDto,
   TaskRuntimeDto,
   TaskTypeDto,
   TechniqueDto,
 } from '@/data/dto/task_runtime_dto';
 import { mapTask } from './catalog_mapper';
+
+/** Read progress, defaulting absent/partial blocks to a single round. */
+export function mapRounds(dto: RoundsDto | null | undefined): Rounds {
+  return {
+    completed: dto?.completed ?? 0,
+    total: dto?.total && dto.total > 0 ? dto.total : 1,
+  };
+}
 
 export function mapTaskType(dto: TaskTypeDto): TaskType {
   return {
@@ -85,7 +95,7 @@ function mapRolePlayOpening(dto: RolePlayOpeningDto): RolePlayOpening {
   };
 }
 
-function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
+export function mapPayload(dto: GeneratedPayloadDto): RuntimePayload {
   return {
     prompt: mapPrompt(dto.prompt),
     assignedTechnique: dto.assigned_technique != null
@@ -108,5 +118,6 @@ export function mapTaskRuntime(dto: TaskRuntimeDto): TaskRuntime {
     taskType: mapTaskType(dto.task_type),
     content: mapContent(dto.content, task.durationSeconds ?? 30),
     payload: mapPayload(dto.payload),
+    rounds: mapRounds(dto.rounds),
   };
 }

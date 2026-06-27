@@ -206,12 +206,21 @@ class ContentResponse(BaseModel):
         )
 
 
+class RoundsResponse(BaseModel):
+    """Multi-rep session progress. ``total == 1`` ⇒ classic single-shot; the
+    client hides the progress bar in that case."""
+
+    completed: int
+    total: int
+
+
 class TaskRuntimeResponse(BaseModel):
     attempt_id: UUID
     task: TaskResponse
     task_type: TaskTypeResponse
     content: ContentResponse
     payload: GeneratedPayloadResponse
+    rounds: RoundsResponse
 
 
 class StartTaskResponse(BaseModel):
@@ -239,7 +248,21 @@ class CompleteTaskResponse(BaseModel):
     status: str
     result: EvaluationResponse
     free_limit: FreeLimitResponse
-    streak: StreakResponse
+    rounds: RoundsResponse
+    is_session_complete: bool
+    # Populated only on the rep that completes the session; null for
+    # intermediate reps (when the user still has a "Next" rep to do).
+    streak: StreakResponse | None
+
+
+class NextRoundResponse(BaseModel):
+    """A freshly generated scenario for the next rep within the same attempt."""
+
+    attempt_id: UUID
+    status: str
+    payload: GeneratedPayloadResponse
+    rounds: RoundsResponse
+    free_limit: FreeLimitResponse
 
 
 class TranscriptionTokenResponse(BaseModel):
@@ -337,6 +360,7 @@ async def get_task_runtime(
             view.task.duration_seconds or 30,
         ),
         payload=GeneratedPayloadResponse.from_payload(view.payload),
+        rounds=RoundsResponse(completed=0, total=view.total_rounds),
     )
 
 
@@ -382,10 +406,19 @@ async def complete_task(
             completion_metadata=result.result.completion_metadata,
         ),
         free_limit=FreeLimitResponse.from_decision(result.free_limit),
-        streak=StreakResponse(
-            current_streak=result.streak.current_streak,
-            longest_streak=result.streak.longest_streak,
-            last_qualified_date=result.streak.last_qualified_date,
+        rounds=RoundsResponse(
+            completed=result.rounds.completed,
+            total=result.rounds.total,
+        ),
+        is_session_complete=result.is_session_complete,
+        streak=(
+            StreakResponse(
+                current_streak=result.streak.current_streak,
+                longest_streak=result.streak.longest_streak,
+                last_qualified_date=result.streak.last_qualified_date,
+            )
+            if result.streak is not None
+            else None
         ),
     )
 
@@ -434,6 +467,30 @@ async def turn_task(
             if result.streak is not None
             else None
         ),
+    )
+
+
+@router.post("/attempts/{attempt_id}/next-round", response_model=NextRoundResponse)
+async def next_round(
+    attempt_id: UUID,
+    container: ContainerDep,
+    user: CurrentUser,
+) -> NextRoundResponse:
+    """Generate the next rep's scenario for a multi-rep (single-shot) attempt.
+
+    Called by the "Next" button after an intermediate rep's feedback; returns a
+    fresh prompt + audio and the unchanged rep counter. Does not finalize.
+    """
+    result = await container.task_attempt_service.next_round(user.id, attempt_id)
+    return NextRoundResponse(
+        attempt_id=result.attempt.id,
+        status=result.attempt.status.value,
+        payload=GeneratedPayloadResponse.from_payload(result.payload),
+        rounds=RoundsResponse(
+            completed=result.rounds.completed,
+            total=result.rounds.total,
+        ),
+        free_limit=FreeLimitResponse.from_decision(result.free_limit),
     )
 
 

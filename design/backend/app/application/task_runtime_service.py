@@ -3,6 +3,7 @@ from __future__ import annotations
 import uuid
 from dataclasses import dataclass
 
+from app.application.runtime_state import serialize_runtime_state
 from app.application.task_attempt_service import TaskAttemptService
 from app.application.unit_of_work import UnitOfWork
 from app.domain.models.task import Task
@@ -22,39 +23,13 @@ class TaskRuntimeView:
     task_type: TaskType
     attempt: TaskAttempt
     payload: GeneratedTaskPayload
+    total_rounds: int
 
 
-def serialize_runtime_state(payload: GeneratedTaskPayload) -> dict:
-    """Persistable prompt context for evaluation.
-
-    Stores only what the evaluator needs to re-read the prompt later (messages,
-    speech text, assigned technique) — never the generated audio, which is large
-    and reproducible.
-    """
-    technique = payload.assigned_technique
-    state: dict = {
-        "prompt": {
-            "messages": [
-                {"role": m.role, "content": m.content}
-                for m in payload.prompt.messages
-            ],
-            "speech_text": payload.prompt.speech_text,
-        },
-        "assigned_technique": (
-            {
-                "name": technique.name,
-                "instruction": technique.instruction,
-                "example": technique.example,
-            }
-            if technique is not None
-            else None
-        ),
-    }
-    # Conversational (roleplay) tasks carry the full turn state to persist so the
-    # `turn` endpoint can advance the conversation against it.
-    if payload.roleplay is not None:
-        state.update(payload.roleplay.runtime_state)
-    return state
+def _total_rounds(task: Task) -> int:
+    """Reps this task is repeated within one attempt (1 = classic single-shot)."""
+    raw = (task.content or {}).get("total_rounds")
+    return raw if isinstance(raw, int) and raw > 0 else 1
 
 
 class TaskRuntimeService:
@@ -90,6 +65,7 @@ class TaskRuntimeService:
         started = await self._attempt_service.start_task(
             app_user_id, task_id, source, daily_plan_item_id
         )
+        total_rounds = _total_rounds(started.task)
         engine = self._engines.for_task_type(started.task_type)
         payload = await engine.generate(
             GenerateTaskInput(
@@ -100,8 +76,9 @@ class TaskRuntimeService:
         )
         async with self._uow.transaction():
             await self._attempts.attach_runtime_state(
-                started.attempt.id, serialize_runtime_state(payload)
+                started.attempt.id,
+                serialize_runtime_state(payload, total_rounds),
             )
         return TaskRuntimeView(
-            started.task, started.task_type, started.attempt, payload
+            started.task, started.task_type, started.attempt, payload, total_rounds
         )
