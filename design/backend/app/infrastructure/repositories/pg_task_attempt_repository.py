@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 from datetime import datetime, timezone
 
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.task_attempt import (
@@ -73,6 +75,30 @@ class PgTaskAttemptRepository:
     async def find_by_id(self, attempt_id: uuid.UUID) -> TaskAttempt | None:
         attempt = await self._session.get(OrmTaskAttempt, attempt_id)
         return self._to_domain(attempt) if attempt is not None else None
+
+    async def last_completed_at_by_task(
+        self, app_user_id: uuid.UUID, task_ids: Sequence[uuid.UUID]
+    ) -> dict[uuid.UUID, datetime]:
+        if not task_ids:
+            return {}
+        stmt = (
+            select(
+                OrmTaskAttempt.task_id,
+                func.max(OrmTaskAttempt.completed_at),
+            )
+            .where(
+                OrmTaskAttempt.app_user_id == app_user_id,
+                OrmTaskAttempt.task_id.in_(task_ids),
+                OrmTaskAttempt.status == OrmStatus(TaskAttemptStatus.completed.value),
+            )
+            .group_by(OrmTaskAttempt.task_id)
+        )
+        rows = (await self._session.execute(stmt)).all()
+        return {
+            task_id: completed_at
+            for task_id, completed_at in rows
+            if completed_at is not None
+        }
 
     @staticmethod
     def _to_domain(row: OrmTaskAttempt) -> TaskAttempt:

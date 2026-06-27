@@ -35,6 +35,17 @@ class DailyPlanRepository(Protocol):
         self, app_user_id: uuid.UUID, plan_date: date
     ) -> DailyPlan | None: ...
 
+    async def get_latest_plan_before(
+        self, app_user_id: uuid.UUID, before_date: date
+    ) -> DailyPlan | None:
+        """The user's most recent plan (with items) dated before ``before_date``.
+
+        Used for the daily-plan carry-over rule: re-serve an exercise the user
+        was assigned but never finished. Robust to skipped days — returns the
+        last plan that exists, not strictly the previous calendar day.
+        """
+        ...
+
     async def create_plan_with_items(
         self, input: CreateDailyPlanInput
     ) -> DailyPlan: ...

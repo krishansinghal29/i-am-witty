@@ -146,7 +146,7 @@ class RequestContainer:
             users, onboarding, integrations.auth_verifier, uow
         )
         self.task_catalog_service = TaskCatalogService(tasks, entitlements)
-        self.daily_plan_service = DailyPlanService(users, plans, tasks, uow)
+        self.daily_plan_service = DailyPlanService(users, plans, tasks, attempts, uow)
         self.task_attempt_service = TaskAttemptService(
             users,
             tasks,

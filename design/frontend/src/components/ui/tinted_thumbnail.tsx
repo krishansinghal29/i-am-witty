@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import { IonIcon } from '@ionic/react';
 import { colors } from '@/theme/tokens';
 
 export interface TintedThumbnailProps {
@@ -7,6 +8,8 @@ export interface TintedThumbnailProps {
   title?: string;
   /** Square edge length in px. */
   size?: number;
+  /** Optional ionicon rendered in place of the derived initials. */
+  icon?: string;
 }
 
 const TINTS: readonly string[] = [
@@ -48,7 +51,7 @@ function glyphFor(title: string | undefined, keyName: string): string {
  * renders a deterministic warm tint derived from `keyName` with the task's
  * initials, ready to be swapped for a real `<img>` when assets land.
  */
-export function TintedThumbnail({ keyName, title, size = 62 }: TintedThumbnailProps) {
+export function TintedThumbnail({ keyName, title, size = 62, icon }: TintedThumbnailProps) {
   const tint = TINTS[hashString(keyName) % TINTS.length];
 
   const style: CSSProperties = {
@@ -68,7 +71,11 @@ export function TintedThumbnail({ keyName, title, size = 62 }: TintedThumbnailPr
 
   return (
     <div style={style} role="img" aria-label={title ?? keyName}>
-      {glyphFor(title, keyName)}
+      {icon ? (
+        <IonIcon icon={icon} style={{ fontSize: Math.round(size * 0.46) }} aria-hidden />
+      ) : (
+        glyphFor(title, keyName)
+      )}
     </div>
   );
 }

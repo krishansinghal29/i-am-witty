@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import Sequence
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Protocol
 
 from app.domain.models.task_attempt import TaskAttempt, TaskAttemptSource
@@ -39,3 +41,14 @@ class TaskAttemptRepository(Protocol):
     async def attach_runtime_state(
         self, attempt_id: uuid.UUID, runtime_state: dict
     ) -> None: ...
+
+    async def last_completed_at_by_task(
+        self, app_user_id: uuid.UUID, task_ids: Sequence[uuid.UUID]
+    ) -> dict[uuid.UUID, datetime]:
+        """Most recent completion timestamp per task, across attempt sources.
+
+        Returns only tasks the user has actually completed (others are absent
+        from the map). Counts completions from any source (daily plan or
+        practice library), which drives the daily-plan rotation + carry-over.
+        """
+        ...

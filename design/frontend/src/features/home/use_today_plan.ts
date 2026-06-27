@@ -3,9 +3,10 @@
  *
  * Reads the bundled `/v1/home` response (shared, via `queryKeys.home`, with
  * {@link useProgressSummary} so it is fetched once) and selects just the daily
- * plan. Plan items only carry a `taskId`, so titles/durations are enriched from
- * the cached catalog (`queryKeys.catalog`) when available, falling back to a
- * calm generic label otherwise.
+ * plan. Plan items only carry a `taskId`, so title/description/duration/etc. are
+ * enriched from the cached catalog (`queryKeys.catalog`) AND lessons
+ * (`queryKeys.lessons`) — lessons live in a separate endpoint, so without them
+ * the plan's lesson items would fall back to a calm generic label.
  */
 
 import { useCallback, useMemo } from 'react';
@@ -16,6 +17,12 @@ import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { queryKeys } from '@/state/query_keys';
 import type { CatalogItem, DailyPlan, HomeView, PlanItemStatus } from '@/types/models';
 
+/** Coarse task kind used to differentiate plan tiles (label + icon). */
+export type PlanItemKind = 'lesson' | 'exercise';
+
+/** task_type_id of audio lessons — the rest of the plan is exercises. */
+const LESSON_TASK_TYPE_ID = 'lesson';
+
 /** A plan item enriched with task display metadata for the screen. */
 export interface PlanItemView {
   /** Daily-plan item id (passed back to the runtime as `dailyPlanItemId`). */
@@ -23,9 +30,16 @@ export interface PlanItemView {
   taskId: string;
   position: number;
   status: PlanItemStatus;
+  /** Lesson vs exercise, or null while the task is still unresolved. */
+  kind: PlanItemKind | null;
   title: string;
+  description: string | null;
   durationSeconds: number | null;
   thumbnailKey: string | null;
+  /** Slug, used as a stable fallback tint key for the thumbnail. */
+  slug: string | null;
+  /** Premium task the caller can't start yet (shows a Riffy+ badge). */
+  isLocked: boolean;
   /** True for the single highlighted "Next up" item. */
   isNextUp: boolean;
 }
@@ -51,10 +65,16 @@ export function useTodayPlan() {
     select: (data: HomeView): DailyPlan => data.plan,
   });
 
-  // Best-effort enrichment; never blocks the plan from rendering.
+  // Best-effort enrichment; never blocks the plan from rendering. Both the
+  // exercise catalog and the (separate) lessons endpoint are merged so every
+  // plan item — exercise or lesson — resolves to real display metadata.
   const catalog = useQuery({
     queryKey: queryKeys.catalog,
     queryFn: () => api.getCatalog(),
+  });
+  const lessons = useQuery({
+    queryKey: queryKeys.lessons,
+    queryFn: () => api.getLessons(),
   });
 
   const items = useMemo<PlanItemView[]>(() => {
@@ -62,7 +82,7 @@ export function useTodayPlan() {
     if (!plan) return [];
 
     const byTaskId = new Map<string, CatalogItem>();
-    for (const entry of catalog.data ?? []) {
+    for (const entry of [...(catalog.data ?? []), ...(lessons.data ?? [])]) {
       byTaskId.set(entry.task.id, entry);
     }
 
@@ -70,19 +90,28 @@ export function useTodayPlan() {
     const nextUpId = pickNextUpId(ordered);
 
     return ordered.map((item) => {
-      const task = byTaskId.get(item.taskId)?.task;
+      const entry = byTaskId.get(item.taskId);
+      const task = entry?.task;
       return {
         id: item.id,
         taskId: item.taskId,
         position: item.position,
         status: item.status,
+        kind: task
+          ? task.taskTypeId === LESSON_TASK_TYPE_ID
+            ? 'lesson'
+            : 'exercise'
+          : null,
         title: task?.title ?? 'Practice',
+        description: task?.description ?? null,
         durationSeconds: task?.durationSeconds ?? null,
         thumbnailKey: task?.thumbnailKey ?? null,
+        slug: task?.slug ?? null,
+        isLocked: entry?.isLocked ?? false,
         isNextUp: item.id === nextUpId,
       };
     });
-  }, [home.data, catalog.data]);
+  }, [home.data, catalog.data, lessons.data]);
 
   const nextUp = useMemo(
     () => items.find((item) => item.isNextUp) ?? null,

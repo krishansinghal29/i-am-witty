@@ -56,7 +56,13 @@ function toNode(item: PlanItemView): PlanNode {
   return {
     id: item.id,
     status: toNodeStatus(item.status),
+    kind: item.kind,
     title: item.title,
+    description: item.description,
+    durationSeconds: item.durationSeconds,
+    thumbnailKey: item.thumbnailKey,
+    slug: item.slug,
+    isLocked: item.isLocked,
     highlighted: item.isNextUp,
   };
 }

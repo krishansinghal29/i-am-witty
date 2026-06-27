@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 from datetime import date, datetime, timezone
 
-from sqlalchemy import Select, select
+from sqlalchemy import Select, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.daily_plan import (
@@ -43,6 +43,24 @@ class PgDailyPlanRepository:
         items = await self._load_items(plan.id)
         return self._to_domain(plan, items)
 
+    async def get_latest_plan_before(
+        self, app_user_id: uuid.UUID, before_date: date
+    ) -> DailyPlan | None:
+        stmt = (
+            select(OrmDailyPlan)
+            .where(
+                OrmDailyPlan.app_user_id == app_user_id,
+                OrmDailyPlan.plan_date < before_date,
+            )
+            .order_by(OrmDailyPlan.plan_date.desc())
+            .limit(1)
+        )
+        plan = (await self._session.execute(stmt)).scalar_one_or_none()
+        if plan is None:
+            return None
+        items = await self._load_items(plan.id)
+        return self._to_domain(plan, items)
+
     async def create_plan_with_items(self, input: CreateDailyPlanInput) -> DailyPlan:
         plan = OrmDailyPlan(
             app_user_id=input.app_user_id,
@@ -74,6 +92,24 @@ class PgDailyPlanRepository:
         item = (await self._session.execute(stmt)).scalar_one_or_none()
         if item is None:
             return
+        # Demote any other item still `current` in this plan before promoting the
+        # tapped one. `current` is a soft, single-highlight UI flag — without this
+        # demotion, opening a second tile while another is still `current` (e.g.
+        # one opened and closed without finishing) violates the
+        # `one_current_item_per_plan` partial unique index and 500s. The explicit
+        # flush lands the demotion before the promotion so the index is never
+        # momentarily seeing two `current` rows.
+        await self._session.execute(
+            update(OrmDailyPlanItem)
+            .where(
+                OrmDailyPlanItem.daily_plan_id == item.daily_plan_id,
+                OrmDailyPlanItem.id != item.id,
+                OrmDailyPlanItem.status == OrmItemStatus.current,
+            )
+            .values(status=OrmItemStatus.upcoming, current_attempt_id=None)
+            .execution_options(synchronize_session=False)
+        )
+        await self._session.flush()
         item.status = OrmItemStatus.current
         item.started_at = datetime.now(timezone.utc)
         item.current_attempt_id = input.current_attempt_id
