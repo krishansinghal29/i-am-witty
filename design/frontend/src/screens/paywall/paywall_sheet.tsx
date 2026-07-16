@@ -5,8 +5,6 @@ import { IonIcon } from '@ionic/react';
 import {
   closeOutline,
   infinite,
-  libraryOutline,
-  micOutline,
   sparkles,
 } from 'ionicons/icons';
 import { Button, LoadingView, Sheet } from '@/components/ui';
@@ -170,8 +168,6 @@ const LATER: CSSProperties = {
 
 const FEATURES: { icon: string; label: string }[] = [
   { icon: infinite, label: 'Unlimited practice, every day' },
-  { icon: micOutline, label: 'Deeper feedback on every take' },
-  { icon: libraryOutline, label: 'The full library + Role play (soon)' },
 ];
 
 const LEGAL_FALLBACKS: Record<string, string> = {
@@ -358,6 +354,7 @@ export function PaywallSheet() {
 
   const iosUrl = configUrl('ios_app_store_url');
   const androidUrl = configUrl('android_play_store_url');
+  const tgUrl = configUrl('telegram_community_url');
 
   const busy = isPurchasing || isRestoring;
 
@@ -428,6 +425,15 @@ export function PaywallSheet() {
               <p style={{ ...HERO_SUB, marginTop: 4 }}>
                 iOS &amp; Android apps are coming soon.
               </p>
+            )}
+            {tgUrl && (
+              <Button
+                variant="accent"
+                block
+                onClick={() => window.open(tgUrl, '_blank', 'noopener')}
+              >
+                Contact us on Telegram to subscribe
+              </Button>
             )}
           </div>
         ) : isLoading ? (
