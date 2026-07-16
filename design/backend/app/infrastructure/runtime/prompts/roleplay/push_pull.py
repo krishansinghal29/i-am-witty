@@ -346,7 +346,7 @@ Let your warmth scale with the quality of the push-pull and with how close the c
 
 SPEC = RoleplaySpec(
     key="rpPushPull",
-    target_count=5,
+    target_count=4,
     safety_max_turns=12,
     opening_schema=PushPullOpening,
     turn_schema=PushPullTurn,

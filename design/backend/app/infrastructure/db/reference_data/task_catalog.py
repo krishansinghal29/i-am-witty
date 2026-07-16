@@ -125,7 +125,7 @@ TASKS: list[dict] = [
             "response_instruction": "Land one push-pull line — tease something trivial, mean the compliment.",
             "recording_limit_seconds": 60,
             "assigned_technique_mode": "none",
-            "total_rounds": 5,
+            "total_rounds": 4,
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -322,7 +322,7 @@ TASKS: list[dict] = [
         "sort_order": 80,
         "content": {
             "exercise_key": "vibing",
-            "total_rounds": 5,
+            "total_rounds": 3,
             "prompt_label": "Vignette",
             "prompt_roles": ["Storyteller"],
             "response_instruction": "Pick a thread and jump in with your own story or take.",
@@ -583,7 +583,7 @@ TASKS: list[dict] = [
             "prompt_roles": ["She"],
             "response_instruction": "Tease and compliment her in one line.",
             "recording_limit_seconds": 60,
-            "target_count": 5,
+            "target_count": 4,
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -592,7 +592,7 @@ TASKS: list[dict] = [
         "runtime_config": {
             "backend_key": "rpPushPull",
             "prompt_bundle_key": "roleplay_push_pull_v1",
-            "target_count": 5,
+            "target_count": 4,
         },
     },
     {
@@ -757,7 +757,7 @@ TASKS: list[dict] = [
             "prompt_roles": ["She"],
             "response_instruction": "Pick a thread and jump in with your own story or take.",
             "recording_limit_seconds": 90,
-            "target_count": 5,
+            "target_count": 3,
             "feedback_tabs": {
                 "feedback_label": "Feedback",
                 "sample_answer_label": "Better Way",
@@ -766,7 +766,7 @@ TASKS: list[dict] = [
         "runtime_config": {
             "backend_key": "rpVibing",
             "prompt_bundle_key": "roleplay_vibing_v1",
-            "target_count": 5,
+            "target_count": 3,
         },
     },
     {

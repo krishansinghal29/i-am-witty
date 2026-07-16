@@ -366,7 +366,7 @@ Let how rich your stories get scale with the quality of his vibes and with how c
 
 SPEC = RoleplaySpec(
     key="rpVibing",
-    target_count=5,
+    target_count=3,
     safety_max_turns=12,
     opening_schema=VibingOpening,
     turn_schema=VibingTurn,
