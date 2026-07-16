@@ -11,6 +11,7 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRiffyApi } from '@/app/providers';
+import { useFreeLimit } from '@/features/entitlement/use_free_limit';
 import { queryKeys } from '@/state/query_keys';
 import type {
   AttemptController,
@@ -23,6 +24,7 @@ export function useTaskAttempt(
 ): AttemptController<VoiceCompleteBody> {
   const api = useRiffyApi();
   const queryClient = useQueryClient();
+  const { handlePaywallRequired } = useFreeLimit();
   const [paywallOnDone, setPaywallOnDone] = useState(false);
 
   useEffect(() => {
@@ -42,6 +44,9 @@ export function useTaskAttempt(
       }
       void queryClient.invalidateQueries({ queryKey: queryKeys.home });
       void queryClient.invalidateQueries({ queryKey: queryKeys.access });
+    },
+    onError: (error) => {
+      handlePaywallRequired(error);
     },
   });
 

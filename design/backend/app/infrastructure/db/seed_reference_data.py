@@ -203,9 +203,12 @@ async def verify(session: AsyncSession) -> None:
     free_task_limit = await session.scalar(
         select(AppConfig.value).where(AppConfig.key == "free_task_limit")
     )
+    expected_limit = next(
+        r["value"] for r in APP_CONFIG if r["key"] == "free_task_limit"
+    )
     print(
-        f"app_config.free_task_limit value == 10: {free_task_limit == 10} "
-        f"(value={free_task_limit!r})"
+        f"app_config.free_task_limit value == {expected_limit}: "
+        f"{free_task_limit == expected_limit} (value={free_task_limit!r})"
     )
 
 

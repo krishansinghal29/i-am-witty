@@ -356,7 +356,9 @@ class TaskAttemptService:
             )
 
         # Final rep — atomic multi-table write (shared with the roleplay turn path).
-        # skip_usage_increment=True because we already incremented above for this rep.
+        # finalize_completion increments usage here; intermediate reps already
+        # incremented above. skip_usage_increment is NOT set so the final rep
+        # is always counted (including single-rep exercises).
         completion_meta = {
             **runtime_result.completion_metadata,
             "style_label": runtime_result.style_label,
@@ -368,7 +370,6 @@ class TaskAttemptService:
             attempt=attempt,
             access=access,
             completion_metadata=completion_meta,
-            skip_usage_increment=True,
         )
         return CompleteTaskResult(
             completed, runtime_result, fl, progress, True, streak

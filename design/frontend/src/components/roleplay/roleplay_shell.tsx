@@ -32,7 +32,7 @@ export interface RolePlayShellProps {
 export function RolePlayShell({ payload }: RolePlayShellProps) {
   const history = useHistory();
   const { transcription } = useIntegrations();
-  const { handleFreeLimit } = useFreeLimit();
+  const { handleFreeLimit, handlePaywallRequired } = useFreeLimit();
   const attempt = useAttemptTurn(payload.attemptId);
 
   const phase = useRolePlayStore((s) => s.phase);
@@ -183,8 +183,10 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
         setDoneFreeLimit(result.freeLimit);
         setPhase('done');
       }
-    } catch {
-      setLocalError('That didn’t go through. Give it another try.');
+    } catch (e) {
+      if (!handlePaywallRequired(e)) {
+        setLocalError('That didn’t go through. Give it another try.');
+      }
     } finally {
       setAwaitingReply(false);
       actionInFlightRef.current = false;
@@ -193,6 +195,7 @@ export function RolePlayShell({ payload }: RolePlayShellProps) {
     attempt,
     addMessage,
     draft,
+    handlePaywallRequired,
     isAwaitingReply,
     isRecording,
     setAwaitingReply,
