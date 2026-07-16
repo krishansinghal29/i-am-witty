@@ -312,7 +312,7 @@ TASKS: list[dict] = [
     {
         "slug": "vibing",
         "title": "Vibing",
-        "description": "Match emotion, validate the feeling, and build conversational momentum.",
+        "description": "Pick a thread from the story and jump in with your own take, memory, or story.",
         "task_type_id": "voice_single_prompt",
         "duration_seconds": 90,
         "thumbnail_key": "vibing",
@@ -323,9 +323,9 @@ TASKS: list[dict] = [
         "content": {
             "exercise_key": "vibing",
             "total_rounds": 5,
-            "prompt_label": "Story",
+            "prompt_label": "Vignette",
             "prompt_roles": ["Storyteller"],
-            "response_instruction": "Respond with warmth, curiosity, and matching energy.",
+            "response_instruction": "Pick a thread and jump in with your own story or take.",
             "recording_limit_seconds": 90,
             "assigned_technique_mode": "none",
             "feedback_tabs": {
@@ -343,7 +343,7 @@ TASKS: list[dict] = [
             },
             "evaluator": {
                 "strategy": "transcript_feedback",
-                "criteria": ["energy_match", "build", "spotlight", "naturalness"],
+                "criteria": ["thread_clarity", "own_contribution", "confidence", "specificity"],
             },
         },
     },
@@ -743,7 +743,7 @@ TASKS: list[dict] = [
     {
         "slug": "roleplay-vibing",
         "title": "Vibing",
-        "description": "Match her energy and make her feel understood — live, in a roleplay conversation.",
+        "description": "Pick a thread from her story and jump in with your own take — live, in a roleplay conversation.",
         "task_type_id": "roleplay",
         "duration_seconds": None,
         "thumbnail_key": "roleplay-vibing",
@@ -755,7 +755,7 @@ TASKS: list[dict] = [
             "exercise_key": "rpVibing",
             "prompt_label": "She",
             "prompt_roles": ["She"],
-            "response_instruction": "Match her energy and make her feel heard.",
+            "response_instruction": "Pick a thread and jump in with your own story or take.",
             "recording_limit_seconds": 90,
             "target_count": 5,
             "feedback_tabs": {
