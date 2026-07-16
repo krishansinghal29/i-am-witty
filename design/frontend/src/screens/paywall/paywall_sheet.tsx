@@ -3,8 +3,10 @@ import type { CSSProperties } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { IonIcon } from '@ionic/react';
 import {
+  chatbubbleEllipsesOutline,
   closeOutline,
   infinite,
+  paperPlaneOutline,
   sparkles,
 } from 'ionicons/icons';
 import { Button, LoadingView, Sheet } from '@/components/ui';
@@ -423,18 +425,55 @@ export function PaywallSheet() {
             </Button>
             {!STORES_LIVE && (
               <p style={{ ...HERO_SUB, marginTop: 4 }}>
-                iOS &amp; Android apps are coming soon.
+                iOS &amp; Android apps are coming soon — reach out to us to subscribe in the meantime.
               </p>
             )}
-            {tgUrl && (
-              <Button
-                variant="accent"
-                block
-                onClick={() => window.open(tgUrl, '_blank', 'noopener')}
+            <div style={{ display: 'grid', gridTemplateColumns: tgUrl ? '1fr 1fr' : '1fr', gap: 10 }}>
+              {tgUrl && (
+                <button
+                  type="button"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 7,
+                    padding: '12px 10px',
+                    borderRadius: 12,
+                    border: '1px solid rgba(14, 165, 233, 0.36)',
+                    background: 'rgba(14, 165, 233, 0.1)',
+                    color: colors.sky,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => window.open(tgUrl, '_blank', 'noopener')}
+                >
+                  <IonIcon icon={paperPlaneOutline} style={{ fontSize: 17 }} aria-hidden />
+                  Telegram
+                </button>
+              )}
+              <button
+                type="button"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 7,
+                  padding: '12px 10px',
+                  borderRadius: 12,
+                  border: `1px solid rgba(249, 115, 22, 0.32)`,
+                  background: 'rgba(249, 115, 22, 0.1)',
+                  color: colors.accent,
+                  fontSize: 13,
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                }}
+                onClick={handleContact}
               >
-                Contact us on Telegram to subscribe
-              </Button>
-            )}
+                <IonIcon icon={chatbubbleEllipsesOutline} style={{ fontSize: 17 }} aria-hidden />
+                Chat with us
+              </button>
+            </div>
           </div>
         ) : isLoading ? (
           <LoadingView message="Loading plans…" centerScreen={false} />
