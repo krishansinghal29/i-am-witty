@@ -30,9 +30,11 @@ export function useAttemptTurn(attemptId: string | null): AttemptTurnController 
       return api.turnAttempt(attemptId, body);
     },
     onSuccess: (data: TurnTaskResult) => {
+      // Each turn consumes one attempt, so keep the access (remaining count)
+      // fresh after every turn. Home and streak only change on session completion.
+      void queryClient.invalidateQueries({ queryKey: queryKeys.access });
       if (data.turn.isComplete) {
         void queryClient.invalidateQueries({ queryKey: queryKeys.home });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.access });
       }
     },
   });

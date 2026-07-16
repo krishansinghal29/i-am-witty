@@ -299,6 +299,12 @@ class TaskAttemptService:
         if not self._is_metered(task_type):
             return await self._finalize_lesson(user, attempt, access)
 
+        # Gate each rep individually: a multi-round exercise costs one attempt
+        # per response, so check the limit before every rep (not just at start).
+        fl = await self._free_limit_for(user, access)
+        if not fl.allowed:
+            raise PaywallRequiredError(fl.reason or "free_limit_reached")
+
         # Rebuild the prompt the user responded to (persisted at generate time)
         # so the evaluator grades against the right scenario/technique.
         eval_messages, eval_technique = _runtime_context_from_state(
@@ -329,22 +335,28 @@ class TaskAttemptService:
         progress = RoundProgress(completed=new_completed, total=total_rounds)
 
         if not is_session_complete:
-            # Intermediate rep: persist progress, keep the attempt `started`, and
-            # skip the shared completion side-effects (streak/usage fire once, on
-            # the final rep — mirroring the roleplay turn path).
+            # Intermediate rep: persist progress + increment usage. Streak/
+            # session-completion side-effects fire only on the final rep.
             new_state = dict(attempt.runtime_state or {})
             new_state["rounds"] = {
                 "total": total_rounds,
                 "completed": new_completed,
             }
+            today = local_today(user.timezone)
+            limit = await self._config.get_free_task_limit()
             async with self._uow.transaction():
                 await self._attempts.attach_runtime_state(attempt_id, new_state)
+                if not access.is_riffy_plus:
+                    await self._usage.increment_daily_usage(
+                        attempt.app_user_id, today, user.timezone, limit
+                    )
             fl = await self._free_limit_for(user, access)
             return CompleteTaskResult(
                 attempt, runtime_result, fl, progress, False, None
             )
 
         # Final rep — atomic multi-table write (shared with the roleplay turn path).
+        # skip_usage_increment=True because we already incremented above for this rep.
         completion_meta = {
             **runtime_result.completion_metadata,
             "style_label": runtime_result.style_label,
@@ -356,6 +368,7 @@ class TaskAttemptService:
             attempt=attempt,
             access=access,
             completion_metadata=completion_meta,
+            skip_usage_increment=True,
         )
         return CompleteTaskResult(
             completed, runtime_result, fl, progress, True, streak
@@ -368,6 +381,7 @@ class TaskAttemptService:
         attempt: TaskAttempt,
         access: AccessState,
         completion_metadata: dict,
+        skip_usage_increment: bool = False,
     ) -> tuple[TaskAttempt, FreeLimitDecision, StreakUpdate]:
         """Run the shared completion side-effects for a finished attempt.
 
@@ -375,6 +389,10 @@ class TaskAttemptService:
         free-tier usage (non-plus only), and updates streak + day activity — all
         in one transaction. Shared by single-shot ``complete_task`` and the
         multi-turn ``turn_task`` (when its goal-reaching turn completes).
+
+        ``skip_usage_increment`` must be True when the caller already incremented
+        ``free_tasks_completed`` for this response (e.g. per-turn/per-rep
+        counting), to prevent double-counting on the final response.
         """
         today = local_today(user.timezone)
         limit = await self._config.get_free_task_limit()
@@ -396,7 +414,7 @@ class TaskAttemptService:
                     )
                 )
 
-            if not access.is_riffy_plus:
+            if not access.is_riffy_plus and not skip_usage_increment:
                 du = await self._usage.increment_daily_usage(
                     attempt.app_user_id, today, user.timezone, limit
                 )
@@ -536,6 +554,11 @@ class TaskAttemptService:
             raise ValidationError("task_type_not_conversational")
         access = await self._entitlements.get_access_state(app_user_id)
 
+        # Gate each turn individually: each user response costs one attempt.
+        fl = await self._free_limit_for(user, access)
+        if self._is_metered(task_type) and not fl.allowed:
+            raise PaywallRequiredError(fl.reason or "free_limit_reached")
+
         # Release the read transaction before any network call.
         await self._uow.rollback()
 
@@ -553,16 +576,25 @@ class TaskAttemptService:
             )
         )
 
-        # Persist the advanced conversation state.
+        # Persist the advanced conversation state and increment usage for this
+        # turn. Streak/session-completion side-effects fire only on the final turn.
+        today = local_today(user.timezone)
+        limit = await self._config.get_free_task_limit()
         async with self._uow.transaction():
             await self._attempts.attach_runtime_state(attempt_id, turn.runtime_state)
+            if not access.is_riffy_plus and self._is_metered(task_type):
+                await self._usage.increment_daily_usage(
+                    user.id, today, user.timezone, limit
+                )
 
         if turn.is_complete:
+            # skip_usage_increment=True because we already incremented above.
             completed, fl, streak = await self.finalize_completion(
                 user=user,
                 attempt=attempt,
                 access=access,
                 completion_metadata=dict(turn.completion_metadata),
+                skip_usage_increment=True,
             )
             return TurnTaskResult(completed, turn, fl, streak)
 
