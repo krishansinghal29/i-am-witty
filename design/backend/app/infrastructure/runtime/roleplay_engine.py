@@ -27,6 +27,11 @@ logger = logging.getLogger(__name__)
 _GENERATION_TEMPERATURE = 1.0
 _DEFAULT_VERB_COUNT = 10
 
+# Set to True to increment landed_count on every graded-phase turn, regardless
+# of whether the LLM judged the tease as landed. Flip to False to restore
+# evaluation-gated counting.
+_ALWAYS_INCREMENT_LANDED: bool = True
+
 
 class RoleplayTaskEngine:
     """LLM-backed `TaskRuntimeEngine` for multi-turn ``roleplay_v1`` tasks.
@@ -175,7 +180,8 @@ class RoleplayTaskEngine:
         # ungraded phase (e.g. the "ask" turn of question_answer_tease) is ignored
         # even if the model returns landed=True.
         phase_is_graded = current_phase in spec.graded_phases
-        new_landed = landed_count + (1 if (turn.landed and phase_is_graded) else 0)
+        landed_credit = phase_is_graded and (_ALWAYS_INCREMENT_LANDED or turn.landed)
+        new_landed = landed_count + (1 if landed_credit else 0)
         new_turn_count = turn_count + 1
         new_phase_index = phase_index + 1
         goal_reached = new_landed >= target
