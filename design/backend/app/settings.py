@@ -41,8 +41,8 @@ class Settings(BaseSettings):
     # provider (OpenAI today; `gemini/...`, `anthropic/...`, etc. supported).
     openai_api_key: str | None = None
     gemini_api_key: str | None = None
-    llm_generator_model: str = "gpt-5.3-chat-latest"
-    llm_evaluator_model: str = "gpt-5.3-chat-latest"
+    llm_generator_model: str = "gpt-5.6-sol"
+    llm_evaluator_model: str = "gpt-5.6-sol"
 
     # Per-call bounds for the LLM. Without an explicit timeout the OpenAI SDK
     # waits its 600s (10 min) default read timeout on a stalled response, which
