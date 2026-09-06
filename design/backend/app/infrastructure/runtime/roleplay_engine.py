@@ -230,7 +230,28 @@ class RoleplayTaskEngine:
                     "goal_reached" if goal_reached else "turn_cap" if capped else None
                 ),
             },
+            is_graded_turn=phase_is_graded,
         )
+
+    def current_turn_is_graded(self, runtime_state: dict) -> bool:
+        """Return whether the NEXT user turn will be a graded (skill) phase.
+
+        Called by the service BEFORE the LLM turn call to decide whether to
+        gate and charge an attempt for this turn. Pure state inspection — no
+        I/O. Returns True for single-phase roleplays (all turns graded) and
+        for any state where the spec cannot be resolved.
+        """
+        rp = (runtime_state or {}).get("roleplay") or {}
+        backend_key = rp.get("backend_key")
+        if not backend_key:
+            return True
+        try:
+            spec = get_roleplay_spec(backend_key)
+        except Exception:
+            return True
+        phase_index = int(rp.get("phase_index", 0))
+        current_phase = spec.phases[phase_index % len(spec.phases)]
+        return current_phase in spec.graded_phases
 
     # -- helpers -----------------------------------------------------------
 

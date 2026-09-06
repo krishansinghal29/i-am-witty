@@ -555,9 +555,18 @@ class TaskAttemptService:
             raise ValidationError("task_type_not_conversational")
         access = await self._entitlements.get_access_state(app_user_id)
 
-        # Gate each turn individually: each user response costs one attempt.
+        # Resolve the engine before rollback (pure in-memory lookup, no I/O)
+        # so we can inspect whether the upcoming turn is a graded skill phase.
+        # Ungraded turns (e.g. the "ask" turn of question-answer-tease) are
+        # setup — they don't cost an attempt and aren't gated.
+        engine = self._engines.for_task_type(task_type)
+        is_graded_turn: bool = getattr(
+            engine, "current_turn_is_graded", lambda _: True
+        )(attempt.runtime_state or {})
+
+        # Gate only graded turns; ungraded turns always proceed.
         fl = await self._free_limit_for(user, access)
-        if self._is_metered(task_type) and not fl.allowed:
+        if self._is_metered(task_type) and is_graded_turn and not fl.allowed:
             raise PaywallRequiredError(fl.reason or "free_limit_reached")
 
         # Release the read transaction before any network call.
@@ -566,7 +575,6 @@ class TaskAttemptService:
         transcript = self._transcription.resolve_final_transcript(
             client_transcript=client_transcript,
         )
-        engine = self._engines.for_task_type(task_type)
         turn = await engine.turn(
             TurnTaskRuntimeInput(
                 task=task,
@@ -577,13 +585,14 @@ class TaskAttemptService:
             )
         )
 
-        # Persist the advanced conversation state and increment usage for this
-        # turn. Streak/session-completion side-effects fire only on the final turn.
+        # Persist the advanced conversation state and — for graded turns only —
+        # increment usage. Ungraded setup turns (e.g. "ask") are free.
+        # Streak/session-completion side-effects fire only on the final turn.
         today = local_today(user.timezone)
         limit = await self._config.get_free_task_limit()
         async with self._uow.transaction():
             await self._attempts.attach_runtime_state(attempt_id, turn.runtime_state)
-            if not access.is_riffy_plus and self._is_metered(task_type):
+            if not access.is_riffy_plus and self._is_metered(task_type) and is_graded_turn:
                 await self._usage.increment_daily_usage(
                     user.id, today, user.timezone, limit
                 )

@@ -131,6 +131,12 @@ class TurnResult:
     drive the progress UI. `is_complete` is true once the goal is reached, at
     which point the service runs the shared completion side-effects.
     `runtime_state` is the new state to persist.
+
+    `is_graded_turn` indicates whether this turn counted as a graded (skill)
+    turn. False for setup phases like the "ask" turn of question-answer-tease;
+    True for all other turns. The service uses this to gate and increment the
+    free-usage counter only for turns that actually practice a skill. Defaults
+    to True so engines that don't support multi-phase roleplays are unaffected.
     """
 
     narration: str
@@ -148,6 +154,7 @@ class TurnResult:
     audio_base64: str | None = None
     audio_content_type: str | None = None
     completion_metadata: dict = field(default_factory=dict)
+    is_graded_turn: bool = True
 
 
 @dataclass(frozen=True)
