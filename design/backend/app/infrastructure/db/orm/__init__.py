@@ -6,6 +6,7 @@ from app.infrastructure.db.orm import (
     config,
     onboarding,
     plans,
+    recall,
     tasks,
     users,
 )
@@ -18,4 +19,5 @@ __all__ = [
     "billing",
     "comms",
     "config",
+    "recall",
 ]

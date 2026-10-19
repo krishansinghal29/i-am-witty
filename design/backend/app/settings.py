@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     firebase_credentials_file: str | None = None  # path to service-account JSON
     firebase_project_id: str | None = None
 
+    # Recall admin: comma-separated Google account emails allowed into
+    # /v1/admin/recall. A caller must also have a verified email in its token.
+    admin_emails: str | None = None
+
     # Deepgram: speech-to-text. The main key transcribes; project id is needed to
     # mint short-lived scoped client keys for the live path.
     deepgram_api_key: str | None = None
@@ -70,6 +74,17 @@ class Settings(BaseSettings):
     # when unset the endpoint always reports "no update".
     ota_enabled: bool = True
     ota_pointer_url: str | None = None
+
+    @property
+    def admin_email_set(self) -> frozenset[str]:
+        """``admin_emails`` parsed: lowercased, trimmed, blanks dropped."""
+        if not self.admin_emails:
+            return frozenset()
+        return frozenset(
+            email.strip().lower()
+            for email in self.admin_emails.split(",")
+            if email.strip()
+        )
 
 
 @lru_cache

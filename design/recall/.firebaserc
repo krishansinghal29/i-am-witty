@@ -1,0 +1,12 @@
+{
+  "projects": {
+    "default": "i-am-witty"
+  },
+  "targets": {
+    "i-am-witty": {
+      "hosting": {
+        "recall": ["riffy-recall"]
+      }
+    }
+  }
+}

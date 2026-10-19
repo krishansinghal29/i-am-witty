@@ -1,0 +1,721 @@
+<title>Riffy Recall Mockups</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: intro, then two galleries of phone frames (Practice in the order you meet the screens, then Admin), each phone captioned below.
+   Single light theme on purpose: it mirrors Riffy's production "Light & Warm" app theme, which has no dark mode. */
+:root{
+  color-scheme: light;
+  --page:#ECEFF4;
+  --screen:#F7F8FA;
+  --surface:#FFFFFF;
+  --tint:#F3F6FA;
+  --text:#2B2F3A;
+  --muted:#6B7589;
+  --faint:#9AA3B2;
+  --line:#E5EAF1;
+  --line-2:#D8E0EA;
+  --frame:#1B2230;
+  --frame-edge:#36405A;
+  --accent:#F97316;
+  --primary:#3B82F6;
+  --primary-2:#0A8FF2;
+  --primary-soft:rgba(59,130,246,.14);
+  --on-fill:#FFFFFF;
+  --ok:#16A34A;
+  --danger:#DC2626;
+  --warm:linear-gradient(135deg,#F97316,#F7C13B);
+  --cool:linear-gradient(135deg,#3B82F6,#0A8FF2);
+  --k-line:#C2410C;    --k-line-bg:rgba(249,115,22,.11);
+  --k-concept:#1D4ED8; --k-concept-bg:rgba(59,130,246,.11);
+  --k-routine:#15803D; --k-routine-bg:rgba(22,163,74,.11);
+  --k-focus:#B45309;   --k-focus-bg:rgba(245,163,10,.16);
+  --shadow-card:0 6px 18px rgba(17,24,39,.05);
+  --shadow-phone:0 40px 90px rgba(17,24,39,.22);
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+body{background:var(--page);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px;margin:0 auto;padding-block:40px 80px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:56px}
+
+/* ---------- intro ---------- */
+.intro{display:flex;flex-direction:column;gap:16px;max-width:760px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;font-size:14px;letter-spacing:-.1px}
+.mark{fill:var(--accent);display:block}
+.mark .arc{fill:none;stroke:var(--accent);stroke-width:11.5;stroke-linecap:round}
+.intro h1{margin:0;font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-1px;line-height:1.08;text-wrap:balance}
+.lede{margin:0;font-size:16px;line-height:1.55;color:var(--muted);max-width:62ch}
+.facts{margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:10px}
+.facts div{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.facts dt{font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+.facts dd{margin:0;font-size:14px;font-weight:600;line-height:1.4}
+.jump{display:flex;gap:8px;flex-wrap:wrap}
+.jump a{font-size:13px;font-weight:700;color:var(--text);text-decoration:none;background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:8px 14px}
+.jump a:hover{border-color:var(--primary);color:var(--primary)}
+.jump a:focus-visible,.btn:focus-visible{outline:3px solid var(--primary-soft);outline-offset:2px}
+
+/* ---------- sections + gallery ---------- */
+.sec{display:flex;flex-direction:column;gap:28px;scroll-margin-top:24px}
+.sec-head{display:flex;flex-direction:column;gap:6px;max-width:640px}
+.url{margin:0;font-size:12px;font-weight:700;color:var(--primary-2);font-variant-numeric:tabular-nums}
+.sec-head h2{margin:0;font-size:26px;font-weight:800;letter-spacing:-.6px}
+.sec-head p{margin:0;font-size:14.5px;line-height:1.55;color:var(--muted)}
+.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:44px 28px;justify-items:center}
+.shot{margin:0;width:100%;max-width:350px;display:flex;flex-direction:column;gap:14px}
+.shot figcaption{display:flex;flex-direction:column;gap:4px;padding-inline:6px}
+.cap-t{font-size:14px;font-weight:800;letter-spacing:-.2px;display:flex;align-items:center;gap:8px}
+.cap-d{font-size:13px;line-height:1.5;color:var(--muted)}
+
+/* ---------- phone frame ---------- */
+.phone{width:100%;max-width:350px;height:720px;border-radius:46px;background:var(--frame);padding:10px;box-shadow:var(--shadow-phone),0 0 0 1px var(--frame-edge)}
+.screen{position:relative;height:100%;border-radius:36px;background:var(--screen);overflow:hidden;display:flex;flex-direction:column}
+.sbar{display:flex;justify-content:space-between;align-items:center;padding:13px 26px 2px;font-size:12.5px;font-weight:700;color:var(--text);flex:none}
+.sbar svg{display:block}
+.appbar{display:flex;align-items:center;gap:10px;padding:10px 16px 8px;flex:none;min-height:52px}
+.appbar .ttl{flex:1;min-width:0;font-size:16px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.logo{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:800;letter-spacing:-.3px;flex:1}
+.date{font-size:12px;font-weight:600;color:var(--muted)}
+.iconbtn{flex:none;width:36px;height:36px;border-radius:12px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted)}
+.textbtn{flex:none;font-size:14px;font-weight:700;color:var(--primary)}
+.body{flex:1;min-height:0;overflow-y:auto;padding:6px 18px 18px;display:flex;flex-direction:column;gap:14px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.foot{flex:none;display:flex;gap:10px;padding:10px 18px 22px;border-top:1px solid var(--line);background:var(--screen)}
+
+/* ---------- shared bits ---------- */
+.btn{flex:1;height:50px;border-radius:14px;border:0;font:700 15px/1 var(--font);display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.btn.warm{background:var(--warm);color:var(--on-fill);box-shadow:0 10px 22px rgba(249,115,22,.28)}
+.btn.cool{background:var(--cool);color:var(--on-fill);box-shadow:0 10px 22px rgba(59,130,246,.28)}
+.btn.ghost{background:var(--surface);color:var(--text);border:1px solid var(--line-2)}
+.btn.sm{flex:none;height:36px;padding:0 12px;border-radius:11px;font-size:13px}
+.chip{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap}
+.k-line{color:var(--k-line);background:var(--k-line-bg)}
+.k-concept{color:var(--k-concept);background:var(--k-concept-bg)}
+.k-routine{color:var(--k-routine);background:var(--k-routine-bg)}
+.k-focus{color:var(--k-focus);background:var(--k-focus-bg)}
+.k-muted{color:var(--muted);background:var(--tint);border:1px solid var(--line)}
+.p2{display:inline-flex;align-items:center;font-size:9.5px;font-weight:800;letter-spacing:.7px;text-transform:uppercase;color:var(--primary-2);background:var(--primary-soft);padding:3px 7px;border-radius:6px;white-space:nowrap}
+.eyebrow{font-size:10.5px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow-card)}
+.h-xl{margin:0;font-size:26px;font-weight:800;letter-spacing:-.7px;line-height:1.1}
+.sub{margin:0;font-size:13.5px;line-height:1.45;color:var(--muted)}
+.muted{color:var(--muted)}
+.center{text-align:center}
+
+/* ---------- practice ---------- */
+.prog{flex:1;height:6px;border-radius:99px;background:var(--line);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--warm);border-radius:99px}
+.count{flex:none;font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.cue{margin:0;font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.28;text-wrap:balance}
+.scenario{margin:0;font-size:16px;font-weight:500;line-height:1.55}
+.hintrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:2px}
+.hintrow span:first-child{font-size:12px;font-weight:600;color:var(--muted)}
+.hint{display:inline-flex;align-items:center;padding:6px 12px;border-radius:999px;background:var(--k-line-bg);color:var(--k-line);font-weight:700;font-size:13px}
+.reveal{border-top:1px dashed var(--line-2);padding-top:14px;margin-top:4px;display:flex;flex-direction:column;gap:10px}
+.answer{margin:0;font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1.3}
+.note{display:flex;flex-direction:column;gap:3px;font-size:13px;color:var(--text);line-height:1.45;background:var(--tint);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.note b{font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.meta{font-size:12px;color:var(--faint);font-weight:600}
+.say{font-size:13px;color:var(--muted);text-align:center;line-height:1.45;padding-inline:12px}
+.steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;counter-reset:s}
+.steps li{counter-increment:s;display:flex;gap:10px;font-size:14px;line-height:1.4}
+.steps li::before{content:counter(s);flex:none;width:22px;height:22px;border-radius:50%;background:var(--k-routine-bg);color:var(--k-routine);font-size:11.5px;font-weight:800;display:grid;place-items:center}
+.big{display:flex;align-items:baseline;gap:8px}
+.num{font-size:56px;font-weight:800;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums}
+.unit{font-size:16px;font-weight:700;color:var(--muted)}
+.split{display:flex;gap:14px;font-size:13px;font-weight:600;color:var(--muted)}
+.split b{color:var(--text)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.list-h{font-size:12px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding-inline:4px}
+.mrow{display:flex;align-items:center;gap:10px;font-size:14px}
+.mrow b{flex:1;min-width:0;font-weight:700}
+.mrow + .mrow{border-top:1px solid var(--line);padding-top:10px}
+.streak{font-size:12px;font-weight:700;color:var(--k-focus)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:4px}
+.week div{display:flex;flex-direction:column;align-items:center;gap:5px;font-size:10.5px;font-weight:700;color:var(--faint)}
+.week i{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;color:var(--on-fill)}
+.week i.ok{background:var(--ok);border-color:var(--ok)}
+.week i.now{border-color:var(--primary);border-style:dashed}
+.question{margin:0;font-size:19px;font-weight:700;line-height:1.35;letter-spacing:-.3px}
+.done-hero{display:flex;flex-direction:column;align-items:center;gap:12px;padding-top:36px}
+.done-ring{width:112px;height:112px;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;box-shadow:0 14px 30px rgba(249,115,22,.16)}
+.kv{display:flex;justify-content:space-between;align-items:center;font-size:14px}
+.kv + .kv{border-top:1px solid var(--line);padding-top:10px}
+.kv span{color:var(--muted)}
+.kv b{font-variant-numeric:tabular-nums}
+
+/* ---------- admin ---------- */
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg.two{grid-template-columns:repeat(2,1fr);align-self:flex-start;min-width:170px}
+.seg span{padding:7px 4px;text-align:center;font-size:12.5px;font-weight:600;color:var(--muted);border-radius:9px}
+.seg span.on{background:var(--surface);color:var(--text);box-shadow:0 1px 3px rgba(17,24,39,.10)}
+.field{display:flex;flex-direction:column;gap:6px}
+.label{font-size:12.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+.label .opt{font-weight:500;color:var(--faint)}
+.label .req{color:var(--accent)}
+.input{background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:11px 12px;font-size:14px;line-height:1.45;color:var(--text);display:flex;align-items:center;gap:8px;min-width:0}
+.input.area{align-items:flex-start;min-height:72px}
+.input.focus{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.input .ph{color:var(--faint)}
+.input .grow{flex:1;min-width:0}
+.input .pre{flex:none;font-size:11px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.help{font-size:11.5px;line-height:1.45;color:var(--muted)}
+.sibs{background:var(--tint);border:1px solid var(--line);border-radius:14px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.sibs .eyebrow{color:var(--muted)}
+.srow{display:flex;gap:8px;align-items:baseline;font-size:12.5px;min-width:0}
+.tag{flex:none;font-size:11px;font-weight:700;color:var(--k-line);background:var(--k-line-bg);padding:2px 8px;border-radius:6px}
+.srow .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.preview{border:1px dashed var(--line-2);border-radius:16px;padding:12px;display:flex;flex-direction:column;gap:8px;background:var(--screen)}
+.preview .card{padding:14px;gap:6px;box-shadow:none}
+.preview .cue{font-size:16px}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:10px 12px;font-size:14px;color:var(--faint)}
+.filters{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex:none}
+.filters::-webkit-scrollbar{display:none}
+.fchip{flex:none;padding:7px 11px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:tabular-nums}
+.fchip.on{background:var(--text);color:var(--surface);border-color:var(--text)}
+.group{background:var(--surface);border:1px solid var(--line);border-radius:16px;overflow:hidden;flex:none}
+.group-h{display:flex;align-items:center;gap:8px;padding:11px 14px;background:var(--tint);border-bottom:1px solid var(--line)}
+.group-h .gt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.group-h .gt b{font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.group-h .n{font-size:12px;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.row{display:flex;gap:10px;align-items:center;padding:10px 14px;font-size:13.5px;min-width:0}
+.row + .row{border-top:1px solid var(--line)}
+.row .t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .m{flex:none;font-size:12px;color:var(--faint);font-weight:600}
+.sug{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;color:var(--primary-2)}
+.draft{border:1px solid var(--primary-soft);background:var(--surface);border-radius:18px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.draft-h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:800}
+.match{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:11px;font-weight:700;color:var(--ok);background:rgba(22,163,74,.10);padding:3px 8px;border-radius:6px}
+.scen{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:10px 12px;font-size:13px;line-height:1.45}
+.scen .i{flex:none;font-size:11px;font-weight:800;color:var(--k-concept);background:var(--k-concept-bg);width:20px;height:20px;border-radius:6px;display:grid;place-items:center;margin-top:1px}
+.scen .t{flex:1;min-width:0}
+.scen .x{flex:none;color:var(--faint)}
+.steprow{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line-2);border-radius:12px;padding:9px 10px;font-size:13px;line-height:1.4}
+.steprow .i{flex:none;width:22px;height:22px;border-radius:50%;background:var(--k-routine-bg);color:var(--k-routine);font-size:11.5px;font-weight:800;display:grid;place-items:center}
+.steprow .t{flex:1;min-width:0}
+.steprow .g{flex:none;color:var(--faint)}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.addlink{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--primary)}
+.zone{border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:4px 14px}
+.zrow{display:flex;align-items:center;gap:12px;padding:10px 0}
+.zrow + .zrow{border-top:1px solid var(--line)}
+.zrow div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.zrow b{font-size:13.5px}
+.zrow span{font-size:12px;color:var(--muted);line-height:1.4}
+.zrow .btn.sm.danger{color:var(--danger);border-color:rgba(220,38,38,.3)}
+.signin{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:0 10px}
+.signin h3{margin:0;font-size:24px;font-weight:800;letter-spacing:-.6px}
+.signin p{margin:0;font-size:14px;line-height:1.5;color:var(--muted);max-width:28ch}
+.gbtn{width:100%;height:50px;border-radius:14px;background:var(--surface);border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;gap:10px;font-size:15px;font-weight:700;color:var(--text);margin-top:8px}
+.gdot{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--primary)}
+.state{width:100%;text-align:left;border:1px solid rgba(220,38,38,.25);background:rgba(220,38,38,.05);border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.state .eyebrow{color:var(--danger)}
+.state p{font-size:13px;color:var(--text);max-width:none}
+.state a{font-size:13px;font-weight:700;color:var(--primary);text-decoration:none}
+
+@media (prefers-reduced-motion:no-preference){
+  .jump a{transition:border-color .15s,color .15s}
+}
+</style>
+
+<div class="wrap">
+
+<header class="intro">
+  <div class="brand">
+    <svg class="mark" width="22" height="22" viewBox="30 18 52 54" aria-hidden="true"><rect x="35.5" y="35" width="11.5" height="35" rx="5.75"/><path class="arc" d="M42 46 C45 38 52 36.5 60 40.5"/><path d="M70 23 C70.8 29 72.6 30.8 79 31.5 C72.6 32.2 70.8 34 70 40 C69.2 34 67.4 32.2 61 31.5 C67.4 30.8 69.2 29 70 23 Z"/></svg>
+    <span>Riffy Recall</span>
+  </div>
+  <h1>Every new screen for recall.riffy.pro</h1>
+  <p class="lede">Practice is public and needs no login. The admin is where you add lines, concepts, routines and focus items, and only your Google account can open it. Content below is example data in the production Riffy theme.</p>
+  <dl class="facts">
+    <div><dt>Practice</dt><dd>recall.riffy.pro</dd></div>
+    <div><dt>Admin</dt><dd>recall.riffy.pro/admin</dd></div>
+    <div><dt>Each card</dt><dd>Say it out loud, Reveal, then Next. No ratings, no timers.</dd></div>
+    <div><dt>Visibility</dt><dd>Everything is public for now</dd></div>
+  </dl>
+  <nav class="jump"><a href="#practice">Practice &middot; 8 screens</a><a href="#admin">Admin &middot; 7 screens</a></nav>
+</header>
+
+<!-- =============================== PRACTICE =============================== -->
+<section id="practice" class="sec">
+  <div class="sec-head">
+    <p class="url">recall.riffy.pro</p>
+    <h2>Practice</h2>
+    <p>One session a day: focus check-ins first, then up to 15 cards. Screens are in the order you meet them.</p>
+  </div>
+
+  <div class="gallery">
+
+    <!-- 1 Today -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:41</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="logo"><svg class="mark" width="20" height="20" viewBox="30 18 52 54" aria-hidden="true"><rect x="35.5" y="35" width="11.5" height="35" rx="5.75"/><path class="arc" d="M42 46 C45 38 52 36.5 60 40.5"/><path d="M70 23 C70.8 29 72.6 30.8 79 31.5 C72.6 32.2 70.8 34 70 40 C69.2 34 67.4 32.2 61 31.5 C67.4 30.8 69.2 29 70 23 Z"/></svg>Recall</span>
+          <span class="date">Mon 19 Oct</span>
+        </div>
+        <div class="body">
+          <div>
+            <h3 class="h-xl">Today's recall</h3>
+            <p class="sub">Say each one out loud before you reveal it.</p>
+          </div>
+          <div class="card">
+            <div class="big"><span class="num">15</span><span class="unit">cards</span></div>
+            <div class="split"><span><b>12</b> due</span><span><b>3</b> new</span></div>
+            <div class="chips"><span class="chip k-line">10 lines</span><span class="chip k-concept">3 concepts</span><span class="chip k-routine">2 routines</span></div>
+          </div>
+          <div class="list-h">Check-ins first</div>
+          <div class="card">
+            <div class="mrow"><span class="chip k-focus">Focus</span><b>Fix sleep</b><span class="streak">5 days</span></div>
+            <div class="mrow"><span class="chip k-focus">Focus</span><b>Protect mental energy</b><span class="streak">2 days</span></div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Start</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">1 &middot; Today</span><span class="cap-d">What's waiting: check-ins first, then due cards, then up to 3 new ones.</span></figcaption>
+    </figure>
+
+    <!-- 2 Check-in -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:41</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:50%"></i></div>
+          <span class="count">Check-in 1 of 2</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-focus">Focus check-in</span>
+            <h3 class="cue">Fix sleep</h3>
+            <p class="question">Did you sleep 7+ hours last night?</p>
+            <div class="note"><b>Why</b>Sleep is where mental energy comes from. Tired means flat in set.</div>
+            <div class="week">
+              <div><i class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></i>T</div>
+              <div><i></i>W</div>
+              <div><i class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></i>T</div>
+              <div><i class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></i>F</div>
+              <div><i class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></i>S</div>
+              <div><i class="ok"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg></i>S</div>
+              <div><i class="now"></i>M</div>
+            </div>
+            <span class="streak">5-day streak</span>
+          </div>
+        </div>
+        <div class="foot"><button class="btn ghost">No</button><button class="btn cool">Yes</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">2 &middot; Focus check-in</span><span class="cap-d">Focus items are a yes/no, with the last 7 days and a streak. No spaced repetition.</span></figcaption>
+    </figure>
+
+    <!-- 3 Line, prompt -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:42</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:17%"></i></div>
+          <span class="count">3 / 18</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-line">Line</span>
+            <span class="eyebrow">She says</span>
+            <h3 class="cue">&ldquo;You're such a player.&rdquo;</h3>
+            <div class="hintrow"><span>Answer with</span><span class="hint">agree &amp; amplify</span></div>
+          </div>
+          <p class="say">Say your line out loud, then reveal.</p>
+        </div>
+        <div class="foot"><button class="btn cool">Reveal</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">3 &middot; Line, before reveal</span><span class="cap-d">The cue plus a hint. This cue has 5 lines, so the hint says which one to practise.</span></figcaption>
+    </figure>
+
+    <!-- 4 Line, revealed -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:42</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:17%"></i></div>
+          <span class="count">3 / 18</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-line">Line</span>
+            <span class="eyebrow">She says</span>
+            <h3 class="cue">&ldquo;You're such a player.&rdquo;</h3>
+            <div class="hintrow"><span>Answer with</span><span class="hint">agree &amp; amplify</span></div>
+            <div class="reveal">
+              <span class="eyebrow">Your line</span>
+              <p class="answer">&ldquo;Only on weekends. Weekdays I'm a monk.&rdquo;</p>
+              <div class="note"><b>How to say it</b>Deadpan. Hold eye contact and only smile after.</div>
+              <span class="meta">1 of 5 lines on this cue</span>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Next</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">4 &middot; Line, revealed</span><span class="cap-d">Your exact line and how to say it. Next moves on. Nothing to rate.</span></figcaption>
+    </figure>
+
+    <!-- 5 Command (goal cue) -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:43</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:39%"></i></div>
+          <span class="count">7 / 18</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-line">Line</span>
+            <span class="eyebrow">Goal</span>
+            <h3 class="cue">Pull her closer</h3>
+            <div class="reveal">
+              <span class="eyebrow">Your line</span>
+              <p class="answer">&ldquo;Come here.&rdquo;</p>
+              <div class="note"><b>How to say it</b>Low and slow. Drop the pitch at the end. Say it once, then wait.</div>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Next</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">5 &middot; Command, revealed</span><span class="cap-d">Commands and sounds like &ldquo;euuu&rdquo; are lines too. This cue is a goal, and it has only one line, so there's no hint.</span></figcaption>
+    </figure>
+
+    <!-- 6 Concept -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:45</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:61%"></i></div>
+          <span class="count">11 / 18</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-concept">Concept</span>
+            <span class="eyebrow">Which concept is this?</span>
+            <p class="scenario">She mentions she's from Lisbon. Instead of reacting, you ask what she'd show you there that tourists never see, and let her sell it.</p>
+            <div class="reveal">
+              <span class="eyebrow">Concept</span>
+              <p class="answer">Qualification</p>
+              <p class="sub">Make her invest by giving you reasons she's interesting.</p>
+              <span class="meta">Scenario 2 of 4</span>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Next</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">6 &middot; Concept, revealed</span><span class="cap-d">A scenario, and you name the concept. Each time this card comes up it shows the next scenario.</span></figcaption>
+    </figure>
+
+    <!-- 7 Routine -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:47</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span>
+          <div class="prog"><i style="width:83%"></i></div>
+          <span class="count">15 / 18</span>
+        </div>
+        <div class="body">
+          <div class="card">
+            <span class="chip k-routine">Routine</span>
+            <span class="eyebrow">Recall the steps</span>
+            <h3 class="cue">Day-game stop</h3>
+            <div class="reveal">
+              <ol class="steps">
+                <li>Stop her from the front, slightly to the side</li>
+                <li>&ldquo;Hey, I had to say hi. You look like you're on a mission.&rdquo;</li>
+                <li>Hook with a cold read</li>
+                <li>Thread: where she's headed, what she does</li>
+                <li>Qualify her once</li>
+                <li>&ldquo;Let's continue this over coffee.&rdquo;</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Next</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">7 &middot; Routine, revealed</span><span class="cap-d">The routine name only. You recall the steps in order, then reveal them.</span></figcaption>
+    </figure>
+
+    <!-- 8 Done -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>9:49</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="body">
+          <div class="done-hero">
+            <div class="done-ring"><svg class="mark" width="52" height="52" viewBox="30 18 52 54" aria-hidden="true"><rect x="35.5" y="35" width="11.5" height="35" rx="5.75"/><path class="arc" d="M42 46 C45 38 52 36.5 60 40.5"/><path d="M70 23 C70.8 29 72.6 30.8 79 31.5 C72.6 32.2 70.8 34 70 40 C69.2 34 67.4 32.2 61 31.5 C67.4 30.8 69.2 29 70 23 Z"/></svg></div>
+            <h3 class="h-xl center">Done for today</h3>
+            <p class="sub center">18 cards and 2 check-ins.</p>
+          </div>
+          <div class="card">
+            <div class="kv"><span>Next session</span><b>Tomorrow</b></div>
+            <div class="kv"><span>Due tomorrow</span><b>11 cards</b></div>
+            <div class="kv"><span>New items waiting</span><b>7</b></div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn ghost">Back to start</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">8 &middot; Done</span><span class="cap-d">A short summary and what's due tomorrow.</span></figcaption>
+    </figure>
+
+  </div>
+</section>
+
+<!-- =============================== ADMIN =============================== -->
+<section id="admin" class="sec">
+  <div class="sec-head">
+    <p class="url">recall.riffy.pro/admin</p>
+    <h2>Admin</h2>
+    <p>Only your Google account gets in. Add and edit everything that shows up in practice. New items and edits share one form.</p>
+  </div>
+
+  <div class="gallery">
+
+    <!-- A Sign in -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:10</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="body">
+          <div class="signin">
+            <svg class="mark" width="48" height="48" viewBox="30 18 52 54" aria-hidden="true"><rect x="35.5" y="35" width="11.5" height="35" rx="5.75"/><path class="arc" d="M42 46 C45 38 52 36.5 60 40.5"/><path d="M70 23 C70.8 29 72.6 30.8 79 31.5 C72.6 32.2 70.8 34 70 40 C69.2 34 67.4 32.2 61 31.5 C67.4 30.8 69.2 29 70 23 Z"/></svg>
+            <h3>Recall admin</h3>
+            <p>Add and edit the lines, concepts, routines and focus items that show up in practice.</p>
+            <div class="gbtn"><span class="gdot">G</span>Continue with Google</div>
+            <div class="state">
+              <span class="eyebrow">If another account signs in</span>
+              <p>This account can't edit Recall.</p>
+              <a href="#admin">Sign out</a>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><span class="cap-t">Sign in</span><span class="cap-d">Google sign-in. The backend checks your account against the admin list; any other account sees the red message.</span></figcaption>
+    </figure>
+
+    <!-- A Library -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:11</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="ttl">Library</span>
+          <button class="btn warm sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add</button>
+        </div>
+        <div class="body">
+          <div class="search"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>Search lines, cues, concepts</div>
+          <div class="filters"><span class="fchip on">All 59</span><span class="fchip">Lines 41</span><span class="fchip">Concepts 9</span><span class="fchip">Routines 6</span><span class="fchip">Focus 3</span></div>
+          <div class="group">
+            <div class="group-h"><div class="gt"><span class="eyebrow">She says</span><b>&ldquo;You're such a player&rdquo;</b></div><span class="n">5</span></div>
+            <div class="row"><span class="tag">agree &amp; amplify</span><span class="t">Only on weekends. Weekdays I'm a monk.</span></div>
+            <div class="row"><span class="tag">flip it</span><span class="t">Says the girl who's been staring at me for ten minutes.</span></div>
+            <div class="row"><span class="tag">misinterpret</span><span class="t">Player? Nobody's ever called me athletic before.</span></div>
+            <div class="row"><span class="tag">sound</span><span class="t">Euuu... with a raised eyebrow</span></div>
+            <div class="row"><span class="tag">command</span><span class="t">Come here. Let me explain myself.</span></div>
+          </div>
+          <div class="group">
+            <div class="group-h"><div class="gt"><span class="eyebrow">Goal</span><b>Get her to qualify</b></div><span class="n">3</span></div>
+            <div class="row"><span class="tag">ambition</span><span class="t">So what do you do that actually excites you?</span></div>
+            <div class="row"><span class="tag">standards</span><span class="t">Okay, but are you fun, or just pretty?</span></div>
+            <div class="row"><span class="tag">travel</span><span class="t">Where would you take me if we had a free weekend?</span></div>
+          </div>
+          <div class="group">
+            <div class="group-h"><div class="gt"><span class="eyebrow">Concepts</span><b>9 concepts</b></div></div>
+            <div class="row"><span class="chip k-concept">Concept</span><span class="t">Qualification</span><span class="m">4 scenarios</span></div>
+            <div class="row"><span class="chip k-concept">Concept</span><span class="t">Push-pull</span><span class="m">3 scenarios</span></div>
+          </div>
+          <div class="group">
+            <div class="group-h"><div class="gt"><span class="eyebrow">Routines</span><b>6 routines</b></div></div>
+            <div class="row"><span class="chip k-routine">Routine</span><span class="t">Day-game stop</span><span class="m">6 steps</span></div>
+            <div class="row"><span class="chip k-routine">Routine</span><span class="t">Bar opener stack</span><span class="chip k-muted">Paused</span></div>
+          </div>
+          <div class="group">
+            <div class="group-h"><div class="gt"><span class="eyebrow">Focus</span><b>3 focus items</b></div></div>
+            <div class="row"><span class="chip k-focus">Focus</span><span class="t">Fix sleep</span></div>
+            <div class="row"><span class="chip k-focus">Focus</span><span class="t">Protect mental energy</span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><span class="cap-t">Library</span><span class="cap-d">Everything you've added. Lines are grouped under their cue with their hints. Tap any row to edit.</span></figcaption>
+    </figure>
+
+    <!-- A New line -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:12</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+          <span class="ttl">New item</span>
+        </div>
+        <div class="body">
+          <div class="seg"><span class="on">Line</span><span>Concept</span><span>Routine</span><span>Focus</span></div>
+          <div class="field">
+            <span class="label">Cue <span class="req">*</span></span>
+            <div class="seg two"><span class="on">She says</span><span>Goal</span></div>
+            <div class="input"><span class="grow">You're such a player</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div>
+          </div>
+          <div class="sibs">
+            <span class="eyebrow">Already on this cue &middot; 4</span>
+            <div class="srow"><span class="tag">agree &amp; amplify</span><span class="t">Only on weekends. Weekdays I'm a monk.</span></div>
+            <div class="srow"><span class="tag">flip it</span><span class="t">Says the girl who's been staring at me...</span></div>
+            <div class="srow"><span class="tag">misinterpret</span><span class="t">Player? Nobody's ever called me athletic.</span></div>
+            <div class="srow"><span class="tag">sound</span><span class="t">Euuu... with a raised eyebrow</span></div>
+          </div>
+          <div class="field">
+            <span class="label">Hint <span class="req">*</span></span>
+            <div class="input focus"><span class="grow">own it</span></div>
+            <span class="help">Needed because this cue has other lines. Keep it different from the hints above.</span>
+          </div>
+          <div class="field">
+            <span class="label">Line <span class="req">*</span></span>
+            <div class="input area">Guilty. But I only play on hard mode.</div>
+          </div>
+          <div class="field">
+            <span class="label">How to say it <span class="opt">optional</span></span>
+            <div class="input area">Shrug, half-smile, then keep talking.</div>
+          </div>
+          <div class="preview">
+            <span class="eyebrow">Preview in practice</span>
+            <div class="card">
+              <span class="eyebrow">She says</span>
+              <h3 class="cue">&ldquo;You're such a player.&rdquo;</h3>
+              <div class="hintrow"><span>Answer with</span><span class="hint">own it</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Save line</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">New line</span><span class="cap-d">Pick an existing cue and you see its other lines. Once a cue has 2+ lines, every line on it needs a different hint.</span></figcaption>
+    </figure>
+
+    <!-- A Quick add (Phase 2) -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>23:48</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+          <span class="ttl">Quick add</span>
+          <span class="p2">Phase 2</span>
+        </div>
+        <div class="body">
+          <div class="field">
+            <span class="label">Paste or dictate</span>
+            <div class="input area">when she says she's not here to meet anyone, say perfect me neither, let's not meet then. turn away a bit</div>
+          </div>
+          <div class="btnrow">
+            <button class="btn ghost sm" aria-label="Dictate"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Dictate</button>
+            <button class="btn cool sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>Suggest</button>
+          </div>
+          <div class="draft">
+            <div class="draft-h"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--primary-2)"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>Suggested draft</div>
+            <div class="field"><span class="label">Kind</span><span class="chip k-line">Line</span></div>
+            <div class="field">
+              <span class="label">Cue</span>
+              <div class="input"><span class="pre">She says</span><span class="grow">I'm not here to meet anyone</span></div>
+              <span class="match"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>Matches an existing cue &middot; 2 lines</span>
+            </div>
+            <div class="field"><span class="label">Hint <span class="sug">suggested</span></span><div class="input">agree &amp; amplify</div></div>
+            <div class="field"><span class="label">Line</span><div class="input area">Perfect, me neither. Let's not meet then.</div></div>
+            <div class="field"><span class="label">How to say it</span><div class="input">Turn away a little as you say it, then turn back.</div></div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn ghost">Full form</button><button class="btn warm">Save</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">Quick add <span class="p2">Phase 2</span></span><span class="cap-d">Paste or dictate. The AI matches the cue, suggests a hint and fills a draft. Nothing is saved until you tap Save.</span></figcaption>
+    </figure>
+
+    <!-- A New concept -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:20</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+          <span class="ttl">New item</span>
+        </div>
+        <div class="body">
+          <div class="seg"><span>Line</span><span class="on">Concept</span><span>Routine</span><span>Focus</span></div>
+          <div class="field"><span class="label">Name <span class="req">*</span></span><div class="input">Push-pull</div></div>
+          <div class="field"><span class="label">Definition <span class="req">*</span></span><div class="input area">Mix a sign of interest with a playful push away, so she isn't sure where she stands.</div></div>
+          <div class="field">
+            <span class="label">Scenarios &middot; 3</span>
+            <span class="help">Practice shows one at a time and moves to the next each time the card comes up.</span>
+          </div>
+          <div class="scen"><span class="i">1</span><span class="t">You tell her she has great style, then add you'd never trust her with the aux cord.</span><svg class="x" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+          <div class="scen"><span class="i">2</span><span class="t">She laughs at your joke. You say: okay, you're fun. Bit loud, but fun.</span><svg class="x" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+          <div class="scen"><span class="i">3</span><span class="t">You lean in to tell her something, then pull back: actually, you haven't earned that story yet.</span><svg class="x" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+          <div class="btnrow">
+            <span class="addlink"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add scenario</span>
+            <button class="btn ghost sm"><svg width="13" height="13" viewBox="0 0 24 24" fill="var(--primary-2)"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/></svg>Draft 3 more <span class="p2">Phase 2</span></button>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Save concept</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">New concept</span><span class="cap-d">Name, definition and scenarios. In Phase 2 the AI can draft scenarios for you to edit.</span></figcaption>
+    </figure>
+
+    <!-- A Edit routine -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:24</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+          <span class="ttl">Edit routine</span>
+          <span class="chip k-routine">Active</span>
+        </div>
+        <div class="body">
+          <div class="field"><span class="label">Name <span class="req">*</span></span><div class="input">Day-game stop</div></div>
+          <div class="field"><span class="label">Steps &middot; 6</span></div>
+          <div class="steprow"><span class="i">1</span><span class="t">Stop her from the front, slightly to the side</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <div class="steprow"><span class="i">2</span><span class="t">&ldquo;Hey, I had to say hi. You look like you're on a mission.&rdquo;</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <div class="steprow"><span class="i">3</span><span class="t">Hook with a cold read</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <div class="steprow"><span class="i">4</span><span class="t">Thread: where she's headed, what she does</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <div class="steprow"><span class="i">5</span><span class="t">Qualify her once</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <div class="steprow"><span class="i">6</span><span class="t">&ldquo;Let's continue this over coffee.&rdquo;</span><svg class="g" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg></div>
+          <span class="addlink"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add step</span>
+          <div class="field"><span class="label">Source <span class="opt">optional</span></span><div class="input">My notes, Oct 2026</div></div>
+          <div class="zone">
+            <div class="zrow"><div><b>Pause</b><span>Stops it showing in practice. Progress is kept.</span></div><button class="btn ghost sm">Pause</button></div>
+            <div class="zrow"><div><b>Archive</b><span>Hides it everywhere. Nothing is deleted.</span></div><button class="btn ghost sm danger">Archive</button></div>
+          </div>
+        </div>
+        <div class="foot"><button class="btn warm">Save changes</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">Edit routine</span><span class="cap-d">Editing uses the same form as New item, plus Pause and Archive. Drag steps to reorder them.</span></figcaption>
+    </figure>
+
+    <!-- A New focus -->
+    <figure class="shot">
+      <div class="phone"><div class="screen">
+        <div class="sbar"><span>21:30</span><svg width="25" height="12" viewBox="0 0 25 12" fill="none"><rect x="1" y="1" width="20" height="10" rx="3" stroke="currentColor" stroke-opacity=".5"/><rect x="3" y="3" width="15" height="6" rx="1.5" fill="currentColor"/></svg></div>
+        <div class="appbar">
+          <span class="iconbtn" aria-label="Back"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></span>
+          <span class="ttl">New item</span>
+        </div>
+        <div class="body">
+          <div class="seg"><span>Line</span><span>Concept</span><span>Routine</span><span class="on">Focus</span></div>
+          <div class="field"><span class="label">Title <span class="req">*</span></span><div class="input">Protect mental energy</div></div>
+          <div class="field"><span class="label">Check-in question <span class="req">*</span></span><div class="input area">Did you stay off your phone in the hour before bed?</div><span class="help">Ask it as a yes/no question.</span></div>
+          <div class="field"><span class="label">Why it matters <span class="opt">optional</span></span><div class="input area">Mental energy is the bottleneck for going out. Guard it.</div></div>
+          <div class="preview">
+            <span class="eyebrow">Preview in practice</span>
+            <div class="card">
+              <span class="chip k-focus">Focus check-in</span>
+              <h3 class="cue">Protect mental energy</h3>
+              <p class="sub">Did you stay off your phone in the hour before bed?</p>
+            </div>
+          </div>
+          <span class="help">Shows at the start of every session while it's active. Pause it from the Library when you're done with it.</span>
+        </div>
+        <div class="foot"><button class="btn warm">Save focus</button></div>
+      </div></div>
+      <figcaption><span class="cap-t">New focus</span><span class="cap-d">Becomes a yes/no check-in at the start of every session.</span></figcaption>
+    </figure>
+
+  </div>
+</section>
+
+</div>

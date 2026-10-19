@@ -10,6 +10,8 @@ from app.application.entitlement_service import EntitlementService
 from app.application.identity_service import IdentityService
 from app.application.notification_service import NotificationService
 from app.application.progress_service import ProgressService
+from app.application.recall_admin_service import RecallAdminService
+from app.application.recall_practice_service import RecallPracticeService
 from app.application.support_service import SupportService
 from app.application.task_attempt_service import TaskAttemptService
 from app.application.task_catalog_service import TaskCatalogService
@@ -43,6 +45,7 @@ from app.infrastructure.repositories.pg_onboarding_repository import (
 )
 from app.infrastructure.repositories.pg_profile_repository import PgProfileRepository
 from app.infrastructure.repositories.pg_progress_repository import PgProgressRepository
+from app.infrastructure.repositories.pg_recall_repository import PgRecallRepository
 from app.infrastructure.repositories.pg_support_repository import PgSupportRepository
 from app.infrastructure.repositories.pg_task_attempt_repository import (
     PgTaskAttemptRepository,
@@ -138,6 +141,7 @@ class RequestContainer:
         devices = PgNotificationDeviceRepository(session)
         support = PgSupportRepository(session)
         config = PgConfigRepository(session)
+        recall = PgRecallRepository(session)
 
         self.transcription_service = TranscriptionService(
             integrations.transcription_provider
@@ -170,3 +174,5 @@ class RequestContainer:
         self.notification_service = NotificationService(devices, uow)
         self.support_service = SupportService(support, uow)
         self.app_config_service = AppConfigService(config)
+        self.recall_practice_service = RecallPracticeService(recall, uow)
+        self.recall_admin_service = RecallAdminService(recall, uow)

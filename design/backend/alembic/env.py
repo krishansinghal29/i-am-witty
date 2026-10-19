@@ -20,6 +20,7 @@ import app.infrastructure.db.orm.plans  # noqa: F401
 import app.infrastructure.db.orm.billing  # noqa: F401
 import app.infrastructure.db.orm.comms  # noqa: F401
 import app.infrastructure.db.orm.config  # noqa: F401
+import app.infrastructure.db.orm.recall  # noqa: F401
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

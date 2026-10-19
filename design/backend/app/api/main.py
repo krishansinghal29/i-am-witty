@@ -9,9 +9,11 @@ from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.routes import admin_recall as admin_recall_routes
 from app.api.routes import comms as comms_routes
 from app.api.routes import identity as identity_routes
 from app.api.routes import ota as ota_routes
+from app.api.routes import recall as recall_routes
 from app.api.routes import tasks as tasks_routes
 from app.application.exceptions import (
     AccessDeniedError,
@@ -70,9 +72,15 @@ app.add_middleware(
         "https://www.riffy.pro",
         "https://i-am-witty.web.app",
         "https://i-am-witty.firebaseapp.com",
+        # Recall site (separate Firebase Hosting site + custom domain).
+        "https://recall.riffy.pro",
+        "https://riffy-recall.web.app",
+        "https://riffy-recall.firebaseapp.com",
         # Dev (Vite dev server) + Capacitor app origins.
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5174",
         "capacitor://localhost",
         "http://localhost",
         # Android Capacitor webview uses the https scheme by default
@@ -112,3 +120,5 @@ app.include_router(identity_routes.router)
 app.include_router(tasks_routes.router)
 app.include_router(comms_routes.router)
 app.include_router(ota_routes.router)
+app.include_router(recall_routes.router)
+app.include_router(admin_recall_routes.router)
