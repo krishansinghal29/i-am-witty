@@ -22,7 +22,7 @@ from app.domain.policies.recall_schedule_policy import (
 from app.ports.repositories.recall_repository import RecallRepository
 
 MAX_SESSION_CARDS = 15
-MAX_NEW_PER_DAY = 3
+MAX_NEW_PER_DAY = 5
 # Client dates may differ from the server's UTC date by a timezone, not more.
 LOCAL_DATE_TOLERANCE = timedelta(days=2)
 # Check-in history read for streaks; a streak longer than this just caps.
