@@ -86,8 +86,9 @@ def select_session_cards(
 
     - Cards already seen today are skipped, and so is every line on a cue that
       had a line seen today, so one cue's lines never blur together in a day.
-    - Due cards come first, at most one line per cue (the most overdue), in an
-      order shuffled by ``seed`` so a reload shows the same order.
+    - Due cards come first: the most overdue that fit the session, at most one
+      line per cue, in an order shuffled by ``seed`` so a reload shows the
+      same order.
     - Then up to ``MAX_NEW_PER_DAY`` never-seen cards (fewer if some were
       already started today), oldest first, skipping cues already in the session.
     - The whole list is capped at ``MAX_SESSION_CARDS``.
@@ -118,15 +119,18 @@ def select_session_cards(
         ),
         key=lambda item: (progress[item.id].due_on, item.created_at),
     )
-    session_cues: set[uuid.UUID] = set()
+    due_cues: set[uuid.UUID] = set()
     due: list[RecallItem] = []
     for item in due_sorted:
         if item.kind is RecallItemKind.line:
-            if item.cue_id in session_cues:
+            if item.cue_id in due_cues:
                 continue
-            session_cues.add(item.cue_id)
+            due_cues.add(item.cue_id)
         due.append(item)
+    # Keep the most overdue cards that fit, then shuffle only their order.
+    due = due[:MAX_SESSION_CARDS]
     random.Random(seed).shuffle(due)
+    session_cues = {item.cue_id for item in due if item.kind is RecallItemKind.line}
 
     started_today = sum(1 for p in progress.values() if p.first_seen_on == local_date)
     allowance = max(0, MAX_NEW_PER_DAY - started_today)
@@ -225,17 +229,14 @@ class RecallPracticeService:
             if item.status is RecallItemStatus.active
             and item.kind is not RecallItemKind.focus
         ]
-        due_tomorrow = sum(
-            1
-            for item in practicable
-            if (p := progress.get(item.id)) is not None
-            and p.due_on is not None
-            and p.due_on <= tomorrow
+        # Count the due cards tomorrow's session will actually show (one line
+        # per cue, capped), not every item whose due date has passed.
+        tomorrow_cards = select_session_cards(
+            practicable, progress, tomorrow, seed=f"{learner_key}:{tomorrow}"
         )
+        due_tomorrow = sum(1 for card in tomorrow_cards if not card.is_new)
         new_waiting = sum(1 for item in practicable if item.id not in progress)
-        return RecallOutlook(
-            due_tomorrow=min(due_tomorrow, MAX_SESSION_CARDS), new_waiting=new_waiting
-        )
+        return RecallOutlook(due_tomorrow=due_tomorrow, new_waiting=new_waiting)
 
     async def mark_seen(
         self, learner_key: str, item_id: uuid.UUID, local_date: date
