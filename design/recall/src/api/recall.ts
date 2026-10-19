@@ -1,6 +1,5 @@
 import { http } from '@/api/http';
 import type {
-  CheckinResult,
   Cue,
   CuePatch,
   CueType,
@@ -10,31 +9,10 @@ import type {
   Kind,
   Me,
   NewItemBody,
-  Outlook,
-  SeenResult,
-  Session,
   Status,
 } from '@/api/types';
 
 const q = encodeURIComponent;
-
-// ---------- public practice ----------
-
-export function getSession(localDate: string): Promise<Session> {
-  return http.publicGet(`/v1/recall/session?local_date=${q(localDate)}`);
-}
-
-export function markSeen(itemId: string, localDate: string): Promise<SeenResult> {
-  return http.publicPost('/v1/recall/seen', { item_id: itemId, local_date: localDate });
-}
-
-export function answerCheckin(itemId: string, localDate: string, done: boolean): Promise<CheckinResult> {
-  return http.publicPost('/v1/recall/checkins', { item_id: itemId, local_date: localDate, done });
-}
-
-export function getOutlook(localDate: string): Promise<Outlook> {
-  return http.publicGet(`/v1/recall/outlook?local_date=${q(localDate)}`);
-}
 
 // ---------- admin ----------
 

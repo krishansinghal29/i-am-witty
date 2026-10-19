@@ -1,9 +1,12 @@
 # Riffy Recall (web)
 
-Public daily recall practice at **recall.riffy.pro**, plus an owner-only admin at
-**/admin** for adding lines, concepts, routines and focus check-ins. It talks to
-the existing backend (`design/backend`, `/v1/recall/*` and `/v1/admin/recall/*`)
-and signs the owner in with Firebase Auth (same Firebase project as the app).
+The owner-only Recall admin at **recall.riffy.pro/admin**: add lines, concepts,
+routines and focus check-ins (by hand or with Quick add), and manage cues. It
+talks to the existing backend (`design/backend`, `/v1/admin/recall/*`) and signs
+the owner in with Firebase Auth (same Firebase project as the app).
+
+Practice lives in the Riffy app's Recall tab (riffy.pro/app/recall). Hosting
+redirects recall.riffy.pro/ there (see `firebase.json`).
 
 Approved design: `design/ux_existing/mockups/html/recall.html`.
 
@@ -35,10 +38,7 @@ npm run build
 firebase deploy --only hosting:recall
 ```
 
-## How identity works
+## Access
 
-- Visitors get a random learner id kept in this browser (`riffy_recall_learner`
-  in localStorage), sent as `X-Recall-Learner` on every practice call.
-- When the owner has signed in on this browser (via /admin), practice calls also
-  send their Firebase ID token so progress follows them across devices.
-  Firebase only loads for /admin or when this browser has signed in before.
+The backend allows only the emails in `ADMIN_EMAILS` (verified Google sign-in).
+Any other account sees "This account can't edit Recall."

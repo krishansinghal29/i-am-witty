@@ -18,4 +18,7 @@ export const queryKeys = {
   taskRuntime: (taskId: string) => ['task', 'runtime', taskId] as const,
   access: ['entitlement', 'access'] as const,
   offerings: ['subscription', 'offerings'] as const, // RevenueCat SDK, client-side
+  recall: ['recall'] as const, // prefix: invalidates every recall query below
+  recallSession: (localDate: string) => ['recall', 'session', localDate] as const,
+  recallOutlook: (localDate: string) => ['recall', 'outlook', localDate] as const,
 };

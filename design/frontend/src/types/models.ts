@@ -13,6 +13,7 @@
  *   - Entitlements & Access
  *   - Notifications
  *   - Support & Utility
+ *   - Recall
  */
 
 // ---------------------------------------------------------------------------
@@ -381,4 +382,102 @@ export interface TranscriptionToken {
   expiresAt: string | null;
   provider: string;
   extra: Record<string, unknown>;
+}
+
+// ---------------------------------------------------------------------------
+// Recall
+// ---------------------------------------------------------------------------
+
+/** One day in a focus check-in's last-7-days strip. `done` is null if unanswered. */
+export interface RecallCheckinDay {
+  date: string;
+  done: boolean | null;
+}
+
+/** A yes/no focus check-in shown before the day's cards. */
+export interface RecallCheckin {
+  itemId: string;
+  title: string;
+  question: string;
+  why: string | null;
+  /** Today's answer, or null if not answered yet. */
+  today: boolean | null;
+  streak: number;
+  /** Oldest first; the last entry is today. */
+  last7: RecallCheckinDay[];
+}
+
+/** `reaction` cues are something she says; `goal` cues are what you're going for. */
+export type RecallCueType = 'reaction' | 'goal' | string;
+
+export interface RecallLine {
+  cueText: string;
+  cueType: RecallCueType;
+  /** Which of the cue's lines to say; only set when the cue has several. */
+  hint: string | null;
+  text: string;
+  deliveryNote: string | null;
+  /** 1-based place among the cue's lines, and how many it has. */
+  position: number;
+  cueLineCount: number;
+}
+
+export interface RecallConcept {
+  name: string;
+  definition: string;
+  scenario: string;
+  scenarioNumber: number;
+  scenarioCount: number;
+}
+
+export interface RecallRoutine {
+  name: string;
+  steps: string[];
+}
+
+interface RecallCardBase {
+  itemId: string;
+  isNew: boolean;
+}
+
+/** One practice card: a prompt to answer out loud, then a reveal. */
+export type RecallCard =
+  | (RecallCardBase & { kind: 'line'; line: RecallLine })
+  | (RecallCardBase & { kind: 'concept'; concept: RecallConcept })
+  | (RecallCardBase & { kind: 'routine'; routine: RecallRoutine });
+
+export type RecallCardKind = RecallCard['kind'];
+
+export interface RecallCounts {
+  due: number;
+  new: number;
+  line: number;
+  concept: number;
+  routine: number;
+}
+
+/** Today's session: check-ins first, then up to 15 cards. Items seen today are excluded. */
+export interface RecallSession {
+  localDate: string;
+  checkins: RecallCheckin[];
+  cards: RecallCard[];
+  counts: RecallCounts;
+}
+
+/** What's waiting after today's session (Done screen). */
+export interface RecallOutlook {
+  dueTomorrow: number;
+  newWaiting: number;
+}
+
+export interface RecallSeenResult {
+  itemId: string;
+  seenCount: number;
+  dueOn: string;
+}
+
+export interface RecallCheckinResult {
+  itemId: string;
+  done: boolean;
+  streak: number;
 }

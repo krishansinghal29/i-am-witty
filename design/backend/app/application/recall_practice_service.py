@@ -157,7 +157,7 @@ def _utc_today() -> date:
 
 
 class RecallPracticeService:
-    """Public practice: build the day's session, record views and check-ins."""
+    """Practice: build the day's session, record views and check-ins."""
 
     def __init__(
         self,

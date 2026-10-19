@@ -1,9 +1,7 @@
 /**
  * Firebase Auth for Recall (auth only, same Firebase project as the Riffy app).
  *
- * Public practice never requires sign-in. When the owner is signed in (via
- * /admin), public calls also carry their ID token so progress follows them
- * across devices.
+ * Used only by the admin. Practice lives in the Riffy app's Recall tab.
  */
 
 import { getApp, getApps, initializeApp } from 'firebase/app';
@@ -16,7 +14,6 @@ import {
   signOut as firebaseSignOut,
 } from 'firebase/auth';
 import type { Auth, User } from 'firebase/auth';
-import { rememberSignedIn } from '@/lib/signedInHint';
 
 const config: FirebaseOptions = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -50,7 +47,6 @@ export function authReady(): Promise<User | null> {
       const unsubscribe = onAuthStateChanged(auth(), (user) => {
         unsubscribe();
         window.clearTimeout(timer);
-        rememberSignedIn(user !== null);
         resolve(user);
       });
     });
@@ -70,10 +66,7 @@ export function subscribeAuth(callback: (user: User | null) => void): () => void
     callback(null);
     return () => {};
   }
-  return onAuthStateChanged(auth(), (user) => {
-    rememberSignedIn(user !== null);
-    callback(user);
-  });
+  return onAuthStateChanged(auth(), callback);
 }
 
 export async function signInWithGoogle(): Promise<void> {
@@ -83,5 +76,4 @@ export async function signInWithGoogle(): Promise<void> {
 export async function signOut(): Promise<void> {
   if (!firebaseConfigured) return;
   await firebaseSignOut(auth());
-  rememberSignedIn(false);
 }

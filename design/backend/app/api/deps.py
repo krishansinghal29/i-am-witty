@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import uuid
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
@@ -13,7 +12,6 @@ from app.ports.integrations.auth_token_verifier import VerifiedToken
 from app.settings import get_settings
 
 _BEARER_PREFIX = "Bearer "
-_RECALL_LEARNER_HEADER = "X-Recall-Learner"
 
 
 def get_integrations(request: Request) -> Integrations:
@@ -94,29 +92,20 @@ async def get_recall_learner_key(
     request: Request,
     container: RequestContainer = Depends(get_container),
 ) -> str:
-    """Identify who is practising on the public recall routes.
+    """Identify who is practising on the recall routes.
 
-    The admin (valid allowlisted token) practises as ``uid:<firebase uid>`` so
-    progress follows them across devices. Everyone else is the anonymous id
-    their browser keeps in ``X-Recall-Learner``; a bad or non-admin token is
-    ignored rather than rejected, so practice never breaks over sign-in state.
+    Practice needs a signed-in Firebase user, and each one practises as
+    ``uid:<firebase uid>`` so progress follows them across devices. Like the
+    recall admin this never touches ``app_users``.
     """
     token = _bearer_token(request)
-    if token is not None:
-        try:
-            verified = await container.integrations.auth_verifier.verify(token)
-        except Exception:  # noqa: BLE001 - fall back to the anonymous id
-            verified = None
-        if verified is not None and _is_recall_admin(verified):
-            return f"uid:{verified.uid}"
-
+    if token is None:
+        raise HTTPException(status_code=401, detail="unauthenticated")
     try:
-        learner_id = uuid.UUID(request.headers.get(_RECALL_LEARNER_HEADER, ""))
-    except ValueError as exc:
-        raise HTTPException(
-            status_code=400, detail="missing or invalid X-Recall-Learner"
-        ) from exc
-    return f"anon:{learner_id}"
+        verified = await container.integrations.auth_verifier.verify(token)
+    except Exception as exc:  # noqa: BLE001 - any verify failure is unauthenticated
+        raise HTTPException(status_code=401, detail="unauthenticated") from exc
+    return f"uid:{verified.uid}"
 
 
 ContainerDep = Annotated[RequestContainer, Depends(get_container)]

@@ -1,8 +1,7 @@
-import { StrictMode, Suspense, lazy } from 'react';
+import { StrictMode, Suspense, lazy, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Link, Route, Routes } from 'react-router-dom';
 import { ToastProvider } from '@/components/Toast';
-import { PracticePage } from '@/screens/practice/PracticePage';
 import './styles.css';
 
 // Admin (and Firebase with it) loads only when someone opens /admin.
@@ -22,14 +21,36 @@ function Loading() {
   );
 }
 
+// Practice moved into the Riffy app. Hosting already redirects "/", so this
+// only catches in-app navigation to it.
+const APP_RECALL_URL = 'https://riffy.pro/app/recall';
+
+function OpenInApp() {
+  useEffect(() => {
+    window.location.replace(APP_RECALL_URL);
+  }, []);
+  return (
+    <div className="screen">
+      <main className="body">
+        <div className="card empty">
+          <b>Recall now lives in the Riffy app.</b>
+          <a className="btn ghost sm" href={APP_RECALL_URL}>
+            Open Recall
+          </a>
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function NotFound() {
   return (
     <div className="screen">
       <main className="body">
         <div className="card empty">
           <b>That page doesn't exist.</b>
-          <Link className="btn ghost sm" to="/">
-            Go to today's recall
+          <Link className="btn ghost sm" to="/admin">
+            Go to the library
           </Link>
         </div>
       </main>
@@ -44,7 +65,7 @@ createRoot(document.getElementById('root')!).render(
         <div className="app">
           <Suspense fallback={<Loading />}>
             <Routes>
-              <Route path="/" element={<PracticePage />} />
+              <Route path="/" element={<OpenInApp />} />
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<LibraryPage />} />
                 <Route path="new" element={<ItemFormRoute />} />

@@ -36,4 +36,10 @@ export const endpoints = {
   // Access / entitlements
   access: '/v1/me/access',
   accessSync: '/v1/me/access/sync',
+
+  // Recall (daily spaced practice of lines, concepts, routines + focus check-ins)
+  recallSession: (localDate: string) => `/v1/recall/session?local_date=${localDate}`,
+  recallOutlook: (localDate: string) => `/v1/recall/outlook?local_date=${localDate}`,
+  recallSeen: '/v1/recall/seen',
+  recallCheckins: '/v1/recall/checkins',
 } as const;

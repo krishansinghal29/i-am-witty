@@ -1,15 +1,10 @@
 /**
- * Minimal JSON client for the Recall endpoints.
- *
- * Public calls always send X-Recall-Learner, plus the Firebase ID token when
- * someone is signed in on this browser. Admin calls require the token.
+ * Minimal JSON client for the Recall admin endpoints. Every call carries the
+ * signed-in owner's Firebase ID token.
  *
  * Error bodies come in three shapes: {"error": reason} (application errors),
  * {"detail": "..."} (HTTP errors) and {"detail": [...]} (request validation).
  */
-
-import { getLearnerId } from '@/lib/learner';
-import { hasSignedInHint } from '@/lib/signedInHint';
 
 const BASE = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
 
@@ -39,30 +34,14 @@ function friendlyMessage(status: number, reason: string | null): string {
   return 'Something went wrong. Try again.';
 }
 
-type Audience = 'public' | 'admin';
-
-async function request<T>(
-  method: 'GET' | 'POST' | 'PATCH',
-  path: string,
-  audience: Audience,
-  body?: unknown,
-): Promise<T> {
+async function request<T>(method: 'GET' | 'POST' | 'PATCH', path: string, body?: unknown): Promise<T> {
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
-  if (audience === 'public') headers['X-Recall-Learner'] = getLearnerId();
 
-  // Firebase loads only for admin calls or when this browser has signed in
-  // before, so anonymous visitors never wait on it.
-  let token: string | null = null;
-  if (audience === 'admin' || hasSignedInHint()) {
-    const { currentIdToken } = await import('@/lib/firebase');
-    token = await currentIdToken();
-  }
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  } else if (audience === 'admin') {
-    throw new ApiError(401, 'unauthenticated', friendlyMessage(401, null));
-  }
+  const { currentIdToken } = await import('@/lib/firebase');
+  const token = await currentIdToken();
+  if (!token) throw new ApiError(401, 'unauthenticated', friendlyMessage(401, null));
+  headers.Authorization = `Bearer ${token}`;
 
   let response: Response;
   try {
@@ -99,11 +78,9 @@ async function request<T>(
 }
 
 export const http = {
-  publicGet: <T>(path: string) => request<T>('GET', path, 'public'),
-  publicPost: <T>(path: string, body: unknown) => request<T>('POST', path, 'public', body),
-  adminGet: <T>(path: string) => request<T>('GET', path, 'admin'),
-  adminPost: <T>(path: string, body: unknown) => request<T>('POST', path, 'admin', body),
-  adminPatch: <T>(path: string, body: unknown) => request<T>('PATCH', path, 'admin', body),
+  adminGet: <T>(path: string) => request<T>('GET', path),
+  adminPost: <T>(path: string, body: unknown) => request<T>('POST', path, body),
+  adminPatch: <T>(path: string, body: unknown) => request<T>('PATCH', path, body),
 };
 
 export function errorMessage(error: unknown): string {

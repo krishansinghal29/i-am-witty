@@ -12,6 +12,7 @@ import {
   homeOutline,
   flameOutline,
   chatbubbleEllipsesOutline,
+  albumsOutline,
   personOutline,
 } from 'ionicons/icons';
 import { OnboardingGuard } from '@/app/guards/onboarding_guard';
@@ -20,6 +21,8 @@ import { HomePage } from '@/screens/home/home_page';
 import { PracticePage } from '@/screens/practice/practice_page';
 import { RoleplayPage } from '@/screens/roleplay/roleplay_page';
 import { ProfilePage } from '@/screens/profile/profile_page';
+import { RecallPage } from '@/screens/recall/recall_page';
+import { RecallSessionPage } from '@/screens/recall/recall_session_page';
 import { OnboardingFlowPage } from '@/screens/onboarding/onboarding_flow_page';
 import { LandingPage } from '@/screens/landing/landing_page';
 import { LegalPage } from '@/screens/legal/legal_page';
@@ -61,6 +64,15 @@ export function AppTabs() {
           />
           <Route
             exact
+            path="/app/recall"
+            render={() => (
+              <ErrorBoundary>
+                <RecallPage />
+              </ErrorBoundary>
+            )}
+          />
+          <Route
+            exact
             path="/app/profile"
             render={() => (
               <ErrorBoundary>
@@ -84,6 +96,10 @@ export function AppTabs() {
           <IonTabButton tab="roleplay" href="/app/roleplay">
             <IonIcon icon={chatbubbleEllipsesOutline} />
             <IonLabel>Role play</IonLabel>
+          </IonTabButton>
+          <IonTabButton tab="recall" href="/app/recall">
+            <IonIcon icon={albumsOutline} />
+            <IonLabel>Recall</IonLabel>
           </IonTabButton>
           <IonTabButton tab="profile" href="/app/profile">
             <IonIcon icon={personOutline} />
@@ -123,6 +139,17 @@ export function AppRoutes() {
           <ErrorBoundary>
             <TaskRuntimePage />
           </ErrorBoundary>
+        )}
+      />
+      <Route
+        exact
+        path="/recall/session"
+        render={() => (
+          <OnboardingGuard>
+            <ErrorBoundary>
+              <RecallSessionPage />
+            </ErrorBoundary>
+          </OnboardingGuard>
         )}
       />
       <Route

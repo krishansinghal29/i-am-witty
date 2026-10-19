@@ -13,6 +13,10 @@ import {
   HomeView,
   NextRoundResult,
   NotificationDevice,
+  RecallCheckinResult,
+  RecallOutlook,
+  RecallSeenResult,
+  RecallSession,
   Session,
   StartTaskResult,
   SupportMessage,
@@ -35,6 +39,12 @@ import { TurnTaskDto } from '@/data/dto/roleplay_dto';
 import { AccessDto } from '@/data/dto/entitlement_dto';
 import { DeviceDto, SupportDto } from '@/data/dto/comms_dto';
 import { TranscriptionTokenDto } from '@/data/dto/transcription_dto';
+import {
+  RecallCheckinResultDto,
+  RecallOutlookDto,
+  RecallSeenDto,
+  RecallSessionDto,
+} from '@/data/dto/recall_dto';
 
 // Mappers
 import { mapLinkedUser } from '@/data/mappers/identity_mapper';
@@ -54,6 +64,12 @@ import {
   mapSupportMessage,
 } from '@/data/mappers/comms_mapper';
 import { mapTranscriptionToken } from '@/data/mappers/transcription_mapper';
+import {
+  mapRecallCheckinResult,
+  mapRecallOutlook,
+  mapRecallSeen,
+  mapRecallSession,
+} from '@/data/mappers/recall_mapper';
 
 // ---------------------------------------------------------------------------
 // Public interface
@@ -150,6 +166,26 @@ export interface RiffyApi {
    * purchase/restore instead of waiting on the webhook.
    */
   syncAccess(): Promise<AccessState>;
+
+  /**
+   * Today's Recall session for the device-local `localDate` (YYYY-MM-DD):
+   * focus check-ins plus the day's cards. Items seen today are excluded, so
+   * re-fetching resumes where the user left off.
+   */
+  getRecallSession(localDate: string): Promise<RecallSession>;
+
+  /** Mark a card as seen today (idempotent per day); schedules its next due date. */
+  markRecallSeen(itemId: string, localDate: string): Promise<RecallSeenResult>;
+
+  /** Record today's yes/no answer for a focus check-in. */
+  recordRecallCheckin(
+    itemId: string,
+    localDate: string,
+    done: boolean,
+  ): Promise<RecallCheckinResult>;
+
+  /** What's due tomorrow and how many new items are waiting (Done screen). */
+  getRecallOutlook(localDate: string): Promise<RecallOutlook>;
 }
 
 // ---------------------------------------------------------------------------
@@ -275,6 +311,33 @@ export function createRiffyApi(http: HttpClient): RiffyApi {
     async syncAccess() {
       const dto = await http.post<AccessDto>(endpoints.accessSync);
       return mapAccess(dto);
+    },
+
+    async getRecallSession(localDate) {
+      const dto = await http.get<RecallSessionDto>(endpoints.recallSession(localDate));
+      return mapRecallSession(dto);
+    },
+
+    async markRecallSeen(itemId, localDate) {
+      const dto = await http.post<RecallSeenDto>(endpoints.recallSeen, {
+        item_id: itemId,
+        local_date: localDate,
+      });
+      return mapRecallSeen(dto);
+    },
+
+    async recordRecallCheckin(itemId, localDate, done) {
+      const dto = await http.post<RecallCheckinResultDto>(endpoints.recallCheckins, {
+        item_id: itemId,
+        local_date: localDate,
+        done,
+      });
+      return mapRecallCheckinResult(dto);
+    },
+
+    async getRecallOutlook(localDate) {
+      const dto = await http.get<RecallOutlookDto>(endpoints.recallOutlook(localDate));
+      return mapRecallOutlook(dto);
     },
   };
 }

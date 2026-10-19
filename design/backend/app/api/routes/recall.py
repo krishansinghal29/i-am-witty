@@ -161,7 +161,7 @@ def _checkin_response(checkin: SessionCheckin) -> SessionCheckinResponse:
 async def get_session(
     local_date: date, container: ContainerDep, learner_key: RecallLearnerKey
 ) -> SessionResponse:
-    """Today's check-ins and cards for the caller (anonymous or the admin)."""
+    """Today's check-ins and cards for the signed-in caller."""
     session = await container.recall_practice_service.get_session(
         learner_key, local_date
     )

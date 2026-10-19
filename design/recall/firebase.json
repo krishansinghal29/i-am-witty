@@ -3,6 +3,9 @@
     "target": "recall",
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "redirects": [
+      { "source": "/", "destination": "https://riffy.pro/app/recall", "type": 302 }
+    ],
     "rewrites": [
       { "source": "**", "destination": "/index.html" }
     ],
