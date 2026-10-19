@@ -9,6 +9,8 @@ import './styles.css';
 const AdminLayout = lazy(() => import('@/screens/admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
 const LibraryPage = lazy(() => import('@/screens/admin/LibraryPage').then((m) => ({ default: m.LibraryPage })));
 const ItemFormRoute = lazy(() => import('@/screens/admin/ItemFormPage').then((m) => ({ default: m.ItemFormRoute })));
+const QuickAddPage = lazy(() => import('@/screens/admin/QuickAddPage').then((m) => ({ default: m.QuickAddPage })));
+const CuesPage = lazy(() => import('@/screens/admin/CuesPage').then((m) => ({ default: m.CuesPage })));
 
 function Loading() {
   return (
@@ -47,6 +49,8 @@ createRoot(document.getElementById('root')!).render(
                 <Route index element={<LibraryPage />} />
                 <Route path="new" element={<ItemFormRoute />} />
                 <Route path="items/:id" element={<ItemFormRoute />} />
+                <Route path="quick" element={<QuickAddPage />} />
+                <Route path="cues" element={<CuesPage />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

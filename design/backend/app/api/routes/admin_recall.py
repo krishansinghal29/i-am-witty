@@ -5,7 +5,7 @@ from typing import Literal
 from uuid import UUID
 
 from fastapi import APIRouter, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.api.deps import ContainerDep, RecallAdmin
 from app.domain.models.recall import (
@@ -82,6 +82,61 @@ class UpdateItemRequest(BaseModel):
     steps: list[str] | None = None
     scenarios: list[str] | None = None
     source: str | None = None
+
+
+class MergeCueRequest(BaseModel):
+    into_cue_id: UUID
+
+
+class SuggestRequest(BaseModel):
+    text: str
+
+
+class DraftCueResponse(BaseModel):
+    id: UUID | None
+    text: str
+    type: CueType
+    line_count: int
+
+
+class DraftSiblingHintResponse(BaseModel):
+    item_id: UUID
+    body: str
+    hint: str
+
+
+class DraftResponse(BaseModel):
+    kind: ItemKind
+    cue: DraftCueResponse | None
+    hint: str | None
+    sibling_hint: DraftSiblingHintResponse | None
+    title: str | None
+    body: str | None
+    delivery_note: str | None
+    question: str | None
+    steps: list[str] | None
+    scenarios: list[str] | None
+
+
+class ScenariosRequest(BaseModel):
+    title: str
+    body: str | None = None
+    existing: list[str] = Field(default_factory=list)
+    count: int = Field(3, ge=1, le=5)
+
+
+class ScenariosResponse(BaseModel):
+    scenarios: list[str]
+
+
+class HintRequest(BaseModel):
+    cue_id: UUID | None = None
+    cue_text: str | None = None
+    body: str
+
+
+class HintResponse(BaseModel):
+    hint: str
 
 
 class ItemResponse(BaseModel):
@@ -167,6 +222,79 @@ async def update_cue(
         cue_id, body.model_dump(exclude_unset=True)
     )
     return _cue_response(cue)
+
+
+@router.post("/cues/{cue_id}/merge", response_model=CueWithCountResponse)
+async def merge_cue(
+    cue_id: UUID, body: MergeCueRequest, container: ContainerDep, admin: RecallAdmin
+) -> CueWithCountResponse:
+    """Move this cue's lines onto ``into_cue_id`` and delete this cue."""
+    merged = await container.recall_admin_service.merge_cue(cue_id, body.into_cue_id)
+    return CueWithCountResponse(
+        id=merged.cue.id,
+        text=merged.cue.text,
+        type=merged.cue.type.value,
+        line_count=merged.line_count,
+    )
+
+
+@router.post("/suggest", response_model=DraftResponse)
+async def suggest_item(
+    body: SuggestRequest, container: ContainerDep, admin: RecallAdmin
+) -> DraftResponse:
+    """Draft one item from a rough note; nothing is saved."""
+    draft = await container.recall_assist_service.suggest(body.text)
+    return DraftResponse(
+        kind=draft.kind.value,
+        cue=(
+            DraftCueResponse(
+                id=draft.cue.id,
+                text=draft.cue.text,
+                type=draft.cue.type.value,
+                line_count=draft.cue.line_count,
+            )
+            if draft.cue is not None
+            else None
+        ),
+        hint=draft.hint,
+        sibling_hint=(
+            DraftSiblingHintResponse(
+                item_id=draft.sibling_hint.item_id,
+                body=draft.sibling_hint.body,
+                hint=draft.sibling_hint.hint,
+            )
+            if draft.sibling_hint is not None
+            else None
+        ),
+        title=draft.title,
+        body=draft.body,
+        delivery_note=draft.delivery_note,
+        question=draft.question,
+        steps=draft.steps,
+        scenarios=draft.scenarios,
+    )
+
+
+@router.post("/scenarios", response_model=ScenariosResponse)
+async def draft_scenarios(
+    body: ScenariosRequest, container: ContainerDep, admin: RecallAdmin
+) -> ScenariosResponse:
+    """Draft new scenarios for a concept, different from ``existing``."""
+    scenarios = await container.recall_assist_service.draft_scenarios(
+        body.title, body.body, body.existing, body.count
+    )
+    return ScenariosResponse(scenarios=scenarios)
+
+
+@router.post("/hint", response_model=HintResponse)
+async def draft_hint(
+    body: HintRequest, container: ContainerDep, admin: RecallAdmin
+) -> HintResponse:
+    """Suggest a hint for a line, distinct from its cue's existing hints."""
+    hint = await container.recall_assist_service.draft_hint(
+        body.cue_id, body.cue_text, body.body
+    )
+    return HintResponse(hint=hint)
 
 
 @router.get("/items", response_model=list[ItemResponse])

@@ -21,6 +21,7 @@ from app.application.exceptions import (
     ConflictError,
     NotFoundError,
     PaywallRequiredError,
+    UpstreamUnavailableError,
     ValidationError,
 )
 from app.composition.container import build_integrations
@@ -36,6 +37,7 @@ EXCEPTION_STATUS_MAP: dict[type[ApplicationError], int] = {
     PaywallRequiredError: 402,
     ConflictError: 409,
     ValidationError: 422,
+    UpstreamUnavailableError: 503,
     ApplicationError: 400,
 }
 

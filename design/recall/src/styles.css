@@ -319,6 +319,31 @@ textarea.input { resize: vertical; min-height: 72px; display: block; }
 .state p { font-size: 13px; color: var(--text); max-width: none; }
 .state .who { font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 
+/* ---------- AI capture (Quick add, Suggest, Draft more) ---------- */
+.labelrow { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.sug { display: inline-flex; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 700; color: var(--primary-2); }
+.textbtn.ai { display: inline-flex; align-items: center; gap: 4px; padding: 2px 0; font-size: 12px; color: var(--primary-2); }
+.textbtn:disabled { color: var(--faint); cursor: default; }
+.ai-ico { display: inline-flex; color: var(--primary-2); }
+.btnrow { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.btn.live { border-color: var(--danger); color: var(--danger); }
+.draft { border: 1px solid var(--primary-soft); background: var(--surface); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.draft-h { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--text); }
+.draft-h svg { color: var(--primary-2); }
+.match { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; font-size: 11px; font-weight: 700; color: var(--ok); background: rgba(22, 163, 74, .10); padding: 3px 8px; border-radius: 6px; }
+a.textbtn { text-decoration: none; }
+.libfoot .links { display: flex; gap: 14px; flex-wrap: wrap; }
+
+/* ---------- cues ---------- */
+.cuerow { display: flex; align-items: center; gap: 10px; padding: 11px 14px; min-width: 0; }
+.cuerow + .cuerow { border-top: 1px solid var(--line); }
+.cuerow .gt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.cuerow .gt b { font-size: 13.5px; font-weight: 700; overflow-wrap: anywhere; }
+.cuerow .m { font-size: 12px; color: var(--faint); font-weight: 600; }
+.cuerow .cueacts { flex: none; display: flex; gap: 12px; }
+.cuerow.open { flex-direction: column; align-items: stretch; gap: 8px; background: var(--tint); }
+select.input { appearance: auto; }
+
 /* ---------- toast ---------- */
 .toast-region {
   position: fixed;

@@ -55,6 +55,16 @@ class RecallRepository(Protocol):
         self, cue_id: uuid.UUID, text: str | None, type: RecallCueType | None
     ) -> RecallCue: ...
 
+    async def move_cue_lines(
+        self, from_cue_id: uuid.UUID, to_cue_id: uuid.UUID
+    ) -> None:
+        """Point every item on ``from_cue_id`` (any status) at ``to_cue_id``."""
+        ...
+
+    async def delete_cue(self, cue_id: uuid.UUID) -> None:
+        """Delete a cue that no item references any more."""
+        ...
+
     # --- items ---
     async def list_items(
         self,

@@ -11,6 +11,7 @@ from app.application.identity_service import IdentityService
 from app.application.notification_service import NotificationService
 from app.application.progress_service import ProgressService
 from app.application.recall_admin_service import RecallAdminService
+from app.application.recall_assist_service import RecallAssistService
 from app.application.recall_practice_service import RecallPracticeService
 from app.application.support_service import SupportService
 from app.application.task_attempt_service import TaskAttemptService
@@ -55,10 +56,12 @@ from app.infrastructure.repositories.pg_usage_repository import PgUsageRepositor
 from app.infrastructure.repositories.pg_user_repository import PgUserRepository
 from app.infrastructure.runtime.engine_resolver import TaskRuntimeEngineResolver
 from app.infrastructure.runtime.lesson_engine import LessonTaskEngine
+from app.infrastructure.runtime.recall_drafter import LlmRecallDrafter
 from app.infrastructure.runtime.roleplay_engine import RoleplayTaskEngine
 from app.infrastructure.runtime.voice_prompt_engine import VoicePromptTaskEngine
 from app.ports.integrations.analytics import Analytics
 from app.ports.integrations.auth_token_verifier import AuthTokenVerifier
+from app.ports.integrations.recall_drafter import RecallDrafter
 from app.ports.integrations.subscription_provider import SubscriptionProvider
 from app.ports.integrations.transcription_provider import TranscriptionProvider
 from app.settings import Settings
@@ -73,14 +76,16 @@ class Integrations:
     analytics: Analytics
     transcription_provider: TranscriptionProvider
     runtime_engines: TaskRuntimeEngineResolver
+    recall_drafter: RecallDrafter
 
 
 def build_integrations(settings: Settings) -> Integrations:
     """Build the integration clients from settings.
 
     Real vendor adapters for auth (Firebase), subscriptions (RevenueCat),
-    analytics (PostHog), transcription (Deepgram), and the LLM-backed voice
-    prompt engine (litellm generation/evaluation + OpenAI TTS); each lazily
+    analytics (PostHog), transcription (Deepgram), the LLM-backed voice
+    prompt engine (litellm generation/evaluation + OpenAI TTS), and the
+    recall admin's AI drafter (same litellm provider); each lazily
     initializes so this never touches credentials/network at startup.
     """
     llm = LiteLlmProvider(settings)
@@ -114,6 +119,7 @@ def build_integrations(settings: Settings) -> Integrations:
         analytics=PostHogAnalytics(settings),
         transcription_provider=DeepgramTranscriptionProvider(settings),
         runtime_engines=runtime_engines,
+        recall_drafter=LlmRecallDrafter(llm, model=settings.llm_generator_model),
     )
 
 
@@ -176,3 +182,6 @@ class RequestContainer:
         self.app_config_service = AppConfigService(config)
         self.recall_practice_service = RecallPracticeService(recall, uow)
         self.recall_admin_service = RecallAdminService(recall, uow)
+        self.recall_assist_service = RecallAssistService(
+            recall, integrations.recall_drafter, uow
+        )

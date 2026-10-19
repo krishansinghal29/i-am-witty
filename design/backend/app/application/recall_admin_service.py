@@ -63,6 +63,21 @@ def check_line_hints(hint: str | None, others: Sequence[RecallItem]) -> None:
         raise ValidationError("sibling_hint_missing")
 
 
+def check_cue_hints(lines: Sequence[RecallItem]) -> None:
+    """Enforce the hint rules over all of a cue's non-archived ``lines`` at once.
+
+    Used when a merge brings two cues' lines together: with two or more lines,
+    every one needs a hint and no two hints may match (ignoring case).
+    """
+    if len(lines) < 2:
+        return
+    if any(line.hint is None for line in lines):
+        raise ValidationError("sibling_hint_missing")
+    hints = [line.hint.lower() for line in lines if line.hint is not None]
+    if len(set(hints)) != len(hints):
+        raise ValidationError("hint_duplicate")
+
+
 class RecallAdminService:
     """Owner-only management of recall cues and items."""
 
@@ -101,6 +116,29 @@ class RecallAdminService:
                 if existing is not None and existing.id != cue_id:
                     raise ConflictError("cue_exists")
             return await self._recall.update_cue(cue_id, text, type)
+
+    async def merge_cue(
+        self, cue_id: uuid.UUID, into_cue_id: uuid.UUID
+    ) -> RecallCueWithCount:
+        """Move every line from ``cue_id`` onto ``into_cue_id`` and delete the source.
+
+        Nothing changes if the combined lines would break the hint rules.
+        """
+        if cue_id == into_cue_id:
+            raise ValidationError("merge_same_cue")
+        async with self._uow.transaction():
+            source = await self._recall.find_cue(cue_id)
+            target = await self._recall.find_cue(into_cue_id)
+            if source is None or target is None:
+                raise NotFoundError("cue_not_found")
+            combined = [
+                *await self._recall.list_cue_lines(into_cue_id),
+                *await self._recall.list_cue_lines(cue_id),
+            ]
+            check_cue_hints(combined)
+            await self._recall.move_cue_lines(cue_id, into_cue_id)
+            await self._recall.delete_cue(cue_id)
+        return RecallCueWithCount(cue=target, line_count=len(combined))
 
     # --- items ---
 

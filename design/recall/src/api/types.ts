@@ -140,6 +140,34 @@ export type NewItemBody =
   | { kind: 'routine'; title: string; steps: string[]; source: string | null }
   | { kind: 'focus'; title: string; question: string; body: string | null };
 
+/** What the AI drafted from Quick add text. Nothing is saved yet. */
+export interface DraftCue {
+  /** Null when the AI proposes a new cue. */
+  id: string | null;
+  text: string;
+  type: CueType;
+  line_count: number;
+}
+
+export interface Draft {
+  kind: Kind;
+  cue: DraftCue | null;
+  hint: string | null;
+  /** Suggested hint for the cue's single existing line that has none. */
+  sibling_hint: { item_id: string; body: string; hint: string } | null;
+  title: string | null;
+  body: string | null;
+  delivery_note: string | null;
+  question: string | null;
+  steps: string[] | null;
+  scenarios: string[] | null;
+}
+
+export interface CuePatch {
+  text?: string;
+  type?: CueType;
+}
+
 export interface ItemPatch {
   cue_id?: string;
   hint?: string | null;

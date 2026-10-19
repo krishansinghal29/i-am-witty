@@ -75,3 +75,16 @@ export const DownIcon = ({ size = 14 }: IconProps) => (
     <path d="M6 9l6 6 6-6" />
   </Stroke>
 );
+
+export const SparkleIcon = ({ size = 14 }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+    <path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z" />
+  </svg>
+);
+
+export const MicIcon = ({ size = 16 }: IconProps) => (
+  <Stroke size={size}>
+    <rect x="9" y="3" width="6" height="11" rx="3" />
+    <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+  </Stroke>
+);

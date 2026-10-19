@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { listItems } from '@/api/recall';
 import { errorMessage } from '@/api/http';
 import type { CueRef, Item, Kind } from '@/api/types';
-import { PlusIcon, SearchIcon } from '@/components/Icons';
+import { PlusIcon, SearchIcon, SparkleIcon } from '@/components/Icons';
 import { signOut } from '@/lib/firebase';
 
 type Filter = 'all' | Kind;
@@ -106,9 +106,13 @@ export function LibraryPage() {
     <div className="screen">
       <header className="appbar">
         <span className="ttl">{archived ? 'Archived' : 'Library'}</span>
-        <Link className="btn warm sm" to={`/admin/new?kind=${addKind}`}>
+        <Link className="btn ghost sm" to={`/admin/new?kind=${addKind}`}>
           <PlusIcon />
           Add
+        </Link>
+        <Link className="btn warm sm" to="/admin/quick">
+          <SparkleIcon />
+          Quick add
         </Link>
       </header>
       <main className="body">
@@ -158,8 +162,8 @@ export function LibraryPage() {
             {!archived && (
               <>
                 <p className="sub">Add your first line and it shows up in practice tomorrow.</p>
-                <Link className="btn warm sm" to="/admin/new?kind=line">
-                  Add a line
+                <Link className="btn warm sm" to="/admin/quick">
+                  Quick add a line
                 </Link>
               </>
             )}
@@ -253,9 +257,14 @@ export function LibraryPage() {
         )}
 
         <div className="libfoot">
-          <button type="button" className="textbtn" onClick={() => setArchived((a) => !a)}>
-            {archived ? 'Back to library' : 'Show archived'}
-          </button>
+          <div className="links">
+            <button type="button" className="textbtn" onClick={() => setArchived((a) => !a)}>
+              {archived ? 'Back to library' : 'Show archived'}
+            </button>
+            <Link className="textbtn" to="/admin/cues">
+              Manage cues
+            </Link>
+          </div>
           <button type="button" className="textbtn muted" onClick={() => void signOut()}>
             Sign out
           </button>

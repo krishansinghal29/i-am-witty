@@ -4,7 +4,7 @@ import uuid
 from datetime import date
 from typing import Any
 
-from sqlalchemy import and_, func, select
+from sqlalchemy import and_, delete, func, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -107,6 +107,21 @@ class PgRecallRepository:
         await self._session.flush()
         await self._session.refresh(row)
         return self._cue_to_domain(row)
+
+    async def move_cue_lines(
+        self, from_cue_id: uuid.UUID, to_cue_id: uuid.UUID
+    ) -> None:
+        stmt = (
+            update(OrmRecallItem)
+            .where(OrmRecallItem.cue_id == from_cue_id)
+            .values(cue_id=to_cue_id, updated_at=func.now())
+        )
+        await self._session.execute(stmt)
+
+    async def delete_cue(self, cue_id: uuid.UUID) -> None:
+        await self._session.execute(
+            delete(OrmRecallCue).where(OrmRecallCue.id == cue_id)
+        )
 
     # --- items ---
 

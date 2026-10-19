@@ -34,6 +34,7 @@ function friendlyMessage(status: number, reason: string | null): string {
   if (status === 409) return 'A cue with that text already exists.';
   if (status === 422 && reason) return `Check the form: ${reason.replace(/_/g, ' ')}.`;
   if (status === 422) return 'Some fields need fixing.';
+  if (reason === 'ai_unavailable') return "The AI couldn't draft this. Try again.";
   if (status >= 500) return 'Something went wrong on our side. Try again in a moment.';
   return 'Something went wrong. Try again.';
 }

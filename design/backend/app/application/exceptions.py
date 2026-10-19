@@ -27,3 +27,7 @@ class ConflictError(ApplicationError):
 
 class ValidationError(ApplicationError):
     """The request is structurally valid but semantically unacceptable."""
+
+
+class UpstreamUnavailableError(ApplicationError):
+    """A provider the action depends on (e.g. the LLM) failed; retrying may work."""
