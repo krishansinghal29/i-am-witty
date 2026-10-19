@@ -3,9 +3,13 @@
     "public": "dist",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
-      { "source": "**", "destination": "/index.html" }
+      { "source": "**", "destination": "/app-shell.html" }
     ],
     "headers": [
+      {
+        "source": "**",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
       {
         "source": "/assets/**",
         "headers": [
@@ -20,6 +24,10 @@
       },
       {
         "source": "/index.html",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
+      },
+      {
+        "source": "/app-shell.html",
         "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
       },
       {

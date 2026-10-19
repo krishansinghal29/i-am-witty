@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /onboarding
+Disallow: /task/
+
+Sitemap: https://riffy.pro/sitemap.xml
