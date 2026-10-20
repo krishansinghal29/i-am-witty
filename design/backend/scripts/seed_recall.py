@@ -1,8 +1,8 @@
-"""Seed Recall with the starting focus check-ins and lines.
+"""Seed Recall with the starting focus check-ins, lines and routines.
 
 Goes through RecallAdminService so the same validation (hint rules, required
-fields) applies as in the admin UI. Safe to re-run: focus items are matched by
-title and lines by cue + text, and anything already present is skipped.
+fields) applies as in the admin UI. Safe to re-run: focus items and routines are
+matched by title and lines by cue + text, and anything already present is skipped.
 
 Usage:
     uv run python scripts/seed_recall.py
@@ -82,6 +82,31 @@ LINES = [
     ("Lead her somewhere", "goal", None,
      "Come with me. I want to show you something.",
      "Start walking before she answers."),
+    ("You have to leave and it's going well", "goal", None,
+     "I've got to run, but I'd like to see you again. Put your number in.",
+     None),
+    ("She types her number in", "reaction", None,
+     "Great. Texting you now so you know it's me, the dumpling guy.",
+     None),
+    ("She hesitates to give it", "reaction", None,
+     "Totally fine, no pressure. It was fun talking to you.",
+     None),
+]
+
+ROUTINES = [
+    {
+        "title": "The Cube",
+        "steps": [
+            "Ask if she wants to play a quick imagination game.",
+            "Picture a desert with a cube: size, material, where it sits?",
+            "Add a ladder: how tall, and where is it relative to the cube?",
+            "Add flowers: how many, and where are they?",
+            "Add a horse: what does it look like and what's it doing?",
+            "Add a storm: near or far, heavy or light?",
+            "Reveal: cube is her, ladder friends, flowers kids, horse partner, storm worries.",
+            "Let her react and say which parts fit.",
+        ],
+    },
 ]
 
 
@@ -126,6 +151,20 @@ async def _main() -> None:
                     "delivery_note": delivery,
                     "source": SOURCE,
                 },
+            )
+            created += 1
+
+        existing_routines = {
+            item.title.lower()
+            for item in await service.list_items(kind=RecallItemKind.routine)
+            if item.title
+        }
+        for routine in ROUTINES:
+            if routine["title"].lower() in existing_routines:
+                skipped += 1
+                continue
+            await service.create_item(
+                RecallItemKind.routine, {**routine, "source": SOURCE}
             )
             created += 1
 
