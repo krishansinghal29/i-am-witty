@@ -1,6 +1,8 @@
 export type CueType = 'reaction' | 'goal';
 export type Kind = 'line' | 'concept' | 'routine' | 'focus';
 export type Status = 'active' | 'paused' | 'archived';
+/** Who practises an item: every signed-in user, or only the admin. */
+export type Audience = 'everyone' | 'admin';
 
 // ---------- admin ----------
 
@@ -35,6 +37,7 @@ export interface Item {
   steps: string[] | null;
   scenarios: string[] | null;
   source: string | null;
+  audience: Audience;
   created_at: string;
   updated_at: string;
 }
@@ -48,10 +51,11 @@ export type NewItemBody =
       body: string;
       delivery_note: string | null;
       source: string | null;
+      audience: Audience;
     }
-  | { kind: 'concept'; title: string; body: string; scenarios: string[] }
-  | { kind: 'routine'; title: string; steps: string[]; source: string | null }
-  | { kind: 'focus'; title: string; question: string; body: string | null };
+  | { kind: 'concept'; title: string; body: string; scenarios: string[]; audience: Audience }
+  | { kind: 'routine'; title: string; steps: string[]; source: string | null; audience: Audience }
+  | { kind: 'focus'; title: string; question: string; body: string | null; audience: Audience };
 
 /** What the AI drafted from Quick add text. Nothing is saved yet. */
 export interface DraftCue {
@@ -92,4 +96,5 @@ export interface ItemPatch {
   scenarios?: string[];
   source?: string | null;
   status?: Status;
+  audience?: Audience;
 }

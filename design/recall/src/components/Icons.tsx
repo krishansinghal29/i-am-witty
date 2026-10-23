@@ -88,3 +88,10 @@ export const MicIcon = ({ size = 16 }: IconProps) => (
     <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
   </Stroke>
 );
+
+export const LockIcon = ({ size = 12 }: IconProps) => (
+  <Stroke size={size} width={2.4}>
+    <rect x="5" y="11" width="14" height="10" rx="2.5" />
+    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+  </Stroke>
+);

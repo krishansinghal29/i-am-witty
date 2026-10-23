@@ -93,46 +93,48 @@ export function QuickAddPage() {
   return (
     <form className="screen" onSubmit={(e) => void save(e)} noValidate>
       <header className="appbar">
-        <Link className="iconbtn" to="/admin" aria-label="Back to library">
+        <Link className="iconbtn only-phone" to="/admin" aria-label="Back to library">
           <BackIcon />
         </Link>
         <span className="ttl">Quick add</span>
       </header>
       <main className="body">
-        <Field
-          id="quick-text"
-          label="Paste or dictate"
-          help="Write it however it comes. The AI turns it into a draft you can edit before saving."
-        >
-          <textarea
+        <div className="quickbox">
+          <Field
             id="quick-text"
-            className="input"
-            rows={4}
-            aria-describedby="quick-text-help"
-            placeholder="e.g. when she says she's not here to meet anyone, say good because I'm not that easy, mock-serious"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-          />
-        </Field>
+            label="Paste or dictate"
+            help="Write it however it comes. The AI turns it into a draft you can edit before saving."
+          >
+            <textarea
+              id="quick-text"
+              className="input"
+              rows={4}
+              aria-describedby="quick-text-help"
+              placeholder="e.g. when she says she's not here to meet anyone, say good because I'm not that easy, mock-serious"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+            />
+          </Field>
 
-        <div className="btnrow">
-          {dictation.supported && (
-            <button
-              type="button"
-              className={`btn ghost sm${dictation.listening ? ' live' : ''}`}
-              aria-pressed={dictation.listening}
-              onClick={() => (dictation.listening ? dictation.stop() : dictation.start(text))}
-            >
-              <MicIcon />
-              {dictation.listening ? 'Stop' : 'Dictate'}
+          <div className="btnrow">
+            {dictation.supported && (
+              <button
+                type="button"
+                className={`btn ghost sm${dictation.listening ? ' live' : ''}`}
+                aria-pressed={dictation.listening}
+                onClick={() => (dictation.listening ? dictation.stop() : dictation.start(text))}
+              >
+                <MicIcon />
+                {dictation.listening ? 'Stop' : 'Dictate'}
+              </button>
+            )}
+            <button type="button" className="btn cool sm" disabled={!text.trim() || suggesting || !listsReady} onClick={() => void suggest()}>
+              <SparkleIcon />
+              {suggesting ? 'Drafting…' : hasDraft ? 'Suggest again' : 'Suggest'}
             </button>
-          )}
-          <button type="button" className="btn cool sm" disabled={!text.trim() || suggesting || !listsReady} onClick={() => void suggest()}>
-            <SparkleIcon />
-            {suggesting ? 'Drafting…' : hasDraft ? 'Suggest again' : 'Suggest'}
-          </button>
+          </div>
+          {dictation.error && <span className="ferr">{dictation.error}</span>}
         </div>
-        {dictation.error && <span className="ferr">{dictation.error}</span>}
 
         {listsError && (
           <div className="banner error" role="alert">
@@ -151,13 +153,21 @@ export function QuickAddPage() {
               <SparkleIcon />
               Suggested draft
             </div>
-            <KindSwitch kind={form.kind} onChange={(kind) => update(switchKind(form, kind))} />
-            {formError && (
-              <div className="banner error" role="alert">
-                <span>{formError}</span>
-              </div>
-            )}
-            <ItemFields state={state} cues={cues} variant="draft" />
+            <ItemFields
+              state={state}
+              cues={cues}
+              variant="draft"
+              lead={
+                <>
+                  <KindSwitch kind={form.kind} onChange={(kind) => update(switchKind(form, kind))} />
+                  {formError && (
+                    <div className="banner error" role="alert">
+                      <span>{formError}</span>
+                    </div>
+                  )}
+                </>
+              }
+            />
           </section>
         )}
       </main>

@@ -9,8 +9,8 @@ import { useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { createCue, createItem, draftScenarios, suggestHint, updateItem } from '@/api/recall';
 import { ApiError, errorMessage } from '@/api/http';
-import type { Cue, CueType, Draft, Item, Kind } from '@/api/types';
-import { CheckIcon, CloseIcon, DownIcon, PlusIcon, SparkleIcon, UpIcon } from '@/components/Icons';
+import type { Audience, Cue, CueType, Draft, Item, Kind } from '@/api/types';
+import { CheckIcon, CloseIcon, DownIcon, LockIcon, PlusIcon, SparkleIcon, UpIcon } from '@/components/Icons';
 import { CueCombobox } from './CueCombobox';
 
 export const KINDS: { key: Kind; label: string; noun: string }[] = [
@@ -26,6 +26,11 @@ export function parseKind(value: string | null): Kind {
 
 export function noun(kind: Kind) {
   return KINDS.find((k) => k.key === kind)?.noun ?? 'item';
+}
+
+/** Focus check-ins are personal, so they default to the admin only. */
+export function defaultAudience(kind: Kind): Audience {
+  return kind === 'focus' ? 'admin' : 'everyone';
 }
 
 function quote(text: string) {
@@ -64,10 +69,13 @@ export interface Form {
   steps: string[];
   question: string;
   why: string;
+  audience: Audience;
+  /** Once the admin picks an audience, switching kind stops resetting it to the kind's default. */
+  audienceTouched: boolean;
 }
 
 /** Form fields the AI can fill; the cue's three fields count as one ("cueText"). */
-type SuggestKey = Exclude<keyof Form, 'kind' | 'cueType' | 'cueId'>;
+type SuggestKey = Exclude<keyof Form, 'kind' | 'cueType' | 'cueId' | 'audience' | 'audienceTouched'>;
 
 export function emptyForm(kind: Kind): Form {
   return {
@@ -86,6 +94,8 @@ export function emptyForm(kind: Kind): Form {
     steps: [''],
     question: '',
     why: '',
+    audience: defaultAudience(kind),
+    audienceTouched: false,
   };
 }
 
@@ -106,6 +116,8 @@ export function formFromItem(item: Item): Form {
     steps: item.steps && item.steps.length > 0 ? item.steps : [''],
     question: item.question ?? '',
     why: item.kind === 'focus' ? item.body ?? '' : '',
+    audience: item.audience ?? defaultAudience(item.kind),
+    audienceTouched: true,
   };
 }
 
@@ -144,6 +156,7 @@ export function suggestedKeys(form: Form): SuggestKey[] {
 export function switchKind(form: Form, kind: Kind): Partial<Form> {
   const main = form.kind === 'line' ? form.lineText : form.kind === 'concept' ? form.definition : form.kind === 'focus' ? form.why : '';
   const patch: Partial<Form> = { kind };
+  if (!form.audienceTouched) patch.audience = defaultAudience(kind);
   if (main.trim()) {
     if (kind === 'line' && !form.lineText.trim()) patch.lineText = main;
     if (kind === 'concept' && !form.definition.trim()) patch.definition = main;
@@ -472,6 +485,7 @@ export function useItemForm({ itemId, initial, cues, lines }: { itemId: string |
           body: form.lineText.trim(),
           delivery_note: orNull(form.deliveryNote),
           source: orNull(form.source),
+          audience: form.audience,
         };
         if (itemId) {
           const cueId = resolvedCue?.id ?? (await createCue(form.cueText.trim(), form.cueType)).id;
@@ -487,19 +501,19 @@ export function useItemForm({ itemId, initial, cues, lines }: { itemId: string |
         return;
       }
       case 'concept': {
-        const fields = { title: form.title.trim(), body: form.definition.trim(), scenarios };
+        const fields = { title: form.title.trim(), body: form.definition.trim(), scenarios, audience: form.audience };
         if (itemId) await updateItem(itemId, fields);
         else await createItem({ kind: 'concept', ...fields });
         return;
       }
       case 'routine': {
-        const fields = { title: form.title.trim(), steps, source: orNull(form.source) };
+        const fields = { title: form.title.trim(), steps, source: orNull(form.source), audience: form.audience };
         if (itemId) await updateItem(itemId, fields);
         else await createItem({ kind: 'routine', ...fields });
         return;
       }
       case 'focus': {
-        const fields = { title: form.title.trim(), question: form.question.trim(), body: orNull(form.why) };
+        const fields = { title: form.title.trim(), question: form.question.trim(), body: orNull(form.why), audience: form.audience };
         if (itemId) await updateItem(itemId, fields);
         else await createItem({ kind: 'focus', ...fields });
         return;
@@ -557,15 +571,101 @@ export type ItemFormState = ReturnType<typeof useItemForm>;
 
 // ---------- fields ----------
 
+const AUDIENCE_HELP: Record<Audience, string> = {
+  everyone: "Shows in every signed-in user's Recall tab.",
+  admin: 'Only shows in your own Recall tab.',
+};
+
+/** Who practises the item. Picking one stops kind switches from resetting it. */
+function AudienceField({ value, onChange }: { value: Audience; onChange: (audience: Audience) => void }) {
+  return (
+    <div className="field">
+      <span className="label" id="audience-label">
+        Who sees it
+      </span>
+      <div className="seg two" role="group" aria-labelledby="audience-label" aria-describedby="audience-help">
+        <button type="button" aria-pressed={value === 'everyone'} onClick={() => onChange('everyone')}>
+          Everyone
+        </button>
+        <button type="button" aria-pressed={value === 'admin'} onClick={() => onChange('admin')}>
+          <span className="segico">
+            <LockIcon size={11} />
+          </span>
+          Only me
+        </button>
+      </div>
+      <span className="help" id="audience-help">
+        {AUDIENCE_HELP[value]}
+      </span>
+    </div>
+  );
+}
+
+/** The "Only me" marker used in the Library and on previews. */
+export function OnlyMeChip() {
+  return (
+    <span className="chip k-muted">
+      <LockIcon size={10} />
+      Only me
+    </span>
+  );
+}
+
+function SiblingsPanel({ siblings }: { siblings: Item[] }) {
+  return (
+    <>
+      <span className="eyebrow">Already on this cue &middot; {siblings.length}</span>
+      {siblings.map((s) => (
+        <div className="srow" key={s.id}>
+          {s.hint ? <span className="tag">{s.hint}</span> : <span className="tag none">no hint</span>}
+          <span className="t">{s.body}</span>
+        </div>
+      ))}
+    </>
+  );
+}
+
+function Preview({ audience, children }: { audience: Audience; children: ReactNode }) {
+  return (
+    <div className="preview">
+      <div className="labelrow">
+        <span className="eyebrow">Preview in practice</span>
+        {audience === 'admin' && <OnlyMeChip />}
+      </div>
+      <div className="card">{children}</div>
+    </div>
+  );
+}
+
 /**
- * The kind-specific fields. `variant="draft"` is Quick add's compact card: it
- * shows whether the cue matches an existing one and leaves out Source and the
- * practice preview.
+ * The kind-specific fields, laid out as a main column and a side column (the
+ * practice preview, and for lines the cue's other lines). On a phone the side
+ * column follows the fields; on desktop it sits sticky on the right. `lead`
+ * and `tail` go at the top and bottom of the main column (kind switch, errors,
+ * Pause/Archive).
+ *
+ * `variant="draft"` is Quick add's compact card: it shows whether the cue
+ * matches an existing one, leaves out Source, and shows the preview on desktop
+ * only.
  */
-export function ItemFields({ state, cues, variant }: { state: ItemFormState; cues: Cue[]; variant: 'form' | 'draft' }) {
+export function ItemFields({
+  state,
+  cues,
+  variant,
+  lead,
+  tail,
+}: {
+  state: ItemFormState;
+  cues: Cue[];
+  variant: 'form' | 'draft';
+  lead?: ReactNode;
+  tail?: ReactNode;
+}) {
   const { form, update, fill, errors, setErrors, suggested, resolvedCue, effectiveCueType, siblings, hintRequired, loneSibling, setCueType } = state;
   const isDraft = variant === 'draft';
   const [busy, setBusy] = useState<'hint' | 'siblingHint' | 'scenarios' | null>(null);
+  // The draft card keeps the phone compact: its preview only shows on desktop.
+  const previewClass = isDraft ? 'only-desktop' : '';
 
   const askHint = async (target: 'hint' | 'siblingHint', body: string) => {
     setBusy(target);
@@ -609,274 +709,324 @@ export function ItemFields({ state, cues, variant }: { state: ItemFormState; cue
     </Field>
   );
 
-  return (
-    <>
-      {form.kind === 'line' && (
-        <>
-          <div className="field">
-            <div className="labelrow">
-              <label className="label" htmlFor="cue">
-                Cue <span className="req">*</span>
-                {suggested.has('cueText') && <SuggestedMark />}
-              </label>
-            </div>
-            <div className="seg two" role="group" aria-label="Cue type">
-              <button type="button" aria-pressed={effectiveCueType === 'reaction'} onClick={() => setCueType('reaction')}>
-                She says
-              </button>
-              <button type="button" aria-pressed={effectiveCueType === 'goal'} onClick={() => setCueType('goal')}>
-                Goal
-              </button>
-            </div>
-            <CueCombobox
-              cues={cues}
-              type={effectiveCueType}
-              text={form.cueText}
-              resolved={resolvedCue}
-              error={errors.cue}
-              onText={(cueText) => update({ cueText, cueId: null, siblingHint: '' })}
-              onPick={(cue) => update({ cueId: cue.id, cueText: cue.text, cueType: cue.type, siblingHint: '' })}
-            />
-            {isDraft && !errors.cue && form.cueText.trim() && (
-              resolvedCue ? (
-                <span className="match" id="cue-help">
-                  <CheckIcon size={11} />
-                  Matches an existing cue &middot; {resolvedCue.line_count} {resolvedCue.line_count === 1 ? 'line' : 'lines'}
-                </span>
-              ) : (
-                <span className="chip k-muted" id="cue-help">
-                  New cue
-                </span>
-              )
-            )}
-            {!isDraft && !errors.cue && form.cueText.trim() && !resolvedCue && (
-              <span className="help" id="cue-help">
-                This creates a new cue.
-              </span>
-            )}
-            <FieldError id="cue-error" message={errors.cue} />
+  const audienceField = (
+    <AudienceField value={form.audience} onChange={(audience) => update({ audience, audienceTouched: true })} />
+  );
+
+  let main: ReactNode = null;
+  let side: ReactNode = null;
+
+  if (form.kind === 'line') {
+    main = (
+      <>
+        <div className="field">
+          <div className="labelrow">
+            <label className="label" htmlFor="cue">
+              Cue <span className="req">*</span>
+              {suggested.has('cueText') && <SuggestedMark />}
+            </label>
           </div>
-
-          {siblings.length > 0 && (
-            <div className="sibs">
-              <span className="eyebrow">Already on this cue &middot; {siblings.length}</span>
-              {siblings.map((s) => (
-                <div className="srow" key={s.id}>
-                  {s.hint ? <span className="tag">{s.hint}</span> : <span className="tag none">no hint</span>}
-                  <span className="t">{s.body}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {loneSibling && (
-            <Field
-              id="sibling-hint"
-              label="Hint for the existing line"
-              required
-              suggested={suggested.has('siblingHint')}
-              action={suggestButton('siblingHint', loneSibling.body ?? '')}
-              help={`Once a cue has two lines, both need a hint. Existing line: “${loneSibling.body ?? ''}”`}
-              error={errors.siblingHint}
-            >
-              <input
-                {...aria('sibling-hint', errors.siblingHint, true)}
-                className="input"
-                placeholder="e.g. agree & amplify"
-                value={form.siblingHint}
-                onChange={(e) => update({ siblingHint: e.target.value })}
-              />
-            </Field>
-          )}
-
-          <Field
-            id="hint"
-            label="Hint"
-            required={hintRequired}
-            optional={!hintRequired}
-            suggested={suggested.has('hint')}
-            action={hintRequired ? suggestButton('hint', form.lineText) : undefined}
-            help={
-              hintRequired
-                ? 'Needed because this cue has other lines. Keep it different from the hints above.'
-                : 'Only needed once a cue has more than one line.'
-            }
-            error={errors.hint}
-          >
-            <input
-              {...aria('hint', errors.hint, true)}
-              className="input"
-              placeholder="e.g. own it"
-              value={form.hint}
-              onChange={(e) => update({ hint: e.target.value })}
-            />
-          </Field>
-
-          <Field id="line-text" label="Line" required suggested={suggested.has('lineText')} error={errors.lineText}>
-            <textarea
-              {...aria('line-text', errors.lineText)}
-              className="input"
-              rows={3}
-              value={form.lineText}
-              onChange={(e) => update({ lineText: e.target.value })}
-            />
-          </Field>
-
-          <Field id="delivery-note" label="How to say it" optional suggested={suggested.has('deliveryNote')}>
-            <textarea
-              id="delivery-note"
-              className="input"
-              rows={2}
-              placeholder="e.g. Deadpan. Hold eye contact and only smile after."
-              value={form.deliveryNote}
-              onChange={(e) => update({ deliveryNote: e.target.value })}
-            />
-          </Field>
-
-          {!isDraft && sourceField}
-
-          {!isDraft && (
-            <div className="preview">
-              <span className="eyebrow">Preview in practice</span>
-              <div className="card">
-                <span className="eyebrow">{effectiveCueType === 'reaction' ? 'She says' : 'Goal'}</span>
-                <h3 className="cue">
-                  {form.cueText.trim() ? (
-                    effectiveCueType === 'reaction' ? (
-                      quote(form.cueText.trim())
-                    ) : (
-                      form.cueText.trim()
-                    )
-                  ) : (
-                    <span className="placeholder">Your cue</span>
-                  )}
-                </h3>
-                {form.hint.trim() && (
-                  <div className="hintrow">
-                    <span>Answer with</span>
-                    <span className="hint">{form.hint.trim()}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {form.kind === 'concept' && (
-        <>
-          <Field id="title" label="Name" required suggested={suggested.has('title')} error={errors.title}>
-            <input {...aria('title', errors.title)} className="input" placeholder="e.g. Push-pull" value={form.title} onChange={(e) => update({ title: e.target.value })} />
-          </Field>
-          <Field id="definition" label="Definition" required suggested={suggested.has('definition')} error={errors.definition}>
-            <textarea
-              {...aria('definition', errors.definition)}
-              className="input"
-              rows={3}
-              value={form.definition}
-              onChange={(e) => update({ definition: e.target.value })}
-            />
-          </Field>
-          <div className="field">
-            <span className="label">
-              Scenarios &middot; {form.scenarios.filter((s) => s.trim()).length} <span className="req">*</span>
-              {suggested.has('scenarios') && <SuggestedMark />}
-            </span>
-            <span className="help">Practice shows one at a time and moves to the next each time the card comes up.</span>
-          </div>
-          <ListEditor
-            idPrefix="scenario"
-            values={form.scenarios}
-            variant="concept"
-            multiline
-            reorder={false}
-            addLabel="Add scenario"
-            itemLabel="Scenario"
-            onChange={(scenarios) => update({ scenarios })}
-          />
-          <div className="btnrow">
-            <button
-              type="button"
-              className="btn ghost sm"
-              disabled={busy !== null || !form.title.trim()}
-              title={form.title.trim() ? undefined : 'Add a name first'}
-              onClick={() => void askScenarios()}
-            >
-              <span className="ai-ico">
-                <SparkleIcon size={13} />
-              </span>
-              {busy === 'scenarios' ? 'Drafting…' : 'Draft 3 more'}
+          <div className="seg two" role="group" aria-label="Cue type">
+            <button type="button" aria-pressed={effectiveCueType === 'reaction'} onClick={() => setCueType('reaction')}>
+              She says
+            </button>
+            <button type="button" aria-pressed={effectiveCueType === 'goal'} onClick={() => setCueType('goal')}>
+              Goal
             </button>
           </div>
-          <FieldError id="scenarios-error" message={errors.scenarios} />
-        </>
-      )}
-
-      {form.kind === 'routine' && (
-        <>
-          <Field id="title" label="Name" required suggested={suggested.has('title')} error={errors.title}>
-            <input {...aria('title', errors.title)} className="input" placeholder="e.g. Day-game stop" value={form.title} onChange={(e) => update({ title: e.target.value })} />
-          </Field>
-          <div className="field">
-            <span className="label">
-              Steps &middot; {form.steps.filter((s) => s.trim()).length} <span className="req">*</span>
-              {suggested.has('steps') && <SuggestedMark />}
-            </span>
-          </div>
-          <ListEditor
-            idPrefix="step"
-            values={form.steps}
-            variant="routine"
-            multiline={false}
-            reorder
-            addLabel="Add step"
-            itemLabel="Step"
-            onChange={(steps) => update({ steps })}
+          <CueCombobox
+            cues={cues}
+            type={effectiveCueType}
+            text={form.cueText}
+            resolved={resolvedCue}
+            error={errors.cue}
+            onText={(cueText) => update({ cueText, cueId: null, siblingHint: '' })}
+            onPick={(cue) => update({ cueId: cue.id, cueText: cue.text, cueType: cue.type, siblingHint: '' })}
           />
-          <FieldError id="steps-error" message={errors.steps} />
-          {!isDraft && sourceField}
-        </>
-      )}
+          {isDraft && !errors.cue && form.cueText.trim() && (
+            resolvedCue ? (
+              <span className="match" id="cue-help">
+                <CheckIcon size={11} />
+                Matches an existing cue &middot; {resolvedCue.line_count} {resolvedCue.line_count === 1 ? 'line' : 'lines'}
+              </span>
+            ) : (
+              <span className="chip k-muted" id="cue-help">
+                New cue
+              </span>
+            )
+          )}
+          {!isDraft && !errors.cue && form.cueText.trim() && !resolvedCue && (
+            <span className="help" id="cue-help">
+              This creates a new cue.
+            </span>
+          )}
+          <FieldError id="cue-error" message={errors.cue} />
+        </div>
 
-      {form.kind === 'focus' && (
-        <>
-          <Field id="title" label="Title" required suggested={suggested.has('title')} error={errors.title}>
-            <input {...aria('title', errors.title)} className="input" placeholder="e.g. Fix sleep" value={form.title} onChange={(e) => update({ title: e.target.value })} />
-          </Field>
+        {siblings.length > 0 && (
+          <div className="sibs only-phone">
+            <SiblingsPanel siblings={siblings} />
+          </div>
+        )}
+
+        {loneSibling && (
           <Field
-            id="question"
-            label="Check-in question"
+            id="sibling-hint"
+            label="Hint for the existing line"
             required
-            suggested={suggested.has('question')}
-            help="Ask it as a yes/no question."
-            error={errors.question}
+            suggested={suggested.has('siblingHint')}
+            action={suggestButton('siblingHint', loneSibling.body ?? '')}
+            help={`Once a cue has two lines, both need a hint. Existing line: “${loneSibling.body ?? ''}”`}
+            error={errors.siblingHint}
           >
-            <textarea
-              {...aria('question', errors.question, true)}
+            <input
+              {...aria('sibling-hint', errors.siblingHint, true)}
               className="input"
-              rows={2}
-              value={form.question}
-              onChange={(e) => update({ question: e.target.value })}
+              placeholder="e.g. agree & amplify"
+              value={form.siblingHint}
+              onChange={(e) => update({ siblingHint: e.target.value })}
             />
           </Field>
-          <Field id="why" label="Why it matters" optional suggested={suggested.has('why')}>
-            <textarea id="why" className="input" rows={2} value={form.why} onChange={(e) => update({ why: e.target.value })} />
-          </Field>
-          {!isDraft && (
-            <>
-              <div className="preview">
-                <span className="eyebrow">Preview in practice</span>
-                <div className="card">
-                  <span className="chip k-focus">Focus check-in</span>
-                  <h3 className="cue">{form.title.trim() || <span className="placeholder">Your focus</span>}</h3>
-                  <p className="sub">{form.question.trim() || 'Your yes/no question'}</p>
-                </div>
+        )}
+
+        <Field
+          id="hint"
+          label="Hint"
+          required={hintRequired}
+          optional={!hintRequired}
+          suggested={suggested.has('hint')}
+          action={hintRequired ? suggestButton('hint', form.lineText) : undefined}
+          help={
+            hintRequired
+              ? 'Needed because this cue has other lines. Keep it different from the hints above.'
+              : 'Only needed once a cue has more than one line.'
+          }
+          error={errors.hint}
+        >
+          <input
+            {...aria('hint', errors.hint, true)}
+            className="input"
+            placeholder="e.g. own it"
+            value={form.hint}
+            onChange={(e) => update({ hint: e.target.value })}
+          />
+        </Field>
+
+        <Field id="line-text" label="Line" required suggested={suggested.has('lineText')} error={errors.lineText}>
+          <textarea
+            {...aria('line-text', errors.lineText)}
+            className="input"
+            rows={3}
+            value={form.lineText}
+            onChange={(e) => update({ lineText: e.target.value })}
+          />
+        </Field>
+
+        <Field id="delivery-note" label="How to say it" optional suggested={suggested.has('deliveryNote')}>
+          <textarea
+            id="delivery-note"
+            className="input"
+            rows={2}
+            placeholder="e.g. Deadpan. Hold eye contact and only smile after."
+            value={form.deliveryNote}
+            onChange={(e) => update({ deliveryNote: e.target.value })}
+          />
+        </Field>
+
+        {!isDraft && sourceField}
+        {audienceField}
+      </>
+    );
+    side = (
+      <>
+        {siblings.length > 0 && (
+          <div className="sibs only-desktop">
+            <SiblingsPanel siblings={siblings} />
+          </div>
+        )}
+        <div className={previewClass}>
+          <Preview audience={form.audience}>
+            <span className="eyebrow">{effectiveCueType === 'reaction' ? 'She says' : 'Goal'}</span>
+            <h3 className="cue">
+              {form.cueText.trim() ? (
+                effectiveCueType === 'reaction' ? (
+                  quote(form.cueText.trim())
+                ) : (
+                  form.cueText.trim()
+                )
+              ) : (
+                <span className="placeholder">Your cue</span>
+              )}
+            </h3>
+            {form.hint.trim() && (
+              <div className="hintrow">
+                <span>Answer with</span>
+                <span className="hint">{form.hint.trim()}</span>
               </div>
-              <span className="help">Shows at the start of every session while it's active. Pause it when you're done with it.</span>
-            </>
+            )}
+          </Preview>
+        </div>
+      </>
+    );
+  } else if (form.kind === 'concept') {
+    const firstScenario = form.scenarios.find((s) => s.trim());
+    main = (
+      <>
+        <Field id="title" label="Name" required suggested={suggested.has('title')} error={errors.title}>
+          <input {...aria('title', errors.title)} className="input" placeholder="e.g. Push-pull" value={form.title} onChange={(e) => update({ title: e.target.value })} />
+        </Field>
+        <Field id="definition" label="Definition" required suggested={suggested.has('definition')} error={errors.definition}>
+          <textarea
+            {...aria('definition', errors.definition)}
+            className="input"
+            rows={3}
+            value={form.definition}
+            onChange={(e) => update({ definition: e.target.value })}
+          />
+        </Field>
+        <div className="field">
+          <span className="label">
+            Scenarios &middot; {form.scenarios.filter((s) => s.trim()).length} <span className="req">*</span>
+            {suggested.has('scenarios') && <SuggestedMark />}
+          </span>
+          <span className="help">Practice shows one at a time and moves to the next each time the card comes up.</span>
+        </div>
+        <ListEditor
+          idPrefix="scenario"
+          values={form.scenarios}
+          variant="concept"
+          multiline
+          reorder={false}
+          addLabel="Add scenario"
+          itemLabel="Scenario"
+          onChange={(scenarios) => update({ scenarios })}
+        />
+        <div className="btnrow">
+          <button
+            type="button"
+            className="btn ghost sm"
+            disabled={busy !== null || !form.title.trim()}
+            title={form.title.trim() ? undefined : 'Add a name first'}
+            onClick={() => void askScenarios()}
+          >
+            <span className="ai-ico">
+              <SparkleIcon size={13} />
+            </span>
+            {busy === 'scenarios' ? 'Drafting…' : 'Draft 3 more'}
+          </button>
+        </div>
+        <FieldError id="scenarios-error" message={errors.scenarios} />
+        {audienceField}
+      </>
+    );
+    // Concepts and routines had no preview on the phone; it's a desktop extra.
+    side = (
+      <div className="only-desktop">
+        <Preview audience={form.audience}>
+          <span className="chip k-concept">Concept</span>
+          <span className="eyebrow">Which concept is this?</span>
+          <p className="scenario">{firstScenario?.trim() || <span className="placeholder">A scenario</span>}</p>
+          <div className="reveal">
+            <p className="answer">{form.title.trim() || <span className="placeholder">Concept name</span>}</p>
+            {form.definition.trim() && <p className="sub">{form.definition.trim()}</p>}
+          </div>
+        </Preview>
+      </div>
+    );
+  } else if (form.kind === 'routine') {
+    const steps = form.steps.map((s) => s.trim()).filter(Boolean);
+    main = (
+      <>
+        <Field id="title" label="Name" required suggested={suggested.has('title')} error={errors.title}>
+          <input {...aria('title', errors.title)} className="input" placeholder="e.g. Day-game stop" value={form.title} onChange={(e) => update({ title: e.target.value })} />
+        </Field>
+        <div className="field">
+          <span className="label">
+            Steps &middot; {form.steps.filter((s) => s.trim()).length} <span className="req">*</span>
+            {suggested.has('steps') && <SuggestedMark />}
+          </span>
+        </div>
+        <ListEditor
+          idPrefix="step"
+          values={form.steps}
+          variant="routine"
+          multiline={false}
+          reorder
+          addLabel="Add step"
+          itemLabel="Step"
+          onChange={(next) => update({ steps: next })}
+        />
+        <FieldError id="steps-error" message={errors.steps} />
+        {!isDraft && sourceField}
+        {audienceField}
+      </>
+    );
+    side = (
+      <div className="only-desktop">
+        <Preview audience={form.audience}>
+          <span className="chip k-routine">Routine</span>
+          <span className="eyebrow">Recall the steps</span>
+          <h3 className="cue">{form.title.trim() || <span className="placeholder">Routine name</span>}</h3>
+          {steps.length > 0 && (
+            <div className="reveal">
+              <ol className="steps">
+                {steps.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </div>
           )}
-        </>
-      )}
-    </>
+        </Preview>
+      </div>
+    );
+  } else {
+    main = (
+      <>
+        <Field id="title" label="Title" required suggested={suggested.has('title')} error={errors.title}>
+          <input {...aria('title', errors.title)} className="input" placeholder="e.g. Fix sleep" value={form.title} onChange={(e) => update({ title: e.target.value })} />
+        </Field>
+        <Field
+          id="question"
+          label="Check-in question"
+          required
+          suggested={suggested.has('question')}
+          help="Ask it as a yes/no question."
+          error={errors.question}
+        >
+          <textarea
+            {...aria('question', errors.question, true)}
+            className="input"
+            rows={2}
+            value={form.question}
+            onChange={(e) => update({ question: e.target.value })}
+          />
+        </Field>
+        <Field id="why" label="Why it matters" optional suggested={suggested.has('why')}>
+          <textarea id="why" className="input" rows={2} value={form.why} onChange={(e) => update({ why: e.target.value })} />
+        </Field>
+        {audienceField}
+      </>
+    );
+    side = (
+      <div className={`sidestack ${previewClass}`}>
+        <Preview audience={form.audience}>
+          <span className="chip k-focus">Focus check-in</span>
+          <h3 className="cue">{form.title.trim() || <span className="placeholder">Your focus</span>}</h3>
+          <p className="sub">{form.question.trim() || 'Your yes/no question'}</p>
+        </Preview>
+        <span className="help">Shows at the start of every session while it's active. Pause it when you're done with it.</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="formgrid">
+      <div className="formmain">
+        {lead}
+        {main}
+      </div>
+      <div className="formside">{side}</div>
+      {tail && <div className="formtail">{tail}</div>}
+    </div>
   );
 }

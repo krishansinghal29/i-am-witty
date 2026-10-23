@@ -5,12 +5,12 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet } from 'react-router-dom';
 import type { User } from 'firebase/auth';
 import { getMe } from '@/api/recall';
 import { ApiError, errorMessage } from '@/api/http';
 import type { Me } from '@/api/types';
-import { Mark } from '@/components/Icons';
+import { Mark, PlusIcon } from '@/components/Icons';
 import { firebaseConfigured, signInWithGoogle, signOut, subscribeAuth } from '@/lib/firebase';
 
 type Access =
@@ -96,6 +96,37 @@ function SignInScreen({ forbiddenEmail }: { forbiddenEmail?: string | null }) {
   );
 }
 
+/** Desktop-only top bar; on a phone each page keeps its own header buttons. */
+function DesktopNav({ me }: { me: Me }) {
+  return (
+    <header className="dnav only-desktop">
+      <div className="dnav-in">
+        <Link className="dnav-brand" to="/admin">
+          <Mark size={22} />
+          Recall admin
+        </Link>
+        <nav className="dnav-links" aria-label="Admin">
+          <NavLink to="/admin" end>
+            Library
+          </NavLink>
+          <NavLink to="/admin/quick">Quick add</NavLink>
+          <NavLink to="/admin/cues">Cues</NavLink>
+        </nav>
+        <Link className="btn warm sm" to="/admin/new?kind=line">
+          <PlusIcon />
+          Add item
+        </Link>
+        <div className="dnav-me">
+          <span className="who">{me.email ?? 'Signed in'}</span>
+          <button type="button" className="textbtn muted" onClick={() => void signOut()}>
+            Sign out
+          </button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
 export function AdminLayout() {
   const [user, setUser] = useState<User | null | undefined>(undefined);
   const [access, setAccess] = useState<Access>({ state: 'checking' });
@@ -148,6 +179,11 @@ export function AdminLayout() {
         </div>
       );
     case 'ok':
-      return <Outlet context={access.me} />;
+      return (
+        <>
+          <DesktopNav me={access.me} />
+          <Outlet context={access.me} />
+        </>
+      );
   }
 }

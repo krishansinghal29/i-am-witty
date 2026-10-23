@@ -248,7 +248,7 @@ export function CuesPage() {
   return (
     <div className="screen">
       <header className="appbar">
-        <Link className="iconbtn" to="/admin" aria-label="Back to library">
+        <Link className="iconbtn only-phone" to="/admin" aria-label="Back to library">
           <BackIcon />
         </Link>
         <span className="ttl">Cues</span>
@@ -272,21 +272,23 @@ export function CuesPage() {
             <p className="sub">Cues are created when you add a line.</p>
           </div>
         ) : (
-          groups.map((g) => {
-            const inGroup = cues.filter((c) => c.type === g.type);
-            if (inGroup.length === 0) return null;
-            return (
-              <section className="group" key={g.type} aria-label={g.label}>
-                <div className="group-h">
-                  <div className="gt">
-                    <span className="eyebrow">{g.label}</span>
-                    <b>{inGroup.length === 1 ? '1 cue' : `${inGroup.length} cues`}</b>
+          <div className="cuegrid">
+            {groups.map((g) => {
+              const inGroup = cues.filter((c) => c.type === g.type);
+              if (inGroup.length === 0) return null;
+              return (
+                <section className="group" key={g.type} aria-label={g.label}>
+                  <div className="group-h">
+                    <div className="gt">
+                      <span className="eyebrow">{g.label}</span>
+                      <b>{inGroup.length === 1 ? '1 cue' : `${inGroup.length} cues`}</b>
+                    </div>
                   </div>
-                </div>
-                {inGroup.map(renderRow)}
-              </section>
-            );
-          })
+                  {inGroup.map(renderRow)}
+                </section>
+              );
+            })}
+          </div>
         )}
       </main>
     </div>

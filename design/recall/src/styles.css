@@ -30,6 +30,9 @@
   --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   --gutter-l: max(18px, env(safe-area-inset-left, 0px));
   --gutter-r: max(18px, env(safe-area-inset-right, 0px));
+  /* Desktop: content width and the sticky top nav's height. */
+  --content: 1120px;
+  --dnav-h: 62px;
 }
 
 * { box-sizing: border-box; }
@@ -137,7 +140,7 @@ a { color: inherit; }
 .btn.danger-fill { background: var(--danger); color: var(--on-fill); }
 .btn:disabled { opacity: .55; cursor: default; box-shadow: none; }
 
-:where(button, a, input, textarea, [tabindex]):focus-visible {
+:where(button, a, input, textarea, select, [tabindex]):focus-visible {
   outline: 3px solid var(--primary-soft);
   outline-offset: 2px;
 }
@@ -378,3 +381,89 @@ select.input { appearance: auto; }
 @keyframes rise { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- layout pieces shared by phone and desktop ---------- */
+@media (max-width: 899.98px) {
+  .only-desktop { display: none !important; }
+}
+@media (min-width: 900px) {
+  .only-phone { display: none !important; }
+}
+
+/* On a phone the form is one column: the main fields, then the side column
+   (preview), then the tail (Pause/Archive), all on the same 14px rhythm. */
+.formgrid { display: flex; flex-direction: column; gap: 14px; }
+.formmain, .formside, .formtail { display: contents; }
+.sidestack { display: flex; flex-direction: column; gap: 10px; }
+.segico { display: inline-flex; vertical-align: -1px; margin-right: 5px; }
+.libtools, .libgrid, .cuegrid, .quickbox { display: flex; flex-direction: column; gap: 14px; }
+
+/* ---------- desktop top nav ---------- */
+.dnav { position: sticky; top: 0; z-index: 8; background: var(--surface); border-bottom: 1px solid var(--line); }
+.dnav-in {
+  max-width: calc(var(--content) + var(--gutter-l) + var(--gutter-r));
+  min-height: var(--dnav-h);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 10px var(--gutter-r) 10px var(--gutter-l);
+}
+.dnav-brand { flex: none; display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 800; letter-spacing: -.3px; color: var(--text); text-decoration: none; }
+.dnav-links { flex: 1; min-width: 0; display: flex; gap: 4px; }
+.dnav-links a { padding: 8px 12px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--muted); text-decoration: none; white-space: nowrap; }
+.dnav-links a:hover { color: var(--text); background: var(--tint); }
+.dnav-links a.active { color: var(--text); background: var(--tint); box-shadow: inset 0 0 0 1px var(--line); }
+.dnav-me { flex: 0 1 auto; min-width: 0; max-width: 280px; display: flex; align-items: center; gap: 10px; }
+.dnav-me .who { min-width: 0; font-size: 12.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- desktop ---------- */
+@media (min-width: 900px) {
+  body { background: var(--screen); }
+  .app { max-width: none; box-shadow: none; }
+  .screen { min-height: 0; }
+
+  .appbar, .body, .foot {
+    width: 100%;
+    max-width: calc(var(--content) + var(--gutter-l) + var(--gutter-r));
+    margin-inline: auto;
+  }
+  .appbar { position: static; min-height: 0; padding-top: 28px; padding-bottom: 4px; background: none; }
+  .appbar .ttl { font-size: 24px; letter-spacing: -.6px; }
+  .body { padding-bottom: 24px; }
+  .body > .sub { max-width: 70ch; }
+  /* Forms size to their content so the button bar sits right under them. */
+  form.screen > .body { flex: none; }
+  .foot { position: static; justify-content: flex-end; padding-top: 0; padding-bottom: 40px; border-top: 0; background: none; }
+  .foot .btn { flex: none; min-width: 180px; }
+
+  .libtools { flex-direction: row; align-items: center; gap: 16px; }
+  .libtools .search { flex: 0 1 380px; min-width: 240px; }
+  .libtools .filters { flex: 1; min-width: 0; }
+  /* Library groups vary a lot in height, so they flow down columns (masonry) instead of rows. */
+  .libgrid { display: block; columns: 2; column-gap: 16px; }
+  .libgrid > * { break-inside: avoid; margin-bottom: 16px; }
+  .cuegrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+
+  .formgrid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+    grid-template-areas: "main side" "tail side";
+    column-gap: 32px;
+    row-gap: 14px;
+    align-items: start;
+  }
+  .formmain { grid-area: main; }
+  .formmain > .seg:not(.two) { max-width: 520px; }
+  .formtail { grid-area: tail; }
+  .formside { grid-area: side; position: sticky; top: calc(var(--dnav-h) + 16px); }
+  .formmain, .formside, .formtail { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+  .quickbox { max-width: 760px; }
+
+  .cuerow.open { flex-direction: row; flex-wrap: wrap; align-items: center; }
+  .cuerow.open > .label, .cuerow.open > .gt, .cuerow.open > .sub, .cuerow.open > .ferr { flex-basis: 100%; }
+  .cuerow.open > .input { flex: 1 1 240px; width: auto; }
+}
+@media (min-width: 1280px) {
+  .libgrid { columns: 3; }
+}

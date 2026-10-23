@@ -5,8 +5,10 @@ import { errorMessage } from '@/api/http';
 import type { CueRef, Item, Kind } from '@/api/types';
 import { PlusIcon, SearchIcon, SparkleIcon } from '@/components/Icons';
 import { signOut } from '@/lib/firebase';
+import { OnlyMeChip } from './itemForm';
 
-type Filter = 'all' | Kind;
+/** A kind, or "admin": everything only the admin practises. */
+type Filter = 'all' | Kind | 'admin';
 
 const FILTERS: { key: Filter; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -14,7 +16,14 @@ const FILTERS: { key: Filter; label: string }[] = [
   { key: 'concept', label: 'Concepts' },
   { key: 'routine', label: 'Routines' },
   { key: 'focus', label: 'Focus' },
+  { key: 'admin', label: 'Only me' },
 ];
+
+function inFilter(item: Item, filter: Filter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'admin') return item.audience === 'admin';
+  return item.kind === filter;
+}
 
 function quote(text: string) {
   return `“${text}”`;
@@ -56,6 +65,16 @@ function StatusChip({ item }: { item: Item }) {
   return null;
 }
 
+/** Audience and status markers shown on every Library row. */
+function RowChips({ item }: { item: Item }) {
+  return (
+    <>
+      {item.audience === 'admin' && <OnlyMeChip />}
+      <StatusChip item={item} />
+    </>
+  );
+}
+
 export function LibraryPage() {
   const [archived, setArchived] = useState(false);
   const [items, setItems] = useState<Item[] | null>(null);
@@ -82,67 +101,63 @@ export function LibraryPage() {
 
   const counts = useMemo(() => {
     const all = items ?? [];
-    return {
-      all: all.length,
-      line: all.filter((i) => i.kind === 'line').length,
-      concept: all.filter((i) => i.kind === 'concept').length,
-      routine: all.filter((i) => i.kind === 'routine').length,
-      focus: all.filter((i) => i.kind === 'focus').length,
-    };
+    return Object.fromEntries(FILTERS.map((f) => [f.key, all.filter((i) => inFilter(i, f.key)).length])) as Record<Filter, number>;
   }, [items]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return (items ?? []).filter((i) => (filter === 'all' || i.kind === filter) && matches(i, q));
+    return (items ?? []).filter((i) => inFilter(i, filter) && matches(i, q));
   }, [items, query, filter]);
 
   const lineGroups = groupLines(visible.filter((i) => i.kind === 'line'));
   const concepts = visible.filter((i) => i.kind === 'concept');
   const routines = visible.filter((i) => i.kind === 'routine');
   const focus = visible.filter((i) => i.kind === 'focus');
-  const addKind: Kind = filter === 'all' ? 'line' : filter;
+  const addKind: Kind = filter === 'all' || filter === 'admin' ? 'line' : filter;
 
   return (
     <div className="screen">
       <header className="appbar">
         <span className="ttl">{archived ? 'Archived' : 'Library'}</span>
-        <Link className="btn ghost sm" to={`/admin/new?kind=${addKind}`}>
+        <Link className="btn ghost sm only-phone" to={`/admin/new?kind=${addKind}`}>
           <PlusIcon />
           Add
         </Link>
-        <Link className="btn warm sm" to="/admin/quick">
+        <Link className="btn warm sm only-phone" to="/admin/quick">
           <SparkleIcon />
           Quick add
         </Link>
       </header>
       <main className="body">
-        <div className="search">
-          <SearchIcon />
-          <label htmlFor="library-search" className="sr-only">
-            Search
-          </label>
-          <input
-            id="library-search"
-            className="input"
-            type="search"
-            placeholder="Search lines, cues, concepts"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-          />
-        </div>
+        <div className="libtools">
+          <div className="search">
+            <SearchIcon />
+            <label htmlFor="library-search" className="sr-only">
+              Search
+            </label>
+            <input
+              id="library-search"
+              className="input"
+              type="search"
+              placeholder="Search lines, cues, concepts"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
 
-        <div className="filters" role="group" aria-label="Filter by kind">
-          {FILTERS.filter((f) => f.key === 'all' || counts[f.key] > 0).map((f) => (
-            <button
-              key={f.key}
-              type="button"
-              className="fchip"
-              aria-pressed={filter === f.key}
-              onClick={() => setFilter(f.key)}
-            >
-              {f.label} {counts[f.key]}
-            </button>
-          ))}
+          <div className="filters" role="group" aria-label="Filter items">
+            {FILTERS.filter((f) => f.key === 'all' || counts[f.key] > 0).map((f) => (
+              <button
+                key={f.key}
+                type="button"
+                className="fchip"
+                aria-pressed={filter === f.key}
+                onClick={() => setFilter(f.key)}
+              >
+                {f.label} {counts[f.key]}
+              </button>
+            ))}
+          </div>
         </div>
 
         {error ? (
@@ -174,7 +189,7 @@ export function LibraryPage() {
             <p className="sub">Try a different search or filter.</p>
           </div>
         ) : (
-          <>
+          <div className="libgrid">
             {lineGroups.map((group) => (
               <section className="group" key={group.cue.id}>
                 <div className="group-h">
@@ -188,7 +203,7 @@ export function LibraryPage() {
                   <Link className="row" key={line.id} to={`/admin/items/${line.id}`}>
                     {line.hint && <span className="tag">{line.hint}</span>}
                     <span className="t">{line.body}</span>
-                    <StatusChip item={line} />
+                    <RowChips item={line} />
                   </Link>
                 ))}
               </section>
@@ -206,7 +221,7 @@ export function LibraryPage() {
                   <Link className="row" key={item.id} to={`/admin/items/${item.id}`}>
                     <span className="chip k-concept">Concept</span>
                     <span className="t">{item.title}</span>
-                    <StatusChip item={item} />
+                    <RowChips item={item} />
                     <span className="m">
                       {(item.scenarios ?? []).length} {(item.scenarios ?? []).length === 1 ? 'scenario' : 'scenarios'}
                     </span>
@@ -227,7 +242,7 @@ export function LibraryPage() {
                   <Link className="row" key={item.id} to={`/admin/items/${item.id}`}>
                     <span className="chip k-routine">Routine</span>
                     <span className="t">{item.title}</span>
-                    <StatusChip item={item} />
+                    <RowChips item={item} />
                     <span className="m">
                       {(item.steps ?? []).length} {(item.steps ?? []).length === 1 ? 'step' : 'steps'}
                     </span>
@@ -248,12 +263,12 @@ export function LibraryPage() {
                   <Link className="row" key={item.id} to={`/admin/items/${item.id}`}>
                     <span className="chip k-focus">Focus</span>
                     <span className="t">{item.title}</span>
-                    <StatusChip item={item} />
+                    <RowChips item={item} />
                   </Link>
                 ))}
               </section>
             )}
-          </>
+          </div>
         )}
 
         <div className="libfoot">
@@ -265,7 +280,7 @@ export function LibraryPage() {
               Manage cues
             </Link>
           </div>
-          <button type="button" className="textbtn muted" onClick={() => void signOut()}>
+          <button type="button" className="textbtn muted only-phone" onClick={() => void signOut()}>
             Sign out
           </button>
         </div>

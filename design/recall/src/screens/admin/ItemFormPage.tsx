@@ -122,7 +122,11 @@ function ItemForm({ itemId, initialKind, handoff }: { itemId: string | null; ini
 
   const appbar = (
     <header className="appbar">
-      <Link className="iconbtn" to={handoff ? '/admin/quick' : '/admin'} aria-label={handoff ? 'Back to Quick add' : 'Back to library'}>
+      <Link
+        className="iconbtn only-phone"
+        to={handoff ? '/admin/quick' : '/admin'}
+        aria-label={handoff ? 'Back to Quick add' : 'Back to library'}
+      >
         <BackIcon />
       </Link>
       <span className="ttl">{title}</span>
@@ -151,90 +155,97 @@ function ItemForm({ itemId, initialKind, handoff }: { itemId: string | null; ini
     );
   }
 
-  return (
-    <form className="screen" onSubmit={(e) => void save(e)} noValidate>
-      {appbar}
-      <main className="body">
-        <KindSwitch kind={form.kind} locked={isEdit} onChange={setKind} />
-
-        {formError && (
-          <div className="banner error" role="alert">
-            <span>{formError}</span>
+  const statusZone = (
+    <div className="zone">
+      {status === 'archived' ? (
+        <div className="zrow">
+          <div>
+            <b>Archived</b>
+            <span>Restore it to show it in practice again.</span>
           </div>
-        )}
-
-        <ItemFields state={state} cues={cues} variant="form" />
-
-        {isEdit && (
-          <div className="zone">
-            {status === 'archived' ? (
-              <div className="zrow">
+          <div className="actions">
+            <button type="button" className="btn ghost sm" disabled={statusBusy} onClick={() => void changeStatus('active')}>
+              Restore
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div className="zrow">
+            <div>
+              <b>{status === 'paused' ? 'Paused' : 'Pause'}</b>
+              <span>
+                {status === 'paused'
+                  ? "It won't show in practice until you resume it."
+                  : 'Stops it showing in practice. Progress is kept.'}
+              </span>
+            </div>
+            <div className="actions">
+              <button
+                type="button"
+                className="btn ghost sm"
+                disabled={statusBusy}
+                onClick={() => void changeStatus(status === 'paused' ? 'active' : 'paused')}
+              >
+                {status === 'paused' ? 'Resume' : 'Pause'}
+              </button>
+            </div>
+          </div>
+          <div className="zrow">
+            {confirmArchive ? (
+              <>
                 <div>
-                  <b>Archived</b>
-                  <span>Restore it to show it in practice again.</span>
+                  <b>Archive this item?</b>
+                  <span>It stops showing everywhere. Nothing is deleted.</span>
                 </div>
                 <div className="actions">
-                  <button type="button" className="btn ghost sm" disabled={statusBusy} onClick={() => void changeStatus('active')}>
-                    Restore
+                  <button type="button" className="btn ghost sm" disabled={statusBusy} onClick={() => setConfirmArchive(false)}>
+                    Cancel
+                  </button>
+                  <button type="button" className="btn danger-fill sm" disabled={statusBusy} onClick={() => void changeStatus('archived')}>
+                    Archive
                   </button>
                 </div>
-              </div>
+              </>
             ) : (
               <>
-                <div className="zrow">
-                  <div>
-                    <b>{status === 'paused' ? 'Paused' : 'Pause'}</b>
-                    <span>
-                      {status === 'paused'
-                        ? "It won't show in practice until you resume it."
-                        : 'Stops it showing in practice. Progress is kept.'}
-                    </span>
-                  </div>
-                  <div className="actions">
-                    <button
-                      type="button"
-                      className="btn ghost sm"
-                      disabled={statusBusy}
-                      onClick={() => void changeStatus(status === 'paused' ? 'active' : 'paused')}
-                    >
-                      {status === 'paused' ? 'Resume' : 'Pause'}
-                    </button>
-                  </div>
+                <div>
+                  <b>Archive</b>
+                  <span>Hides it everywhere. Nothing is deleted.</span>
                 </div>
-                <div className="zrow">
-                  {confirmArchive ? (
-                    <>
-                      <div>
-                        <b>Archive this item?</b>
-                        <span>It stops showing everywhere. Nothing is deleted.</span>
-                      </div>
-                      <div className="actions">
-                        <button type="button" className="btn ghost sm" disabled={statusBusy} onClick={() => setConfirmArchive(false)}>
-                          Cancel
-                        </button>
-                        <button type="button" className="btn danger-fill sm" disabled={statusBusy} onClick={() => void changeStatus('archived')}>
-                          Archive
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div>
-                        <b>Archive</b>
-                        <span>Hides it everywhere. Nothing is deleted.</span>
-                      </div>
-                      <div className="actions">
-                        <button type="button" className="btn ghost sm danger" disabled={statusBusy} onClick={() => setConfirmArchive(true)}>
-                          Archive
-                        </button>
-                      </div>
-                    </>
-                  )}
+                <div className="actions">
+                  <button type="button" className="btn ghost sm danger" disabled={statusBusy} onClick={() => setConfirmArchive(true)}>
+                    Archive
+                  </button>
                 </div>
               </>
             )}
           </div>
-        )}
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <form className="screen" onSubmit={(e) => void save(e)} noValidate>
+      {appbar}
+      <main className="body">
+        <ItemFields
+          state={state}
+          cues={cues}
+          variant="form"
+          lead={
+            <>
+              <KindSwitch kind={form.kind} locked={isEdit} onChange={setKind} />
+              {formError && (
+                <div className="banner error" role="alert">
+                  <span>{formError}</span>
+                </div>
+              )}
+            </>
+          }
+          tail={isEdit ? statusZone : undefined}
+        />
       </main>
       <footer className="foot">
         <button type="submit" className="btn warm" disabled={saving}>
