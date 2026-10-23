@@ -7,7 +7,7 @@ from uuid import UUID
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from app.api.deps import ContainerDep, RecallLearnerKey
+from app.api.deps import ContainerDep, RecallLearnerDep
 from app.application.recall_practice_service import SessionCard, SessionCheckin
 from app.domain.models.recall import RecallItemKind
 
@@ -159,11 +159,11 @@ def _checkin_response(checkin: SessionCheckin) -> SessionCheckinResponse:
 
 @router.get("/session", response_model=SessionResponse)
 async def get_session(
-    local_date: date, container: ContainerDep, learner_key: RecallLearnerKey
+    local_date: date, container: ContainerDep, learner: RecallLearnerDep
 ) -> SessionResponse:
     """Today's check-ins and cards for the signed-in caller."""
     session = await container.recall_practice_service.get_session(
-        learner_key, local_date
+        learner.key, local_date, include_admin_only=learner.is_admin
     )
     cards = [_card_response(card) for card in session.cards]
     return SessionResponse(
@@ -182,11 +182,11 @@ async def get_session(
 
 @router.post("/seen", response_model=SeenResponse)
 async def mark_seen(
-    body: SeenRequest, container: ContainerDep, learner_key: RecallLearnerKey
+    body: SeenRequest, container: ContainerDep, learner: RecallLearnerDep
 ) -> SeenResponse:
     """Record a "Next" tap; repeat taps on the same day count once."""
     progress = await container.recall_practice_service.mark_seen(
-        learner_key, body.item_id, body.local_date
+        learner.key, body.item_id, body.local_date, include_admin_only=learner.is_admin
     )
     return SeenResponse(
         item_id=progress.item_id,
@@ -197,22 +197,26 @@ async def mark_seen(
 
 @router.post("/checkins", response_model=CheckinResponse)
 async def record_checkin(
-    body: CheckinRequest, container: ContainerDep, learner_key: RecallLearnerKey
+    body: CheckinRequest, container: ContainerDep, learner: RecallLearnerDep
 ) -> CheckinResponse:
     """Save today's yes/no for a focus item and return its streak."""
     done, streak = await container.recall_practice_service.record_checkin(
-        learner_key, body.item_id, body.local_date, body.done
+        learner.key,
+        body.item_id,
+        body.local_date,
+        body.done,
+        include_admin_only=learner.is_admin,
     )
     return CheckinResponse(item_id=body.item_id, done=done, streak=streak)
 
 
 @router.get("/outlook", response_model=OutlookResponse)
 async def get_outlook(
-    local_date: date, container: ContainerDep, learner_key: RecallLearnerKey
+    local_date: date, container: ContainerDep, learner: RecallLearnerDep
 ) -> OutlookResponse:
     """What's waiting tomorrow, for the end-of-session screen."""
     outlook = await container.recall_practice_service.get_outlook(
-        learner_key, local_date
+        learner.key, local_date, include_admin_only=learner.is_admin
     )
     return OutlookResponse(
         due_tomorrow=outlook.due_tomorrow, new_waiting=outlook.new_waiting

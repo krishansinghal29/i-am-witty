@@ -6,6 +6,7 @@ from datetime import date
 from typing import Any, Protocol
 
 from app.domain.models.recall import (
+    RecallAudience,
     RecallCheckin,
     RecallCue,
     RecallCueType,
@@ -35,6 +36,7 @@ class CreateRecallItemInput:
     steps: list[str] | None = None
     scenarios: list[str] | None = None
     source: str | None = None
+    audience: RecallAudience = RecallAudience.everyone
 
 
 class RecallRepository(Protocol):

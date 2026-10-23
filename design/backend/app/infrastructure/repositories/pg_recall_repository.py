@@ -9,6 +9,7 @@ from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domain.models.recall import (
+    RecallAudience,
     RecallCheckin,
     RecallCue,
     RecallCueType,
@@ -22,6 +23,7 @@ from app.infrastructure.db.orm.recall import RecallCheckin as OrmRecallCheckin
 from app.infrastructure.db.orm.recall import RecallCue as OrmRecallCue
 from app.infrastructure.db.orm.recall import RecallCueType as OrmRecallCueType
 from app.infrastructure.db.orm.recall import RecallItem as OrmRecallItem
+from app.infrastructure.db.orm.recall import RecallAudience as OrmRecallAudience
 from app.infrastructure.db.orm.recall import RecallItemKind as OrmRecallItemKind
 from app.infrastructure.db.orm.recall import RecallItemStatus as OrmRecallItemStatus
 from app.infrastructure.db.orm.recall import RecallProgress as OrmRecallProgress
@@ -34,6 +36,7 @@ from app.ports.repositories.recall_repository import (
 _UPDATABLE_ITEM_COLUMNS = frozenset(
     {
         "status",
+        "audience",
         "cue_id",
         "hint",
         "title",
@@ -185,6 +188,7 @@ class PgRecallRepository:
             steps=input.steps,
             scenarios=input.scenarios,
             source=input.source,
+            audience=OrmRecallAudience(input.audience.value),
         )
         self._session.add(row)
         await self._session.flush()
@@ -202,6 +206,8 @@ class PgRecallRepository:
                 raise ValueError(f"recall item column {column!r} is not updatable")
             if column == "status":
                 value = OrmRecallItemStatus(value.value)
+            elif column == "audience":
+                value = OrmRecallAudience(value.value)
             setattr(row, column, value)
         await self._session.flush()
         # Reload so the server-side `updated_at` is current.
@@ -336,6 +342,7 @@ class PgRecallRepository:
             source=row.source,
             created_at=row.created_at,
             updated_at=row.updated_at,
+            audience=RecallAudience(row.audience.value),
         )
 
     @staticmethod

@@ -21,6 +21,7 @@ router = APIRouter(prefix="/v1/admin/recall", tags=["admin-recall"])
 CueType = Literal["reaction", "goal"]
 ItemKind = Literal["line", "concept", "routine", "focus"]
 ItemStatus = Literal["active", "paused", "archived"]
+Audience = Literal["everyone", "admin"]
 
 
 class AdminMeResponse(BaseModel):
@@ -65,6 +66,8 @@ class CreateItemRequest(BaseModel):
     steps: list[str] | None = None
     scenarios: list[str] | None = None
     source: str | None = None
+    # Omitted: focus defaults to admin-only, everything else to everyone.
+    audience: Audience | None = None
 
 
 class UpdateItemRequest(BaseModel):
@@ -72,6 +75,7 @@ class UpdateItemRequest(BaseModel):
 
     kind: ItemKind | None = None
     status: ItemStatus | None = None
+    audience: Audience | None = None
     cue_id: UUID | None = None
     new_cue: NewCueRequest | None = None
     hint: str | None = None
@@ -143,6 +147,7 @@ class ItemResponse(BaseModel):
     id: UUID
     kind: ItemKind
     status: ItemStatus
+    audience: Audience
     cue: CueResponse | None
     hint: str | None
     title: str | None
@@ -165,6 +170,7 @@ def _item_response(item: RecallItem) -> ItemResponse:
         id=item.id,
         kind=item.kind.value,
         status=item.status.value,
+        audience=item.audience.value,
         cue=_cue_response(item.cue) if item.cue is not None else None,
         hint=item.hint,
         title=item.title,

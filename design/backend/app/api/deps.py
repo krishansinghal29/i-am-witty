@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
@@ -88,15 +89,24 @@ async def get_recall_admin(
     return verified
 
 
-async def get_recall_learner_key(
+@dataclass(frozen=True)
+class RecallLearner:
+    """Who is practising: their progress key, and whether admin-only items show."""
+
+    key: str
+    is_admin: bool
+
+
+async def get_recall_learner(
     request: Request,
     container: RequestContainer = Depends(get_container),
-) -> str:
+) -> RecallLearner:
     """Identify who is practising on the recall routes.
 
     Practice needs a signed-in Firebase user, and each one practises as
-    ``uid:<firebase uid>`` so progress follows them across devices. Like the
-    recall admin this never touches ``app_users``.
+    ``uid:<firebase uid>`` so progress follows them across devices. The admin
+    also gets admin-only items. Like the recall admin this never touches
+    ``app_users``.
     """
     token = _bearer_token(request)
     if token is None:
@@ -105,10 +115,10 @@ async def get_recall_learner_key(
         verified = await container.integrations.auth_verifier.verify(token)
     except Exception as exc:  # noqa: BLE001 - any verify failure is unauthenticated
         raise HTTPException(status_code=401, detail="unauthenticated") from exc
-    return f"uid:{verified.uid}"
+    return RecallLearner(key=f"uid:{verified.uid}", is_admin=_is_recall_admin(verified))
 
 
 ContainerDep = Annotated[RequestContainer, Depends(get_container)]
 CurrentUser = Annotated[AppUser, Depends(get_current_user)]
 RecallAdmin = Annotated[VerifiedToken, Depends(get_recall_admin)]
-RecallLearnerKey = Annotated[str, Depends(get_recall_learner_key)]
+RecallLearnerDep = Annotated[RecallLearner, Depends(get_recall_learner)]

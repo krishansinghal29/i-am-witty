@@ -7,6 +7,7 @@ from typing import Any
 from app.application.exceptions import ConflictError, NotFoundError, ValidationError
 from app.application.unit_of_work import UnitOfWork
 from app.domain.models.recall import (
+    RecallAudience,
     RecallCue,
     RecallCueType,
     RecallItem,
@@ -28,6 +29,11 @@ _KIND_FIELDS: dict[RecallItemKind, frozenset[str]] = {
     RecallItemKind.routine: frozenset({"title", "steps", "source"}),
     RecallItemKind.focus: frozenset({"title", "question", "body", "source"}),
 }
+
+
+def default_audience(kind: RecallItemKind) -> RecallAudience:
+    """Focus check-ins are personal, so they default to the admin only."""
+    return RecallAudience.admin if kind is RecallItemKind.focus else RecallAudience.everyone
 
 
 def _clean(value: str | None) -> str | None:
@@ -158,11 +164,16 @@ class RecallAdminService:
     async def create_item(
         self, kind: RecallItemKind, fields: Mapping[str, Any]
     ) -> RecallItem:
+        audience = (
+            RecallAudience(fields["audience"])
+            if fields.get("audience") is not None
+            else default_audience(kind)
+        )
         fields = {k: v for k, v in fields.items() if k in _KIND_FIELDS[kind]}
         source = _clean(fields.get("source"))
 
         if kind is RecallItemKind.line:
-            return await self._create_line(fields, source)
+            return await self._create_line(fields, source, audience)
 
         title = _clean(fields.get("title"))
         body = _clean(fields.get("body"))
@@ -180,6 +191,7 @@ class RecallAdminService:
                     steps=steps,
                     scenarios=scenarios,
                     source=source,
+                    audience=audience,
                 )
             )
 
@@ -190,7 +202,7 @@ class RecallAdminService:
         if "kind" in changes and RecallItemKind(changes["kind"]) is not item.kind:
             raise ValidationError("kind_immutable")
 
-        allowed = _KIND_FIELDS[item.kind] | {"status"}
+        allowed = _KIND_FIELDS[item.kind] | {"status", "audience"}
         changes = {k: v for k, v in changes.items() if k in allowed}
 
         columns: dict[str, Any] = {}
@@ -202,6 +214,8 @@ class RecallAdminService:
                 columns[name] = _clean_list(changes[name])
         if "status" in changes and changes["status"] is not None:
             columns["status"] = RecallItemStatus(changes["status"])
+        if "audience" in changes and changes["audience"] is not None:
+            columns["audience"] = RecallAudience(changes["audience"])
 
         def merged(name: str) -> Any:
             return columns[name] if name in columns else getattr(item, name)
@@ -242,7 +256,7 @@ class RecallAdminService:
             return await self._recall.update_item(item_id, columns)
 
     async def _create_line(
-        self, fields: Mapping[str, Any], source: str | None
+        self, fields: Mapping[str, Any], source: str | None, audience: RecallAudience
     ) -> RecallItem:
         if (fields.get("cue_id") is None) == (_new_cue_text(fields) is None):
             raise ValidationError("line_requires_one_cue")
@@ -262,6 +276,7 @@ class RecallAdminService:
                     body=body,
                     delivery_note=_clean(fields.get("delivery_note")),
                     source=source,
+                    audience=audience,
                 )
             )
 

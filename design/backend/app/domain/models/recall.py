@@ -24,6 +24,13 @@ class RecallItemStatus(str, Enum):
     archived = "archived"
 
 
+class RecallAudience(str, Enum):
+    """Who practises an item: every signed-in user, or only the admin."""
+
+    everyone = "everyone"
+    admin = "admin"
+
+
 @dataclass(frozen=True)
 class RecallCue:
     """A trigger a line answers: something she says, or a goal you start."""
@@ -57,6 +64,7 @@ class RecallItem:
     source: str | None
     created_at: datetime
     updated_at: datetime
+    audience: RecallAudience = RecallAudience.everyone
 
     @property
     def cue_id(self) -> uuid.UUID | None:

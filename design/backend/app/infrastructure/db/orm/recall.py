@@ -40,6 +40,11 @@ class RecallItemStatus(str, enum.Enum):
     archived = "archived"
 
 
+class RecallAudience(str, enum.Enum):
+    everyone = "everyone"
+    admin = "admin"
+
+
 class RecallCue(Base):
     __tablename__ = "recall_cues"
 
@@ -105,6 +110,17 @@ class RecallItem(Base):
         ),
         nullable=False,
         server_default=text("'active'"),
+    )
+    audience: Mapped[RecallAudience] = mapped_column(
+        sa.Enum(
+            RecallAudience,
+            name="recall_audience",
+            native_enum=True,
+            create_type=False,
+            values_callable=lambda e: [m.value for m in e],
+        ),
+        nullable=False,
+        server_default=text("'everyone'"),
     )
     cue_id: Mapped[uuid.UUID | None] = mapped_column(
         postgresql.UUID(as_uuid=True),

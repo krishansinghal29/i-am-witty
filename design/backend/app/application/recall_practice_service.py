@@ -9,6 +9,7 @@ from datetime import date, datetime, timedelta, timezone
 from app.application.exceptions import NotFoundError, ValidationError
 from app.application.unit_of_work import UnitOfWork
 from app.domain.models.recall import (
+    RecallAudience,
     RecallItem,
     RecallItemKind,
     RecallItemStatus,
@@ -152,6 +153,11 @@ def select_session_cards(
     return selected[:MAX_SESSION_CARDS]
 
 
+def _visible_to(item: RecallItem, include_admin_only: bool) -> bool:
+    """Admin-only items exist only for the admin; everyone sees the rest."""
+    return include_admin_only or item.audience is RecallAudience.everyone
+
+
 def _utc_today() -> date:
     return datetime.now(timezone.utc).date()
 
@@ -169,9 +175,15 @@ class RecallPracticeService:
         self._uow = uow
         self._today = today
 
-    async def get_session(self, learner_key: str, local_date: date) -> RecallSession:
+    async def get_session(
+        self, learner_key: str, local_date: date, include_admin_only: bool = False
+    ) -> RecallSession:
         self._check_local_date(local_date)
-        items = await self._recall.list_non_archived_items()
+        items = [
+            item
+            for item in await self._recall.list_non_archived_items()
+            if _visible_to(item, include_admin_only)
+        ]
         progress = {p.item_id: p for p in await self._recall.list_progress(learner_key)}
 
         active = [item for item in items if item.status is RecallItemStatus.active]
@@ -217,9 +229,15 @@ class RecallPracticeService:
             new_count=sum(1 for card in cards if card.is_new),
         )
 
-    async def get_outlook(self, learner_key: str, local_date: date) -> RecallOutlook:
+    async def get_outlook(
+        self, learner_key: str, local_date: date, include_admin_only: bool = False
+    ) -> RecallOutlook:
         self._check_local_date(local_date)
-        items = await self._recall.list_non_archived_items()
+        items = [
+            item
+            for item in await self._recall.list_non_archived_items()
+            if _visible_to(item, include_admin_only)
+        ]
         progress = {p.item_id: p for p in await self._recall.list_progress(learner_key)}
         tomorrow = local_date + timedelta(days=1)
 
@@ -239,11 +257,19 @@ class RecallPracticeService:
         return RecallOutlook(due_tomorrow=due_tomorrow, new_waiting=new_waiting)
 
     async def mark_seen(
-        self, learner_key: str, item_id: uuid.UUID, local_date: date
+        self,
+        learner_key: str,
+        item_id: uuid.UUID,
+        local_date: date,
+        include_admin_only: bool = False,
     ) -> RecallProgress:
         self._check_local_date(local_date)
         item = await self._recall.find_item(item_id)
-        if item is None or item.status is not RecallItemStatus.active:
+        if (
+            item is None
+            or item.status is not RecallItemStatus.active
+            or not _visible_to(item, include_admin_only)
+        ):
             raise NotFoundError("item_not_found")
         if item.kind is RecallItemKind.focus:
             raise ValidationError("focus_items_use_checkins")
@@ -266,11 +292,18 @@ class RecallPracticeService:
             return await self._recall.save_progress(learner_key, item_id, schedule)
 
     async def record_checkin(
-        self, learner_key: str, item_id: uuid.UUID, local_date: date, done: bool
+        self,
+        learner_key: str,
+        item_id: uuid.UUID,
+        local_date: date,
+        done: bool,
+        include_admin_only: bool = False,
     ) -> tuple[bool, int]:
         """Upsert today's yes/no for a focus item; returns ``(done, streak)``."""
         self._check_local_date(local_date)
         item = await self._recall.find_item(item_id)
+        if item is not None and not _visible_to(item, include_admin_only):
+            raise NotFoundError("item_not_found")
         if (
             item is None
             or item.kind is not RecallItemKind.focus
