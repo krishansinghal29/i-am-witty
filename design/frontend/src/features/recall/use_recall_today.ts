@@ -10,13 +10,13 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useRiffyApi } from '@/app/providers';
-import { localDateString } from '@/lib/local_date';
+import { recallDayString } from '@/lib/local_date';
 import { queryKeys } from '@/state/query_keys';
 import type { RecallCardKind } from '@/types/models';
 
 export function useRecallToday() {
   const api = useRiffyApi();
-  const localDate = localDateString();
+  const localDate = recallDayString();
 
   const query = useQuery({
     queryKey: queryKeys.recallSession(localDate),

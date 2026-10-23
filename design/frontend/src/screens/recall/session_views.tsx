@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import { IonIcon } from '@ionic/react';
 import { checkmark } from 'ionicons/icons';
 import { Card, RiffyMark } from '@/components/ui';
+import { RECALL_DAY_START_HOUR } from '@/lib/local_date';
 import { colors } from '@/theme/tokens';
 import type { RecallCard, RecallCheckin, RecallOutlook } from '@/types/models';
 import {
@@ -303,7 +304,7 @@ export interface DoneViewProps {
 
 export function DoneView({ cards, checkins, outlook }: DoneViewProps) {
   const rows: [string, string][] = [
-    ['Next session', 'Tomorrow'],
+    ['Next session', `After ${RECALL_DAY_START_HOUR} AM`],
     ['Due tomorrow', outlook ? plural(outlook.dueTomorrow, 'card') : '…'],
     ['New items waiting', outlook ? String(outlook.newWaiting) : '…'],
   ];

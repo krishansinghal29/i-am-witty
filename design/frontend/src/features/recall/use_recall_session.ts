@@ -17,7 +17,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useRiffyApi } from '@/app/providers';
-import { localDateString } from '@/lib/local_date';
+import { recallDayString } from '@/lib/local_date';
 import { queryKeys } from '@/state/query_keys';
 import type {
   RecallCard,
@@ -60,7 +60,7 @@ export function useRecallSession() {
   const api = useRiffyApi();
   const queryClient = useQueryClient();
   // Pinned for the whole run so a session that crosses midnight stays one day.
-  const [localDate] = useState(() => localDateString());
+  const [localDate] = useState(() => recallDayString());
 
   const query = useQuery({
     queryKey: queryKeys.recallSession(localDate),
